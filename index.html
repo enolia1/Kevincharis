@@ -1,137 +1,375 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b6040">
 <title>KC Comfortable Long Distance Rides</title>
+
 <style>
-*{box-sizing:border-box}
-body{font-family:Arial,sans-serif;margin:0;background:#f1f5f2;color:#17251d}
-.app{max-width:480px;margin:auto;background:white;min-height:100vh}
-header{background:#0b6040;color:white;padding:22px 18px}
-header h2{margin:0 0 8px}
-nav{display:flex;background:#e5eee8}
-nav button{flex:1;padding:14px 4px;border:0;background:transparent;font-weight:bold}
-nav button.active{background:white;color:#087346}
-main{padding:18px}
-.panel{display:none}
-.panel.active{display:block}
-label{display:block;font-size:14px;font-weight:bold;margin:12px 0 6px}
-input,textarea{width:100%;padding:12px;border:1px solid #cbd5ce;border-radius:8px;font-size:16px}
-.green{width:100%;padding:14px;border:0;border-radius:8px;background:#087346;color:white;font-size:16px;font-weight:bold;margin-top:16px}
-.ride{border:1px solid #dce5df;border-radius:10px;padding:14px;margin-top:12px}
-.message{padding:12px;background:#f1f5f2;border-radius:8px;margin-top:12px;overflow-wrap:anywhere}
-.muted{color:#607267;font-size:14px}
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f1f5f2;
+  color: #17251d;
+}
+
+.app {
+  max-width: 480px;
+  margin: auto;
+  background: white;
+  min-height: 100vh;
+}
+
+header {
+  background: #0b6040;
+  color: white;
+  padding: 22px 18px;
+}
+
+header h2 {
+  margin: 0 0 8px;
+}
+
+header p {
+  margin-bottom: 0;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  background: #e5eee8;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+nav button {
+  flex: 1 1 25%;
+  min-width: 0;
+  padding: 13px 3px;
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+nav button.active {
+  background: white;
+  color: #087346;
+  box-shadow: inset 0 -3px #087346;
+}
+
+main {
+  padding: 18px;
+}
+
+.panel {
+  display: none;
+}
+
+.panel.active {
+  display: block;
+}
+
+label {
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  margin: 12px 0 6px;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5ce;
+  border-radius: 8px;
+  font-size: 16px;
+  background: white;
+  color: #17251d;
+}
+
+input:focus,
+textarea:focus {
+  outline: 2px solid #087346;
+  outline-offset: 1px;
+}
+
+.green {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border: 0;
+  border-radius: 8px;
+  background: #087346;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 16px;
+  cursor: pointer;
+}
+
+.green:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.ride {
+  border: 1px solid #dce5df;
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+
+.message {
+  padding: 12px;
+  background: #f1f5f2;
+  border-radius: 8px;
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+
+.muted {
+  color: #607267;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+footer {
+  padding: 18px;
+  text-align: center;
+  color: #607267;
+  font-size: 12px;
+}
+
+@media (max-width: 360px) {
+  nav button {
+    flex-basis: 50%;
+    padding: 12px 4px;
+    font-size: 13px;
+  }
+}
 </style>
 </head>
+
 <body>
 <div class="app">
+
 <header>
-<h2>KC Comfortable Long Distance Rides</h2>
-<p>Find a ride. Offer a ride. Travel comfortably.</p>
+  <h2>KC Comfortable Long Distance Rides</h2>
+  <p>Find a ride. Offer a ride. Travel comfortably.</p>
 </header>
-<nav>
-<button class="active" onclick="showTab('find',this)">Find Ride</button>
-<button onclick="showTab('offer',this)">Offer Ride</button>
-<button onclick="showTab('driver',this)">Driver Account</button>
-<button onclick="showTab('profile',this)">About KC</button>
+
+<nav aria-label="Main navigation">
+  <button type="button" class="active"
+    onclick="showTab('find', this)">Find Ride</button>
+
+  <button type="button"
+    onclick="showTab('offer', this)">Offer Ride</button>
+
+  <button type="button"
+    onclick="showTab('driver', this)">Driver Account</button>
+
+  <button type="button"
+    onclick="showTab('profile', this)">About KC</button>
 </nav>
+
 <main>
+
+<!-- FIND A RIDE -->
 <section id="find" class="panel active">
-<h3>Find a ride</h3>
-<label for="searchPickup">Leaving from</label>
-<input id="searchPickup" placeholder="e.g. Boksburg">
-<label for="searchDestination">Going to</label>
-<input id="searchDestination" placeholder="e.g. Durban">
-<label for="searchDate">Travel date (optional)</label>
-<input id="searchDate" type="date">
-<button class="green" onclick="searchRides()">SEARCH RIDES</button>
-<div id="results" class="message">Enter your route to search for rides.</div>
+  <h3>Find a Ride</h3>
+  <p class="muted">Search for available long-distance rides.</p>
+
+  <label for="searchPickup">Leaving from</label>
+  <input id="searchPickup" placeholder="e.g. Boksburg">
+
+  <label for="searchDestination">Going to</label>
+  <input id="searchDestination" placeholder="e.g. Durban">
+
+  <label for="searchDate">Travel date (optional)</label>
+  <input id="searchDate" type="date">
+
+  <button type="button" class="green"
+    onclick="searchRides()">SEARCH RIDES</button>
+
+  <div id="results" class="message" aria-live="polite">
+    Enter your route to search for rides.
+  </div>
 </section>
 
-<section id="offer" class="panel"><section id="driver" class="panel">
-<h3>Driver Account</h3>
-<p class="muted">Register or sign in to manage your driver profile and vehicle details.</p><div id="driverAuth">
-  <h4>Register a new account</h4><label for="driverEmail">Email address</label>
-<input id="driverEmail" type="email" autocomplete="email" placeholder="you@example.com">
+<!-- OFFER A RIDE -->
+<section id="offer" class="panel">
+  <h3>Offer a Ride</h3>
+  <p class="muted">
+    Enter your trip details below. Sign in to your driver account
+    before posting a ride.
+  </p>
 
-<label for="driverPassword">Password</label>
-<input id="driverPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters">
+  <label for="pickup">Leaving from</label>
+  <input id="pickup" placeholder="Pickup town or city">
 
-<button class="green" onclick="registerDriver()">REGISTER</button>
-<button class="green" onclick="loginDriver()">SIGN IN</button>
+  <label for="destination">Going to</label>
+  <input id="destination" placeholder="Destination town or city">
 
-</div><div id="driverProfileForm" style="display:none">
-  <p id="driverSignedIn" class="message"></p><label for="driverFullName">Full name</label>
-<input id="driverFullName" type="text" autocomplete="name" placeholder="Your full name">
+  <label for="travelDate">Travel date</label>
+  <input id="travelDate" type="date">
 
-<label for="driverPhone">Phone number</label>
-<input id="driverPhone" type="tel" autocomplete="tel" placeholder="Your phone number">
+  <label for="travelTime">Departure time</label>
+  <input id="travelTime" type="time">
 
-<label for="carModel">Car model</label>
-<input id="carModel" type="text" placeholder="e.g. Toyota Corolla">
+  <label for="seats">Available seats</label>
+  <input id="seats" type="number" min="1" max="20" value="3">
 
-<label for="registrationNumber">Vehicle registration number</label>
-<input id="registrationNumber" type="text" placeholder="Vehicle registration">
+  <label for="price">Price per passenger (R)</label>
+  <input id="price" type="number" min="0" step="0.01"
+    placeholder="e.g. 250">
 
-<label for="carPhotoUrl">Car photo link (optional)</label>
-<input id="carPhotoUrl" type="url" placeholder="https://example.com/car-photo.jpg">
+  <label for="notes">Extra details (optional)</label>
+  <textarea id="notes" rows="3"
+    placeholder="Vehicle or meeting point details"></textarea>
 
-<button class="green" onclick="saveDriverProfile()">SAVE DRIVER PROFILE</button>
-<button class="green" onclick="logoutDriver()">SIGN OUT</button>
+  <button type="button" class="green"
+    onclick="publishRide()">POST MY RIDE</button>
 
-</div><div id="driverMessage" class="message" aria-live="polite"></div>
-</section>
-<h3>Offer a ride</h3>
-<p class="muted">Enter your trip details below.</p>
-<label for="pickup">Leaving from</label>
-<input id="pickup" placeholder="Pickup town or city">
-<label for="destination">Going to</label>
-<input id="destination" placeholder="Destination town or city">
-<label for="travelDate">Travel date</label>
-<input id="travelDate" type="date">
-<label for="travelTime">Departure time</label>
-<input id="travelTime" type="time">
-<label for="seats">Available seats</label>
-<input id="seats" type="number" min="1" max="20" value="3">
-<label for="price">Price per passenger (R)</label>
-<input id="price" type="number" min="0" step="0.01" placeholder="e.g. 250">
-<label for="notes">Extra details (optional)</label>
-<textarea id="notes" rows="3" placeholder="Vehicle or meeting point details"></textarea>
-<button class="green" onclick="publishRide()">POST MY RIDE</button>
-<div id="publishMessage" class="message"></div>
+  <div id="publishMessage" class="message" aria-live="polite"></div>
 </section>
 
+<!-- DRIVER ACCOUNT: SEPARATE FROM OFFER RIDE -->
+<section id="driver" class="panel">
+  <h3>Driver Account</h3>
+
+  <p class="muted">
+    Register or sign in to manage your driver profile and vehicle details.
+  </p>
+
+  <div id="driverAuth">
+    <h4>Register a New Account</h4>
+
+    <label for="driverEmail">Email address</label>
+    <input id="driverEmail" type="email" autocomplete="email"
+      placeholder="you@example.com">
+
+    <label for="driverPassword">Password</label>
+    <input id="driverPassword" type="password"
+      autocomplete="new-password"
+      placeholder="At least 8 characters">
+
+    <button type="button" class="green"
+      onclick="registerDriver()">REGISTER</button>
+
+    <button type="button" class="green"
+      onclick="loginDriver()">SIGN IN</button>
+  </div>
+
+  <div id="driverProfileForm" style="display:none">
+    <p id="driverSignedIn" class="message"></p>
+
+    <h4>Your Driver Details</h4>
+
+    <label for="driverFullName">Full name</label>
+    <input id="driverFullName" type="text"
+      autocomplete="name" placeholder="Your full name">
+
+    <label for="driverPhone">Phone number</label>
+    <input id="driverPhone" type="tel"
+      autocomplete="tel" placeholder="Your phone number">
+
+    <label for="carModel">Car model</label>
+    <input id="carModel" type="text"
+      placeholder="e.g. Toyota Corolla">
+
+    <label for="registrationNumber">Vehicle registration number</label>
+    <input id="registrationNumber" type="text"
+      placeholder="Vehicle registration">
+
+    <label for="carPhotoUrl">Car photo link (optional)</label>
+    <input id="carPhotoUrl" type="url"
+      placeholder="https://example.com/car-photo.jpg">
+
+    <button type="button" class="green"
+      onclick="saveDriverProfile()">SAVE DRIVER PROFILE</button>
+
+    <button type="button" class="green"
+      onclick="logoutDriver()">SIGN OUT</button>
+  </div>
+
+  <div id="driverMessage" class="message" aria-live="polite">
+    Register a new account or sign in to continue.
+  </div>
+</section>
+
+<!-- ABOUT KC -->
 <section id="profile" class="panel">
-<h3>About KC</h3>
-<p>KC Comfortable Long Distance Rides helps passengers and drivers connect for long-distance journeys.</p>
-<p class="muted">Confirm the driver, price, pickup point and travel arrangements before paying or travelling.</p>
+  <h3>About KC</h3>
+
+  <p>
+    KC Comfortable Long Distance Rides helps passengers and
+    drivers connect for long-distance journeys.
+  </p>
+
+  <p class="muted">
+    Confirm the driver, price, pickup point and travel arrangements
+    before paying or travelling.
+  </p>
 </section>
+
 </main>
+
+<footer>
+  KC Comfortable Long Distance Rides
+</footer>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-const SUPABASE_URL = 'https://ndagpnohncjudssgtsvg.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_h4zgJO-RfPnnCXG5-QwPlA_geL4XqkI';
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const SUPABASE_URL =
+  'https://ndagpnohncjudssgtsvg.supabase.co';
+
+const SUPABASE_PUBLISHABLE_KEY =
+  'sb_publishable_h4zgJO-RfPnnCXG5-QwPlA_geL4XqkI';
+
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
 
 function showTab(id, button) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(panel => {
+    panel.classList.remove('active');
+  });
+
+  document.querySelectorAll('nav button').forEach(btn => {
+    btn.classList.remove('active');
+  });
+
   document.getElementById(id).classList.add('active');
   button.classList.add('active');
 }
 
 async function searchRides() {
-  const from = document.getElementById('searchPickup').value.trim();
-  const to = document.getElementById('searchDestination').value.trim();
+  const from = document.getElementById('searchPickup')
+    .value.trim();
+
+  const to = document.getElementById('searchDestination')
+    .value.trim();
+
   const date = document.getElementById('searchDate').value;
   const results = document.getElementById('results');
 
   if (!from || !to) {
-    results.textContent = 'Please enter both pickup and destination.';
+    results.textContent =
+      'Please enter both pickup and destination.';
     return;
   }
 
@@ -139,15 +377,21 @@ async function searchRides() {
 
   try {
     let query = db.from('rides')
-      .select('id,pickup_location,destination,travel_date,travel_time,available_seats,price,notes')
+      .select(
+        'id,pickup_location,destination,travel_date,' +
+        'travel_time,available_seats,price,notes'
+      )
       .ilike('pickup_location', from)
       .ilike('destination', to)
       .gt('available_seats', 0)
-      .order('travel_date', {ascending:true});
+      .order('travel_date', { ascending: true });
 
-    if (date) query = query.eq('travel_date', date);
+    if (date) {
+      query = query.eq('travel_date', date);
+    }
 
-    const {data, error} = await query;
+    const { data, error } = await query;
+
     if (error) throw error;
 
     results.replaceChildren();
@@ -162,7 +406,9 @@ async function searchRides() {
       card.className = 'ride';
 
       const title = document.createElement('strong');
-      title.textContent = ride.pickup_location + ' → ' + ride.destination;
+      title.textContent =
+        ride.pickup_location + ' → ' + ride.destination;
+
       card.appendChild(title);
 
       const details = document.createElement('p');
@@ -171,6 +417,7 @@ async function searchRides() {
         ' | Time: ' + (ride.travel_time || 'Not specified') +
         ' | Seats: ' + ride.available_seats +
         ' | Price: R' + ride.price;
+
       card.appendChild(details);
 
       if (ride.notes) {
@@ -188,29 +435,50 @@ async function searchRides() {
 
 async function publishRide() {
   const message = document.getElementById('publishMessage');
+
   const pickup = document.getElementById('pickup').value.trim();
-  const destination = document.getElementById('destination').value.trim();
+  const destination =
+    document.getElementById('destination').value.trim();
+
   const date = document.getElementById('travelDate').value;
   const time = document.getElementById('travelTime').value;
   const seats = Number(document.getElementById('seats').value);
-  const price = Number(document.getElementById('price').value);
+  const priceInput = document.getElementById('price').value;
+  const price = Number(priceInput);
   const notes = document.getElementById('notes').value.trim();
 
   if (!pickup || !destination || !date || !time ||
-      !seats || document.getElementById('price').value === '') {
+      !seats || priceInput === '') {
     message.textContent = 'Please complete all required fields.';
     return;
   }
 
-  if (seats < 1 || price < 0) {
+  if (seats < 1 || seats > 20 ||
+      !Number.isFinite(price) || price < 0) {
     message.textContent = 'Please enter valid seats and price.';
     return;
   }
 
-  message.textContent = 'Posting your ride...';
+  message.textContent = 'Checking your driver account...';
 
   try {
-    const {error} = await db.from('rides').insert([{
+    const { data: userData, error: userError } =
+      await db.auth.getUser();
+
+    if (userError) throw userError;
+
+    const user = userData.user;
+
+    if (!user) {
+      message.textContent =
+        'Please open Driver Account and sign in before posting a ride.';
+      return;
+    }
+
+    message.textContent = 'Posting your ride...';
+
+    const { error } = await db.from('rides').insert([{
+      driver_id: user.id,
       pickup_location: pickup,
       destination: destination,
       travel_date: date,
@@ -223,6 +491,7 @@ async function publishRide() {
     if (error) throw error;
 
     message.textContent = 'Ride posted successfully!';
+
     document.getElementById('pickup').value = '';
     document.getElementById('destination').value = '';
     document.getElementById('travelDate').value = '';
@@ -230,198 +499,257 @@ async function publishRide() {
     document.getElementById('seats').value = '3';
     document.getElementById('price').value = '';
     document.getElementById('notes').value = '';
+
   } catch (error) {
     message.textContent = 'Could not post ride: ' + error.message;
   }
 }
+
 async function registerDriver() {
-const email = document.getElementById('driverEmail').value.trim();
-const password = document.getElementById('driverPassword').value;
-const message = document.getElementById('driverMessage');
+  const email = document.getElementById('driverEmail')
+    .value.trim();
 
-if (!email || password.length < 8) {
-message.textContent = 'Enter a valid email and a password of at least 8 characters.';
-return;
-}
+  const password =
+    document.getElementById('driverPassword').value;
 
-message.textContent = 'Creating your account...';
+  const message = document.getElementById('driverMessage');
 
-try {
-const { data, error } = await db.auth.signUp({
-email,
-password,
-options: {
-emailRedirectTo: window.location.origin
-}
-});
+  if (!email || password.length < 8) {
+    message.textContent =
+      'Enter a valid email and a password of at least 8 characters.';
+    return;
+  }
 
-if (error) throw error;
+  message.textContent = 'Creating your account...';
 
-if (data.session) {
-  message.textContent = 'Account created successfully.';
-  await loadDriverProfile();
-} else {
-  message.textContent = 'Account request submitted. Check your email to confirm your account before signing in.';
-}
+  try {
+    const { data, error } = await db.auth.signUp({
+      email: email,
+      password: password,
+      options: {
+        emailRedirectTo: window.location.origin
+      }
+    });
 
-} catch (error) {
-message.textContent = 'Registration error: ' + error.message;
-}
+    if (error) throw error;
+
+    if (data.session) {
+      await loadDriverProfile();
+      message.textContent =
+        'Account created successfully. Complete your profile.';
+    } else {
+      message.textContent =
+        'Account request submitted. Check your email to confirm ' +
+        'your account before signing in.';
+    }
+  } catch (error) {
+    message.textContent =
+      'Registration error: ' + error.message;
+  }
 }
 
 async function loginDriver() {
-const email = document.getElementById('driverEmail').value.trim();
-const password = document.getElementById('driverPassword').value;
-const message = document.getElementById('driverMessage');
+  const email = document.getElementById('driverEmail')
+    .value.trim();
 
-if (!email || !password) {
-message.textContent = 'Enter your email and password.';
-return;
-}
+  const password =
+    document.getElementById('driverPassword').value;
 
-message.textContent = 'Signing in...';
+  const message = document.getElementById('driverMessage');
 
-try {
-const { error } = await db.auth.signInWithPassword({
-email,
-password
-});
+  if (!email || !password) {
+    message.textContent = 'Enter your email and password.';
+    return;
+  }
 
-if (error) throw error;
+  message.textContent = 'Signing in...';
 
-await loadDriverProfile();
-message.textContent = 'You are signed in.';
+  try {
+    const { error } = await db.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
 
-} catch (error) {
-message.textContent = 'Sign-in error: ' + error.message;
-}
+    if (error) throw error;
+
+    await loadDriverProfile();
+
+    message.textContent =
+      'You are signed in. Your driver account is ready.';
+  } catch (error) {
+    message.textContent = 'Sign-in error: ' + error.message;
+  }
 }
 
 async function loadDriverProfile() {
-const message = document.getElementById('driverMessage');
+  const message = document.getElementById('driverMessage');
 
-try {
-const { data: userData, error: userError } = await db.auth.getUser();
-if (userError) throw userError;
+  try {
+    const { data: userData, error: userError } =
+      await db.auth.getUser();
 
-const user = userData.user;
+    if (userError) throw userError;
 
-if (!user) {
-  document.getElementById('driverAuth').style.display = 'block';
-  document.getElementById('driverProfileForm').style.display = 'none';
-  return;
-}
+    const user = userData.user;
 
-document.getElementById('driverAuth').style.display = 'none';
-document.getElementById('driverProfileForm').style.display = 'block';
-document.getElementById('driverSignedIn').textContent =
-  'Signed in as ' + user.email;
+    if (!user) {
+      document.getElementById('driverAuth').style.display = 'block';
+      document.getElementById('driverProfileForm').style.display = 'none';
 
-const { data: profile, error } = await db
-  .from('driver_profiles')
-  .select('full_name,phone,car_model,registration_number,car_photo_url')
-  .eq('id', user.id)
-  .maybeSingle();
+      message.textContent =
+        'Please register or sign in to manage your profile.';
+      return;
+    }
 
-if (error) throw error;
+    document.getElementById('driverAuth').style.display = 'none';
 
-if (profile) {
-  document.getElementById('driverFullName').value = profile.full_name || '';
-  document.getElementById('driverPhone').value = profile.phone || '';
-  document.getElementById('carModel').value = profile.car_model || '';
-  document.getElementById('registrationNumber').value =
-    profile.registration_number || '';
-  document.getElementById('carPhotoUrl').value =
-    profile.car_photo_url || '';
-  message.textContent = 'Your saved driver profile has been loaded.';
-} else {
-  message.textContent = 'Complete your details and save your driver profile.';
-}
+    document.getElementById('driverProfileForm').style.display = 'block';
 
-} catch (error) {
-message.textContent = 'Could not load profile: ' + error.message;
-}
+    document.getElementById('driverSignedIn').textContent =
+      'Signed in as ' + user.email;
+
+    const { data: profile, error } = await db
+      .from('driver_profiles')
+      .select(
+        'full_name,phone,car_model,registration_number,car_photo_url'
+      )
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (profile) {
+      document.getElementById('driverFullName').value =
+        profile.full_name || '';
+
+      document.getElementById('driverPhone').value =
+        profile.phone || '';
+
+      document.getElementById('carModel').value =
+        profile.car_model || '';
+
+      document.getElementById('registrationNumber').value =
+        profile.registration_number || '';
+
+      document.getElementById('carPhotoUrl').value =
+        profile.car_photo_url || '';
+
+      message.textContent =
+        'Your saved driver profile has been loaded.';
+    } else {
+      message.textContent =
+        'Complete your details and save your driver profile.';
+    }
+  } catch (error) {
+    message.textContent =
+      'Could not load profile: ' + error.message;
+  }
 }
 
 async function saveDriverProfile() {
-const message = document.getElementById('driverMessage');
+  const message = document.getElementById('driverMessage');
 
-const fullName = document.getElementById('driverFullName').value.trim();
-const phone = document.getElementById('driverPhone').value.trim();
-const carModel = document.getElementById('carModel').value.trim();
-const registrationNumber =
-document.getElementById('registrationNumber').value.trim();
-const carPhotoUrl = document.getElementById('carPhotoUrl').value.trim();
+  const fullName = document.getElementById('driverFullName')
+    .value.trim();
 
-if (!fullName) {
-message.textContent = 'Please enter your full name.';
-return;
-}
+  const phone = document.getElementById('driverPhone')
+    .value.trim();
 
-message.textContent = 'Saving your driver profile...';
+  const carModel = document.getElementById('carModel')
+    .value.trim();
 
-try {
-const { data: userData, error: userError } = await db.auth.getUser();
-if (userError) throw userError;
+  const registrationNumber =
+    document.getElementById('registrationNumber').value.trim();
 
-const user = userData.user;
+  const carPhotoUrl =
+    document.getElementById('carPhotoUrl').value.trim();
 
-if (!user) {
-  throw new Error('Please sign in before saving your profile.');
-}
+  if (!fullName) {
+    message.textContent = 'Please enter your full name.';
+    return;
+  }
 
-const { error } = await db.from('driver_profiles').upsert({
-  id: user.id,
-  full_name: fullName,
-  phone: phone || null,
-  car_model: carModel || null,
-  registration_number: registrationNumber || null,
-  car_photo_url: carPhotoUrl || null
-}, {
-  onConflict: 'id'
-});
+  message.textContent = 'Saving your driver profile...';
 
-if (error) throw error;
+  try {
+    const { data: userData, error: userError } =
+      await db.auth.getUser();
 
-message.textContent = 'Driver profile saved successfully.';
+    if (userError) throw userError;
 
-} catch (error) {
-message.textContent = 'Could not save profile: ' + error.message;
-}
+    const user = userData.user;
+
+    if (!user) {
+      throw new Error('Please sign in before saving your profile.');
+    }
+
+    const { error } = await db.from('driver_profiles').upsert({
+      id: user.id,
+      full_name: fullName,
+      phone: phone || null,
+      car_model: carModel || null,
+      registration_number: registrationNumber || null,
+      car_photo_url: carPhotoUrl || null
+    }, {
+      onConflict: 'id'
+    });
+
+    if (error) throw error;
+
+    message.textContent =
+      'Driver profile saved successfully!';
+  } catch (error) {
+    message.textContent =
+      'Could not save profile: ' + error.message;
+  }
 }
 
 async function logoutDriver() {
-const message = document.getElementById('driverMessage');
+  const message = document.getElementById('driverMessage');
 
-try {
-const { error } = await db.auth.signOut();
-if (error) throw error;
+  try {
+    const { error } = await db.auth.signOut();
 
-document.getElementById('driverFullName').value = '';
-document.getElementById('driverPhone').value = '';
-document.getElementById('carModel').value = '';
-document.getElementById('registrationNumber').value = '';
-document.getElementById('carPhotoUrl').value = '';
+    if (error) throw error;
 
-document.getElementById('driverAuth').style.display = 'block';
-document.getElementById('driverProfileForm').style.display = 'none';
+    document.getElementById('driverFullName').value = '';
+    document.getElementById('driverPhone').value = '';
+    document.getElementById('carModel').value = '';
+    document.getElementById('registrationNumber').value = '';
+    document.getElementById('carPhotoUrl').value = '';
 
-message.textContent = 'You have signed out.';
+    document.getElementById('driverAuth').style.display = 'block';
+    document.getElementById('driverProfileForm').style.display = 'none';
 
-} catch (error) {
-message.textContent = 'Sign-out error: ' + error.message;
+    document.getElementById('driverEmail').value = '';
+    document.getElementById('driverPassword').value = '';
+
+    message.textContent = 'You have signed out.';
+  } catch (error) {
+    message.textContent = 'Sign-out error: ' + error.message;
+  }
 }
-}
+
+db.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    setTimeout(() => {
+      loadDriverProfile();
+    }, 0);
+  }
+});
 
 db.auth.getSession().then(({ data, error }) => {
-if (error) {
-document.getElementById('driverMessage').textContent =
-'Could not check your session: ' + error.message;
-return;
-}
-if (data.session) {
-loadDriverProfile();
-}
-});</script>
+  if (error) {
+    document.getElementById('driverMessage').textContent =
+      'Could not check your session: ' + error.message;
+    return;
+  }
+
+  if (data.session) {
+    loadDriverProfile();
+  }
+});
+</script>
+
 </body>
 </html>
