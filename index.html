@@ -1,138 +1,208 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>KC Comfortable Long Distance Rides</title><style>body{font-family:Arial;margin:0;background:#f4f7f5;color:#17251d}.app{max-width:480px;margin:auto;background:white;min-height:100vh}.top{background:#0b6b3a;color:white;padding:28px 20px;border-radius:0 0 24px 24px}.logo{font-size:38px;font-weight:900}.tag{opacity:.9}.main{padding:18px}.card{padding:18px;border:1px solid #e2e8e4;border-radius:18px;margin-bottom:15px;box-shadow:0 5px 15px #00000008}label{font-size:12px;font-weight:bold;display:block;margin:10px 0 5px}input,select{width:100%;padding:13px;border:1px solid #ccd7d0;border-radius:11px;box-sizing:border-box}button{border:0;border-radius:12px;padding:14px;width:100%;font-weight:bold;margin-top:12px}.green{background:#0b6b3a;color:white}.dark{background:#17251d;color:white}.outline{background:white;border:1px solid #b8c7bf}.trip{display:flex;justify-content:space-between;gap:12px}.price{font-weight:900;color:#0b6b3a}.verified{font-size:11px;color:#08743d;background:#e8f7ee;padding:5px 8px;border-radius:20px;display:inline-block;margin-top:7px}.small{font-size:12px;color:#65736b}.nav{position:sticky;bottom:0;background:white;border-top:1px solid #ddd;display:grid;grid-template-columns:repeat(3,1fr);padding:8px}.nav button{margin:0;background:white;color:#506057;padding:8px}.view{display:none}.view.active{display:block}h2{font-size:20px}</style></head><body><div class='app'><div class='top'><div class='logo'>KC</div><div>Comfortable Long Distance Rides</div><div class='tag'>Travel Far. Travel Comfortably.</div></div><main class='main'>
-<section id='home' class='view active'><div class='card'><h2>Find a Ride</h2><label>From</label><select id='from'><option>Johannesburg</option><option>Pretoria</option><option>Mbombela</option><option>Polokwane</option><option>Durban</option><option>Cape Town</option><option>Gqeberha</option></select><label>To</label><select id='to'><option>Mbombela</option><option>Johannesburg</option><option>Polokwane</option><option>Durban</option><option>Cape Town</option><option>Gqeberha</option><option>Bloemfontein</option></select><label>Date</label><input type='date' id='date'><button class='green' onclick='search()'>SEARCH RIDES</button></div><div id='results'></div><div class='card'><h3>Safety first</h3><div class='small'>KC is designed around driver and vehicle verification, trip sharing, emergency contacts, ratings and reporting.</div></div></section>
-<section id='offer' class='view'><div class='card'><h2>Offer a Ride</h2><label>From</label><input id='df' placeholder='Johannesburg'><label>To</label><input id='dt' placeholder='Mbombela'><label>Date & time</label><input type='datetime-local'><label>Seats available</label><select><option>1</option><option>2</option><option>3</option><option>4</option></select><label>Fare / contribution</label><input placeholder='R350'><label>Vehicle</label><input placeholder='Toyota Corolla'>"<button class='green' onclick="publishRide()">POST MY RIDE</button>"</div></section>
-<section id='profile' class='view'><div class='card'><h2>My Profile</h2><label>Full name</label><input placeholder='Your name'><label>Mobile number</label><input placeholder='07...'><label>Account type</label><select><option>Passenger</option><option>Driver</option></select><button class='dark'>SAVE PROFILE</button></div><div class='card'><h3>Driver Verification</h3><div class='small'>Production KC will support identity, licence, vehicle and applicable operating-authority verification before a driver can offer regulated paid passenger trips.</div></div></section></main><div class='nav'><button onclick="show('home')">🏠<br>Find Ride</button><button onclick="show('offer')">🚗<br>Offer Ride</button><button onclick="show('profile')">👤<br>Profile</button></div></div><script>function show(id){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');scrollTo(0,0)}function search(){let f=document.getElementById('from').value,t=document.getElementById('to').value;document.getElementById('results').innerHTML=`<h2>Available rides</h2><div class='card'><div class='trip'><div><b>${f} → ${t}</b><div class='small'>06:30 • 3 seats available</div><span class='verified'>✓ KC Verified Driver</span></div><div class='price'>R350</div></div><button class='green' onclick="publishRide()">POST MY RIDE</button></div>`}<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KC Comfortable Long Distance Rides</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:Arial,sans-serif;margin:0;background:#f1f5f2;color:#17251d}
+.app{max-width:480px;margin:auto;background:white;min-height:100vh}
+header{background:#0b6040;color:white;padding:22px 18px}
+header h2{margin:0 0 8px}
+nav{display:flex;background:#e5eee8}
+nav button{flex:1;padding:14px 4px;border:0;background:transparent;font-weight:bold}
+nav button.active{background:white;color:#087346}
+main{padding:18px}
+.panel{display:none}
+.panel.active{display:block}
+label{display:block;font-size:14px;font-weight:bold;margin:12px 0 6px}
+input,textarea{width:100%;padding:12px;border:1px solid #cbd5ce;border-radius:8px;font-size:16px}
+.green{width:100%;padding:14px;border:0;border-radius:8px;background:#087346;color:white;font-size:16px;font-weight:bold;margin-top:16px}
+.ride{border:1px solid #dce5df;border-radius:10px;padding:14px;margin-top:12px}
+.message{padding:12px;background:#f1f5f2;border-radius:8px;margin-top:12px;overflow-wrap:anywhere}
+.muted{color:#607267;font-size:14px}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+<h2>KC Comfortable Long Distance Rides</h2>
+<p>Find a ride. Offer a ride. Travel comfortably.</p>
+</header>
+
+<nav>
+<button class="active" onclick="showTab('find',this)">Find Ride</button>
+<button onclick="showTab('offer',this)">Offer Ride</button>
+<button onclick="showTab('profile',this)">About KC</button>
+</nav>
+
+<main>
+<section id="find" class="panel active">
+<h3>Find a ride</h3>
+<label for="searchPickup">Leaving from</label>
+<input id="searchPickup" placeholder="e.g. Boksburg">
+<label for="searchDestination">Going to</label>
+<input id="searchDestination" placeholder="e.g. Durban">
+<label for="searchDate">Travel date (optional)</label>
+<input id="searchDate" type="date">
+<button class="green" onclick="searchRides()">SEARCH RIDES</button>
+<div id="results" class="message">Enter your route to search for rides.</div>
+</section>
+
+<section id="offer" class="panel">
+<h3>Offer a ride</h3>
+<p class="muted">Enter your trip details below.</p>
+<label for="pickup">Leaving from</label>
+<input id="pickup" placeholder="Pickup town or city">
+<label for="destination">Going to</label>
+<input id="destination" placeholder="Destination town or city">
+<label for="travelDate">Travel date</label>
+<input id="travelDate" type="date">
+<label for="travelTime">Departure time</label>
+<input id="travelTime" type="time">
+<label for="seats">Available seats</label>
+<input id="seats" type="number" min="1" max="20" value="3">
+<label for="price">Price per passenger (R)</label>
+<input id="price" type="number" min="0" step="0.01" placeholder="e.g. 250">
+<label for="notes">Extra details (optional)</label>
+<textarea id="notes" rows="3" placeholder="Vehicle or meeting point details"></textarea>
+<button class="green" onclick="publishRide()">POST MY RIDE</button>
+<div id="publishMessage" class="message"></div>
+</section>
+
+<section id="profile" class="panel">
+<h3>About KC</h3>
+<p>KC Comfortable Long Distance Rides helps passengers and drivers connect for long-distance journeys.</p>
+<p class="muted">Confirm the driver, price, pickup point and travel arrangements before paying or travelling.</p>
+</section>
+</main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL = 'https://ndagpnohncjudssgtsvg.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'PASTE_YOUR_PUBLISHABLE_KEY_HERE';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_h4zgJO-RfPnnCXG5-QwPlA_geL4XqkI';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-const db = supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
-
-function show(id) {
-  document.querySelectorAll('.view').forEach(
-    x => x.classList.remove('active')
-  );
+function showTab(id, button) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  window.scrollTo(0, 0);
+  button.classList.add('active');
 }
 
-async function search() {
-  const from = document.getElementById('from').value;
-  const to = document.getElementById('to').value;
-  const date = document.getElementById('date').value;
+async function searchRides() {
+  const from = document.getElementById('searchPickup').value.trim();
+  const to = document.getElementById('searchDestination').value.trim();
+  const date = document.getElementById('searchDate').value;
   const results = document.getElementById('results');
 
-  if (from === to) {
-    results.textContent = 'Choose different departure and destination cities.';
+  if (!from || !to) {
+    results.textContent = 'Please enter both pickup and destination.';
     return;
   }
 
   results.textContent = 'Searching for rides...';
 
-  let query = db.from('rides')
-    .select('id,pickup_location,destination,travel_date,travel_time,available_seats,price,notes')
-    .eq('pickup_location', from)
-    .eq('destination', to)
-    .gt('available_seats', 0)
-    .order('travel_date', { ascending: true });
+  try {
+    let query = db.from('rides')
+      .select('id,pickup_location,destination,travel_date,travel_time,available_seats,price,notes')
+      .ilike('pickup_location', from)
+      .ilike('destination', to)
+      .gt('available_seats', 0)
+      .order('travel_date', {ascending:true});
 
-  if (date) query = query.eq('travel_date', date);
+    if (date) query = query.eq('travel_date', date);
 
-  const { data, error } = await query;
+    const {data, error} = await query;
+    if (error) throw error;
 
-  if (error) {
-    results.textContent = 'Could not load rides: ' + error.message;
-    return;
-  }
+    results.replaceChildren();
 
-  results.replaceChildren();
-
-  const heading = document.createElement('h2');
-  heading.textContent = 'Available rides';
-  results.appendChild(heading);
-
-  if (!data.length) {
-    const message = document.createElement('p');
-    message.textContent = 'No rides found for this route yet.';
-    results.appendChild(message);
-    return;
-  }
-
-  data.forEach(ride => {
-    const card = document.createElement('div');
-    card.className = 'card';
-
-    const route = document.createElement('h3');
-    route.textContent = ride.pickup_location + ' → ' + ride.destination;
-
-    const details = document.createElement('p');
-    details.textContent =
-      ride.travel_date + ' • ' + (ride.travel_time || 'Time not set') +
-      ' • ' + ride.available_seats + ' seat(s)';
-
-    const price = document.createElement('p');
-    price.className = 'price';
-    price.textContent = 'R' + Number(ride.price).toFixed(2);
-
-    card.append(route, details, price);
-
-    if (ride.notes) {
-      const notes = document.createElement('p');
-      notes.textContent = ride.notes;
-      card.appendChild(notes);
+    if (!data || data.length === 0) {
+      results.textContent = 'No rides found for this route yet.';
+      return;
     }
 
-    results.appendChild(card);
-  });
+    data.forEach(ride => {
+      const card = document.createElement('div');
+      card.className = 'ride';
+
+      const title = document.createElement('strong');
+      title.textContent = ride.pickup_location + ' → ' + ride.destination;
+      card.appendChild(title);
+
+      const details = document.createElement('p');
+      details.textContent =
+        'Date: ' + (ride.travel_date || 'Not specified') +
+        ' | Time: ' + (ride.travel_time || 'Not specified') +
+        ' | Seats: ' + ride.available_seats +
+        ' | Price: R' + ride.price;
+      card.appendChild(details);
+
+      if (ride.notes) {
+        const note = document.createElement('p');
+        note.textContent = ride.notes;
+        card.appendChild(note);
+      }
+
+      results.appendChild(card);
+    });
+  } catch (error) {
+    results.textContent = 'Search error: ' + error.message;
+  }
 }
 
 async function publishRide() {
-  const section = document.getElementById('offer');
-  const fields = section.querySelectorAll('input, select');
+  const message = document.getElementById('publishMessage');
+  const pickup = document.getElementById('pickup').value.trim();
+  const destination = document.getElementById('destination').value.trim();
+  const date = document.getElementById('travelDate').value;
+  const time = document.getElementById('travelTime').value;
+  const seats = Number(document.getElementById('seats').value);
+  const price = Number(document.getElementById('price').value);
+  const notes = document.getElementById('notes').value.trim();
 
-  const pickup = document.getElementById('df').value.trim();
-  const destination = document.getElementById('dt').value.trim();
-  const datetime = fields[2].value;
-  const seats = Number(fields[3].value);
-  const price = Number(fields[4].value.replace(/[^0-9.]/g, ''));
-  const vehicle = fields[5].value.trim();
-
-  if (!pickup || !destination || !datetime || !vehicle ||
-      !Number.isFinite(price) || price <= 0) {
-    alert('Please complete all ride details and enter a valid fare.');
+  if (!pickup || !destination || !date || !time ||
+      !seats || document.getElementById('price').value === '') {
+    message.textContent = 'Please complete all required fields.';
     return;
   }
 
-  if (pickup.toLowerCase() === destination.toLowerCase()) {
-    alert('Departure and destination must be different.');
+  if (seats < 1 || price < 0) {
+    message.textContent = 'Please enter valid seats and price.';
     return;
   }
 
-  const [travel_date, travel_time] = datetime.split('T');
+  message.textContent = 'Posting your ride...';
 
-  const { error } = await db.from('rides').insert({
-    pickup_location: pickup,
-    destination: destination,
-    travel_date,
-    travel_time,
-    available_seats: seats,
-    price,
-    notes: 'Vehicle: ' + vehicle
-  });
+  try {
+    const {error} = await db.from('rides').insert([{
+      pickup_location: pickup,
+      destination: destination,
+      travel_date: date,
+      travel_time: time,
+      available_seats: seats,
+      price: price,
+      notes: notes || null
+    }]);
 
-  if (error) {
-    alert('Ride was not saved: ' + error.message);
-    return;
+    if (error) throw error;
+
+    message.textContent = 'Ride posted successfully!';
+    document.getElementById('pickup').value = '';
+    document.getElementById('destination').value = '';
+    document.getElementById('travelDate').value = '';
+    document.getElementById('travelTime').value = '';
+    document.getElementById('seats').value = '3';
+    document.getElementById('price').value = '';
+    document.getElementById('notes').value = '';
+  } catch (error) {
+    message.textContent = 'Could not post ride: ' + error.message;
   }
-
-  alert('Ride published successfully!');
-  section.querySelectorAll('input').forEach(input => input.value = '');
 }
-
 </script>
 </body>
 </html>
- </body></html>
