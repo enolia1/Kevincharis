@@ -12,7 +12,7 @@ body {
   font-family: Arial, sans-serif; margin: 0;
   background: #f1f5f2; color: #17251d;
 }
-.app { max-width: 480px; margin: auto; background: white; min-height: 100vh; padding-bottom: 92px; }
+.app { max-width: 480px; margin: auto; background: white; min-height: 100vh; padding-bottom: 118px; }
 header { background: #0b6040; color: white; padding: 22px 18px; }
 header h2 { margin: 0 0 8px; }
 header p { margin-bottom: 0; }
@@ -34,19 +34,34 @@ footer { padding: 18px; text-align: center; color: #607267; font-size: 12px; }
 .sos-dock {
   position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
   width: 100%; max-width: 480px; z-index: 100;
-  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  padding: 9px 12px calc(9px + env(safe-area-inset-bottom));
   background: rgba(255,255,255,.98); border-top: 1px solid #dce5df;
   box-shadow: 0 -3px 12px rgba(0,0,0,.08); text-align: center;
 }
-.sos-button {
-  width: 100%; min-height: 54px; border: 2px solid #9f0000;
-  border-radius: 12px; background: #c90000; color: #fff;
-  font-size: 17px; font-weight: 800; cursor: pointer;
+.emergency-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
 }
-.sos-caption { margin: 5px 0 0; font-size: 11px; color: #4b5b51; }
+.emergency-button {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 100%; min-height: 62px; padding: 8px 4px;
+  border: 2px solid transparent; border-radius: 10px;
+  color: #fff; font-size: 13px; line-height: 1.15; font-weight: 800;
+  cursor: pointer; overflow-wrap: anywhere;
+}
+.emergency-button small { display: block; margin-top: 4px; font-size: 12px; font-weight: 700; }
+.emergency-sos { background: #c90000; border-color: #9f0000; }
+.emergency-fire { background: #c65300; border-color: #963e00; }
+.emergency-police { background: #1d4ed8; border-color: #173ca4; }
+.emergency-caption { margin: 6px 0 0; font-size: 10px; line-height: 1.3; color: #4b5b51; }
 .sos-help { border: 1px solid #f0c6c6; border-radius: 10px; background: #fff7f7; padding: 12px; margin-top: 12px; line-height: 1.5; }
 @media (max-width: 360px) {
   nav button { flex-basis: 50%; padding: 12px 4px; font-size: 13px; }
+  .emergency-grid { gap: 5px; }
+  .emergency-button { min-height: 60px; padding: 7px 2px; font-size: 11px; }
+  .emergency-button small { font-size: 11px; }
+  .sos-dock { padding-left: 8px; padding-right: 8px; }
 }
 </style>
 </head>
@@ -137,7 +152,7 @@ footer { padding: 18px; text-align: center; color: #607267; font-size: 12px; }
   <p class="muted">Confirm the driver, price, pickup point and travel arrangements before paying or travelling.</p>
   <div class="sos-help">
     <strong>Journey emergency help</strong>
-    <p>If you are in immediate danger in South Africa, use the SOS button at the bottom of the screen to open your phone's dialler for 112. You must confirm/place the call on your phone.</p>
+    <p>If you are in immediate danger in South Africa, use one of the emergency buttons fixed at the bottom of the screen. SOS opens your phone dialler for 112, Fire Brigade / Ambulance opens 10177, and Police opens 10111. You may need to press Call on your phone.</p>
   </div>
 </section>
 </main>
@@ -146,8 +161,21 @@ footer { padding: 18px; text-align: center; color: #607267; font-size: 12px; }
 </div>
 
 <div class="sos-dock" role="region" aria-label="Emergency help">
-  <button type="button" class="sos-button" onclick="confirmSOS()">🆘 SOS — CALL FOR HELP</button>
-  <p class="sos-caption">For immediate emergencies • South Africa: 112 from a mobile phone</p>
+  <div class="emergency-grid">
+    <button type="button" class="emergency-button emergency-sos" onclick="confirmEmergency('SOS', '112')" aria-label="SOS emergency call 112">
+      🆘 SOS
+      <small>Call 112</small>
+    </button>
+    <button type="button" class="emergency-button emergency-fire" onclick="confirmEmergency('Fire Brigade / Ambulance', '10177')" aria-label="Call Fire Brigade or Ambulance on 10177">
+      🔥 Fire Brigade
+      <small>10177</small>
+    </button>
+    <button type="button" class="emergency-button emergency-police" onclick="confirmEmergency('Police', '10111')" aria-label="Call Police on 10111">
+      🚔 Police
+      <small>10111</small>
+    </button>
+  </div>
+  <p class="emergency-caption">South Africa emergency numbers • Tap a button, then confirm the call on your phone.</p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -157,11 +185,11 @@ const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_h4zgJO-RfPnnCXG5-QwPlA_geL4XqkI
 
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-function confirmSOS() {
+function confirmEmergency(service, number) {
   const confirmed = window.confirm(
-    'EMERGENCY CALL\\n\\nIf you are in immediate danger, press OK to open your phone dialler for 112. You may need to press Call. This website cannot call silently or send your location automatically.'
+    'EMERGENCY CALL — ' + service + '\n\nThis will open your phone dialler for ' + number + '. You may need to press Call. This website cannot call silently or automatically send your location.\n\nOnly continue if this is a real emergency.'
   );
-  if (confirmed) window.location.href = 'tel:112';
+  if (confirmed) window.location.href = 'tel:' + number;
 }
 
 function showTab(id, button) {
