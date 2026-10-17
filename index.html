@@ -8,465 +8,176 @@
 
 <style>
 * { box-sizing: border-box; }
-
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  background: #f1f5f2;
-  color: #17251d;
-}
-
-.app {
-  max-width: 480px;
-  margin: auto;
-  background: white;
-  min-height: 100vh;
-  padding-bottom: 118px;
-}
-
-header {
-  background: #0b6040;
-  color: white;
-  padding: 22px 18px;
-}
-
+body { font-family: Arial, sans-serif; margin: 0; background: #f1f5f2; color: #17251d; }
+.app { max-width: 480px; margin: auto; background: white; min-height: 100vh; padding-bottom: 118px; }
+header { background: #0b6040; color: white; padding: 22px 18px; }
 header h2 { margin: 0 0 8px; }
 header p { margin-bottom: 0; }
-
-nav {
-  display: flex;
-  flex-wrap: wrap;
-  background: #e5eee8;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-nav button {
-  flex: 1 1 25%;
-  min-width: 0;
-  padding: 13px 3px;
-  border: 0;
-  background: transparent;
-  font-size: 12px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-nav button.active {
-  background: white;
-  color: #087346;
-  box-shadow: inset 0 -3px #087346;
-}
-
+nav { display: flex; flex-wrap: wrap; background: #e5eee8; position: sticky; top: 0; z-index: 10; }
+nav button { flex: 1 1 25%; min-width: 0; padding: 13px 3px; border: 0; background: transparent; font-size: 12px; font-weight: bold; cursor: pointer; }
+nav button.active { background: white; color: #087346; box-shadow: inset 0 -3px #087346; }
 main { padding: 18px; }
-
 .panel { display: none; }
 .panel.active { display: block; }
-
-label {
-  display: block;
-  font-size: 14px;
-  font-weight: bold;
-  margin: 12px 0 6px;
-}
-
-input, textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #cbd5ce;
-  border-radius: 8px;
-  font-size: 16px;
-  background: white;
-  color: #17251d;
-}
-
-input:focus, textarea:focus {
-  outline: 2px solid #087346;
-  outline-offset: 1px;
-}
-
-.green {
-  display: block;
-  width: 100%;
-  padding: 14px;
-  border: 0;
-  border-radius: 8px;
-  background: #087346;
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
-  margin-top: 16px;
-  cursor: pointer;
-}
-
-.green:disabled {
-  opacity: 0.6;
-  cursor: wait;
-}
-
-.ride {
-  border: 1px solid #dce5df;
-  border-radius: 10px;
-  padding: 14px;
-  margin-top: 12px;
-  overflow-wrap: anywhere;
-}
-
-.message {
-  padding: 12px;
-  background: #f1f5f2;
-  border-radius: 8px;
-  margin-top: 12px;
-  overflow-wrap: anywhere;
-  line-height: 1.5;
-}
-
-.muted {
-  color: #607267;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-footer {
-  padding: 18px;
-  text-align: center;
-  color: #607267;
-  font-size: 12px;
-}
-
-.sos-dock {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 480px;
-  z-index: 100;
-  padding: 9px 12px calc(9px + env(safe-area-inset-bottom));
-  background: rgba(255,255,255,.98);
-  border-top: 1px solid #dce5df;
-  box-shadow: 0 -3px 12px rgba(0,0,0,.08);
-  text-align: center;
-}
-
-.emergency-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.emergency-button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 62px;
-  padding: 8px 4px;
-  border: 2px solid transparent;
-  border-radius: 10px;
-  color: #fff;
-  font-size: 13px;
-  line-height: 1.15;
-  font-weight: 800;
-  cursor: pointer;
-  overflow-wrap: anywhere;
-}
-
-.emergency-button small {
-  display: block;
-  margin-top: 4px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.emergency-sos {
-  background: #c90000;
-  border-color: #9f0000;
-}
-
-.emergency-fire {
-  background: #c65300;
-  border-color: #963e00;
-}
-
-.emergency-police {
-  background: #1d4ed8;
-  border-color: #173ca4;
-}
-
-.emergency-caption {
-  margin: 6px 0 0;
-  font-size: 10px;
-  line-height: 1.3;
-  color: #4b5b51;
-}
-
-.sos-help {
-  border: 1px solid #f0c6c6;
-  border-radius: 10px;
-  background: #fff7f7;
-  padding: 12px;
-  margin-top: 12px;
-  line-height: 1.5;
-}
-
+label { display: block; font-size: 14px; font-weight: bold; margin: 12px 0 6px; }
+input, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5ce; border-radius: 8px; font-size: 16px; background: white; color: #17251d; }
+input:focus, textarea:focus { outline: 2px solid #087346; outline-offset: 1px; }
+input[type="file"] { font-size: 14px; padding: 10px; }
+.green { display: block; width: 100%; padding: 14px; border: 0; border-radius: 8px; background: #087346; color: white; font-size: 16px; font-weight: bold; margin-top: 16px; cursor: pointer; }
+.green:disabled { opacity: 0.6; cursor: wait; }
+.ride { border: 1px solid #dce5df; border-radius: 10px; padding: 14px; margin-top: 12px; overflow-wrap: anywhere; }
+.message { padding: 12px; background: #f1f5f2; border-radius: 8px; margin-top: 12px; overflow-wrap: anywhere; line-height: 1.5; }
+.muted { color: #607267; font-size: 14px; line-height: 1.5; }
+.photo-preview { display: block; width: 100%; max-width: 220px; max-height: 200px; object-fit: cover; border: 1px solid #dce5df; border-radius: 10px; margin-top: 10px; }
+.photo-hint { font-size: 12px; color: #607267; line-height: 1.4; margin: 6px 0 0; }
+footer { padding: 18px; text-align: center; color: #607267; font-size: 12px; }
+.sos-dock { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; z-index: 100; padding: 9px 12px calc(9px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.98); border-top: 1px solid #dce5df; box-shadow: 0 -3px 12px rgba(0,0,0,.08); text-align: center; }
+.emergency-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.emergency-button { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; min-height: 62px; padding: 8px 4px; border: 2px solid transparent; border-radius: 10px; color: #fff; font-size: 13px; line-height: 1.15; font-weight: 800; cursor: pointer; overflow-wrap: anywhere; }
+.emergency-button small { display: block; margin-top: 4px; font-size: 12px; font-weight: 700; }
+.emergency-sos { background: #c90000; border-color: #9f0000; }
+.emergency-fire { background: #c65300; border-color: #963e00; }
+.emergency-police { background: #1d4ed8; border-color: #173ca4; }
+.emergency-caption { margin: 6px 0 0; font-size: 10px; line-height: 1.3; color: #4b5b51; }
+.sos-help { border: 1px solid #f0c6c6; border-radius: 10px; background: #fff7f7; padding: 12px; margin-top: 12px; line-height: 1.5; }
 @media (max-width: 360px) {
-  nav button {
-    flex-basis: 50%;
-    padding: 12px 4px;
-    font-size: 13px;
-  }
-
+  nav button { flex-basis: 50%; padding: 12px 4px; font-size: 13px; }
   .emergency-grid { gap: 5px; }
-
-  .emergency-button {
-    min-height: 60px;
-    padding: 7px 2px;
-    font-size: 11px;
-  }
-
+  .emergency-button { min-height: 60px; padding: 7px 2px; font-size: 11px; }
   .emergency-button small { font-size: 11px; }
-
-  .sos-dock {
-    padding-left: 8px;
-    padding-right: 8px;
-  }
+  .sos-dock { padding-left: 8px; padding-right: 8px; }
 }
 </style>
 </head>
-
 <body>
 <div class="app">
-
 <header>
   <h2>KC Comfortable Long Distance Rides</h2>
   <p>Find a ride. Offer a ride. Travel comfortably.</p>
 </header>
 
 <nav aria-label="Main navigation">
-  <button type="button" class="active"
-    onclick="showTab('find', this)">Find Ride</button>
-
-  <button type="button"
-    onclick="showTab('offer', this)">Offer Ride</button>
-
-  <button type="button"
-    onclick="showTab('driver', this)">Driver Account</button>
-
-  <button type="button"
-    onclick="showTab('profile', this)">About KC</button>
+  <button type="button" class="active" onclick="showTab('find', this)">Find Ride</button>
+  <button type="button" onclick="showTab('offer', this)">Offer Ride</button>
+  <button type="button" onclick="showTab('driver', this)">Driver Account</button>
+  <button type="button" onclick="showTab('profile', this)">About KC</button>
 </nav>
 
 <main>
-
 <section id="find" class="panel active">
   <h3>Find a Ride</h3>
   <p class="muted">Search for available long-distance rides.</p>
-
   <label for="searchPickup">Leaving from</label>
   <input id="searchPickup" placeholder="e.g. Boksburg">
-
   <label for="searchDestination">Going to</label>
   <input id="searchDestination" placeholder="e.g. Durban">
-
   <label for="searchDate">Travel date (optional)</label>
   <input id="searchDate" type="date">
-
-  <button type="button" class="green" onclick="searchRides()">
-    SEARCH RIDES
-  </button>
-
-  <div id="results" class="message" aria-live="polite">
-    Enter your route to search for rides.
-  </div>
+  <button type="button" class="green" onclick="searchRides()">SEARCH RIDES</button>
+  <div id="results" class="message" aria-live="polite">Enter your route to search for rides.</div>
 </section>
 
 <section id="offer" class="panel">
   <h3>Offer a Ride</h3>
-  <p class="muted">
-    Enter your trip details. Sign in to your driver account before
-    posting a ride.
-  </p>
-
+  <p class="muted">Enter your trip details. Sign in to your driver account before posting a ride.</p>
   <label for="pickup">Leaving from</label>
   <input id="pickup" placeholder="Pickup town or city">
-
   <label for="destination">Going to</label>
   <input id="destination" placeholder="Destination town or city">
-
   <label for="travelDate">Travel date</label>
   <input id="travelDate" type="date">
-
   <label for="travelTime">Departure time</label>
   <input id="travelTime" type="time">
-
   <label for="seats">Available seats</label>
   <input id="seats" type="number" min="1" max="20" value="3">
-
   <label for="price">Price per passenger (R)</label>
-  <input id="price" type="number" min="0" step="0.01"
-    placeholder="e.g. 350">
-
+  <input id="price" type="number" min="0" step="0.01" placeholder="e.g. 350">
   <label for="notes">Extra details (optional)</label>
-  <textarea id="notes" rows="3"
-    placeholder="Vehicle or meeting point details"></textarea>
-
-  <button type="button" class="green" onclick="publishRide()">
-    POST MY RIDE
-  </button>
-
+  <textarea id="notes" rows="3" placeholder="Vehicle or meeting point details"></textarea>
+  <button type="button" class="green" onclick="publishRide()">POST MY RIDE</button>
   <div id="publishMessage" class="message" aria-live="polite"></div>
 </section>
 
 <section id="driver" class="panel">
   <h3>Driver Account</h3>
-  <p class="muted">
-    Register or sign in to manage your driver profile and vehicle details.
-  </p>
-
+  <p class="muted">Register or sign in to manage your driver profile and vehicle details.</p>
   <div id="driverAuth">
     <h4>Register a New Account</h4>
-
     <label for="driverEmail">Email address</label>
-    <input id="driverEmail" type="email" autocomplete="email"
-      placeholder="you@example.com">
-
+    <input id="driverEmail" type="email" autocomplete="email" placeholder="you@example.com">
     <label for="driverPassword">Password</label>
-    <input id="driverPassword" type="password"
-      autocomplete="new-password" placeholder="At least 8 characters">
-
-    <button type="button" class="green" onclick="registerDriver()">
-      REGISTER
-    </button>
-
-    <button type="button" class="green" onclick="loginDriver()">
-      SIGN IN
-    </button>
+    <input id="driverPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters">
+    <button type="button" class="green" onclick="registerDriver()">REGISTER</button>
+    <button type="button" class="green" onclick="loginDriver()">SIGN IN</button>
   </div>
 
   <div id="driverProfileForm" style="display:none">
     <p id="driverSignedIn" class="message"></p>
-
     <h4>Your Driver Details</h4>
-
     <label for="driverFullName">Full name</label>
-    <input id="driverFullName" type="text" autocomplete="name"
-      placeholder="Your full name">
-
+    <input id="driverFullName" type="text" autocomplete="name" placeholder="Your full name">
     <label for="driverPhone">Phone number</label>
-    <input id="driverPhone" type="tel" autocomplete="tel"
-      placeholder="Your phone number">
+    <input id="driverPhone" type="tel" autocomplete="tel" placeholder="Your phone number">
+
+    <label for="driverPhotoFile">Driver profile photo (optional)</label>
+    <input id="driverPhotoFile" type="file" accept="image/jpeg,image/png,image/webp">
+    <p class="photo-hint">Choose a photo from your phone or take one with your camera. JPG, PNG or WebP; maximum 5 MB.</p>
+    <img id="driverPhotoPreview" class="photo-preview" alt="Driver profile photo preview" hidden>
 
     <label for="carModel">Car model</label>
     <input id="carModel" type="text" placeholder="e.g. Toyota Corolla">
-
     <label for="registrationNumber">Vehicle registration number</label>
-    <input id="registrationNumber" type="text"
-      placeholder="Vehicle registration">
+    <input id="registrationNumber" type="text" placeholder="Vehicle registration">
 
-    <label for="carPhotoUrl">Car photo link (optional)</label>
-    <input id="carPhotoUrl" type="url"
-      placeholder="https://example.com/car-photo.jpg">
+    <label for="carPhotoFile">Car photo (optional)</label>
+    <input id="carPhotoFile" type="file" accept="image/jpeg,image/png,image/webp">
+    <p class="photo-hint">Choose a clear photo of the vehicle from your phone or take a new one. Maximum 5 MB.</p>
+    <img id="carPhotoPreview" class="photo-preview" alt="Car photo preview" hidden>
 
-    <button type="button" class="green" onclick="saveDriverProfile()">
-      SAVE DRIVER PROFILE
-    </button>
-
-    <button type="button" class="green" onclick="logoutDriver()">
-      SIGN OUT
-    </button>
+    <button type="button" class="green" id="saveDriverButton" onclick="saveDriverProfile()">SAVE DRIVER PROFILE</button>
+    <button type="button" class="green" onclick="logoutDriver()">SIGN OUT</button>
   </div>
-
-  <div id="driverMessage" class="message" aria-live="polite">
-    Register a new account or sign in to continue.
-  </div>
+  <div id="driverMessage" class="message" aria-live="polite">Register a new account or sign in to continue.</div>
 </section>
 
 <section id="profile" class="panel">
   <h3>About KC</h3>
-
-  <p>
-    KC Comfortable Long Distance Rides helps passengers and drivers
-    connect for long-distance journeys.
-  </p>
-
-  <p class="muted">
-    Confirm the driver, price, pickup point and travel arrangements
-    before paying or travelling.
-  </p>
-
+  <p>KC Comfortable Long Distance Rides helps passengers and drivers connect for long-distance journeys.</p>
+  <p class="muted">Confirm the driver, price, pickup point and travel arrangements before paying or travelling.</p>
   <div class="sos-help">
     <strong>Journey emergency help</strong>
-    <p>
-      In an emergency in South Africa, use one of the emergency buttons
-      fixed at the bottom of the screen. SOS opens your phone dialler
-      for 112, Fire Brigade / Ambulance opens 10177, and Police opens
-      10111. You may need to press Call on your phone.
-    </p>
+    <p>In an emergency in South Africa, use one of the emergency buttons fixed at the bottom of the screen. SOS opens your phone dialler for 112, Fire Brigade / Ambulance opens 10177, and Police opens 10111. You may need to press Call on your phone.</p>
   </div>
 </section>
-
 </main>
-
 <footer>KC Comfortable Long Distance Rides</footer>
 </div>
 
 <div class="sos-dock" role="region" aria-label="Emergency help">
   <div class="emergency-grid">
-
-    <button type="button"
-      class="emergency-button emergency-sos"
-      onclick="confirmEmergency('SOS', '112')"
-      aria-label="SOS emergency call 112">
-      🆘 SOS
-      <small>Call 112</small>
-    </button>
-
-    <button type="button"
-      class="emergency-button emergency-fire"
-      onclick="confirmEmergency('Fire Brigade / Ambulance', '10177')"
-      aria-label="Call Fire Brigade or Ambulance on 10177">
-      🔥 Fire Brigade
-      <small>10177</small>
-    </button>
-
-    <button type="button"
-      class="emergency-button emergency-police"
-      onclick="confirmEmergency('Police', '10111')"
-      aria-label="Call Police on 10111">
-      🚔 Police
-      <small>10111</small>
-    </button>
-
+    <button type="button" class="emergency-button emergency-sos" onclick="confirmEmergency('SOS', '112')" aria-label="SOS emergency call 112">🆘 SOS<small>Call 112</small></button>
+    <button type="button" class="emergency-button emergency-fire" onclick="confirmEmergency('Fire Brigade / Ambulance', '10177')" aria-label="Call Fire Brigade or Ambulance on 10177">🔥 Fire Brigade<small>10177</small></button>
+    <button type="button" class="emergency-button emergency-police" onclick="confirmEmergency('Police', '10111')" aria-label="Call Police on 10111">🚔 Police<small>10111</small></button>
   </div>
-
-  <p class="emergency-caption">
-    South Africa emergency numbers • Tap a button, then confirm the
-    call on your phone.
-  </p>
+  <p class="emergency-caption">South Africa emergency numbers • Tap a button, then confirm the call on your phone.</p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
 const SUPABASE_URL = 'https://ndagpnohncjudssgtsvg.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_h4zgJO-RfPnnCXG5-QwPlA_geL4XqkI';
+const DRIVER_PHOTO_BUCKET = 'kc-driver-photos';
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
-const SUPABASE_PUBLISHABLE_KEY =
-  'sb_publishable_h4zgJO-RfPnnCXG5-QwPlA_geL4XqkI';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+});
 
-const db = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY,
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  }
-);
+// Preserve any existing photo values when no new file is selected.
+let savedDriverPhotoValue = null;
+let savedCarPhotoValue = null;
+let profileLoadInProgress = false;
 
 function confirmEmergency(service, number) {
   const confirmed = window.confirm(
@@ -476,46 +187,116 @@ function confirmEmergency(service, number) {
     'or automatically send your location.' +
     '\n\nOnly continue if this is a real emergency.'
   );
-
-  if (confirmed) {
-    window.location.href = 'tel:' + number;
-  }
+  if (confirmed) window.location.href = 'tel:' + number;
 }
 
 function showTab(id, button) {
-  document.querySelectorAll('.panel').forEach(panel => {
-    panel.classList.remove('active');
-  });
-
-  document.querySelectorAll('nav button').forEach(btn => {
-    btn.classList.remove('active');
-  });
-
-  document.getElementById(id).classList.add('active');
-
+  document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+  const target = document.getElementById(id);
+  if (target) target.classList.add('active');
   if (button) button.classList.add('active');
+  else {
+    const navButton = Array.from(document.querySelectorAll('nav button')).find(btn => btn.getAttribute('onclick')?.includes("'" + id + "'"));
+    if (navButton) navButton.classList.add('active');
+  }
 }
 
-function openDriverAccount() {
-  const driverButton = document.querySelectorAll('nav button')[2];
-  showTab('driver', driverButton);
-}
+function openDriverAccount() { showTab('driver'); }
+function friendlyError(error) { return error?.message || String(error || 'An unknown error occurred.'); }
 
-function friendlyError(error) {
-  if (!error) return 'An unknown error occurred.';
-  return error.message || String(error);
-}
-
+// Confirm that an actual logged-in user exists before any protected database write.
 async function getSignedInUser() {
-  const { data, error } = await db.auth.getSession();
+  const { data: sessionData, error: sessionError } = await db.auth.getSession();
+  if (sessionError) throw sessionError;
+  if (!sessionData.session?.access_token) return null;
 
-  if (error) throw error;
+  const { data: userData, error: userError } = await db.auth.getUser();
+  if (userError) throw userError;
+  return userData.user || null;
+}
 
-  if (!data.session || !data.session.user) {
-    return null;
+function setPhotoPreview(previewId, source) {
+  const img = document.getElementById(previewId);
+  if (!img) return;
+  if (!source) {
+    img.removeAttribute('src');
+    img.hidden = true;
+    return;
+  }
+  img.src = source;
+  img.hidden = false;
+}
+
+function previewSelectedFile(inputId, previewId) {
+  const input = document.getElementById(inputId);
+  const file = input?.files?.[0];
+  if (!file) return;
+  if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
+    input.value = '';
+    alert('Please choose a JPG, PNG or WebP image.');
+    return;
+  }
+  if (file.size > MAX_PHOTO_BYTES) {
+    input.value = '';
+    alert('The photo is larger than 5 MB. Please choose a smaller image.');
+    return;
+  }
+  setPhotoPreview(previewId, URL.createObjectURL(file));
+}
+
+function cleanFileName(fileName) {
+  return String(fileName || 'photo').toLowerCase().replace(/[^a-z0-9._-]+/g, '-').slice(-80) || 'photo';
+}
+
+// Upload a real image to the existing Supabase Storage bucket inside the owner's folder.
+async function uploadDriverPhoto(file, kind, userId) {
+  if (!file) return null;
+  if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
+    throw new Error('Choose a JPG, PNG or WebP image for ' + kind + '.');
+  }
+  if (file.size > MAX_PHOTO_BYTES) {
+    throw new Error('The ' + kind + ' photo must be 5 MB or smaller.');
   }
 
-  return data.session.user;
+  const safeName = cleanFileName(file.name);
+  const objectPath = userId + '/' + kind + '-' + Date.now() + '-' + safeName;
+  const { error: uploadError } = await db.storage.from(DRIVER_PHOTO_BUCKET).upload(objectPath, file, {
+    cacheControl: '3600',
+    contentType: file.type,
+    upsert: false
+  });
+
+  if (uploadError) {
+    throw new Error('Photo upload failed. Check that the ' + DRIVER_PHOTO_BUCKET + ' bucket allows authenticated users to upload into their own user-ID folder. Details: ' + uploadError.message);
+  }
+
+  // Public buckets store a usable public URL; private buckets store the object path.
+  try {
+    const { data: bucketData, error: bucketError } = await db.storage.getBucket(DRIVER_PHOTO_BUCKET);
+    if (!bucketError && bucketData?.public) {
+      return db.storage.from(DRIVER_PHOTO_BUCKET).getPublicUrl(objectPath).data.publicUrl;
+    }
+  } catch (_) {
+    // If bucket settings cannot be read, safely retain the object path.
+  }
+  return objectPath;
+}
+
+async function resolvePhotoValue(value) {
+  if (!value) return null;
+  if (/^https?:\/\//i.test(value)) return value; // existing saved URL
+
+  try {
+    const { data: bucketData, error: bucketError } = await db.storage.getBucket(DRIVER_PHOTO_BUCKET);
+    if (!bucketError && bucketData?.public) {
+      return db.storage.from(DRIVER_PHOTO_BUCKET).getPublicUrl(value).data.publicUrl;
+    }
+  } catch (_) {}
+
+  const { data, error } = await db.storage.from(DRIVER_PHOTO_BUCKET).createSignedUrl(value, 3600);
+  if (error) throw error;
+  return data?.signedUrl || null;
 }
 
 /* FIND RIDES */
@@ -524,80 +305,42 @@ async function searchRides() {
   const to = document.getElementById('searchDestination').value.trim();
   const date = document.getElementById('searchDate').value;
   const results = document.getElementById('results');
-
-  if (!from || !to) {
-    results.textContent =
-      'Please enter both pickup and destination.';
-    return;
-  }
-
+  if (!from || !to) { results.textContent = 'Please enter both pickup and destination.'; return; }
   results.textContent = 'Searching for rides...';
 
   try {
-    let query = db.from('rides')
-      .select(
-        'id,pickup_location,destination,travel_date,travel_time,' +
-        'available_seats,price,notes'
-      )
-      .ilike('pickup_location', from)
-      .ilike('destination', to)
-      .gt('available_seats', 0)
-      .order('travel_date', { ascending: true });
-
-    if (date) {
-      query = query.eq('travel_date', date);
-    }
-
+    let query = db.from('rides').select('id,pickup_location,destination,travel_date,travel_time,available_seats,price,notes')
+      .ilike('pickup_location', from).ilike('destination', to)
+      .gt('available_seats', 0).order('travel_date', { ascending: true });
+    if (date) query = query.eq('travel_date', date);
     const { data, error } = await query;
-
     if (error) throw error;
-
     results.replaceChildren();
-
     if (!data || data.length === 0) {
-      results.textContent =
-        'No rides found for this route yet. Check the spelling or try another date.';
+      results.textContent = 'No rides found for this route yet. Check the spelling or try another date.';
       return;
     }
-
     data.forEach(ride => {
-      const card = document.createElement('div');
-      card.className = 'ride';
-
+      const card = document.createElement('div'); card.className = 'ride';
       const title = document.createElement('strong');
-      title.textContent =
-        ride.pickup_location + ' → ' + ride.destination;
+      title.textContent = ride.pickup_location + ' → ' + ride.destination;
       card.appendChild(title);
-
       const details = document.createElement('p');
-      details.textContent =
-        'Date: ' + (ride.travel_date || 'Not specified') +
+      details.textContent = 'Date: ' + (ride.travel_date || 'Not specified') +
         ' | Time: ' + (ride.travel_time || 'Not specified') +
-        ' | Seats: ' + ride.available_seats +
-        ' | Price: R' + ride.price;
-
+        ' | Seats: ' + ride.available_seats + ' | Price: R' + ride.price;
       card.appendChild(details);
-
-      if (ride.notes) {
-        const note = document.createElement('p');
-        note.textContent = ride.notes;
-        card.appendChild(note);
-      }
-
+      if (ride.notes) { const note = document.createElement('p'); note.textContent = ride.notes; card.appendChild(note); }
       results.appendChild(card);
     });
-  } catch (error) {
-    results.textContent = 'Search error: ' + friendlyError(error);
-  }
+  } catch (error) { results.textContent = 'Search error: ' + friendlyError(error); }
 }
 
 /* POST A RIDE */
 async function publishRide() {
   const message = document.getElementById('publishMessage');
-
   const pickup = document.getElementById('pickup').value.trim();
-  const destination =
-    document.getElementById('destination').value.trim();
+  const destination = document.getElementById('destination').value.trim();
   const date = document.getElementById('travelDate').value;
   const time = document.getElementById('travelTime').value;
   const seats = Number(document.getElementById('seats').value);
@@ -605,81 +348,44 @@ async function publishRide() {
   const price = Number(priceInput);
   const notes = document.getElementById('notes').value.trim();
 
-  if (!pickup || !destination || !date || !time ||
-      !seats || priceInput === '') {
-    message.textContent =
-      'Please complete all required fields.';
-    return;
+  if (!pickup || !destination || !date || !time || !seats || priceInput === '') {
+    message.textContent = 'Please complete all required fields.'; return;
   }
-
-  if (seats < 1 || seats > 20 ||
-      !Number.isFinite(price) || price < 0) {
-    message.textContent = 'Please enter valid seats and price.';
-    return;
+  if (seats < 1 || seats > 20 || !Number.isFinite(price) || price < 0) {
+    message.textContent = 'Please enter valid seats and price.'; return;
   }
-
   if (pickup.toLowerCase() === destination.toLowerCase()) {
-    message.textContent =
-      'Pickup and destination cannot be the same.';
-    return;
+    message.textContent = 'Pickup and destination cannot be the same.'; return;
   }
 
   message.textContent = 'Checking your driver account...';
-
   try {
     const user = await getSignedInUser();
-
     if (!user) {
-      message.textContent =
-        'You are not signed in. Sign in under Driver Account, ' +
-        'then return here to post your ride.';
-      openDriverAccount();
-      return;
+      message.textContent = 'You are not signed in. Sign in under Driver Account, then return here to post your ride.';
+      openDriverAccount(); return;
     }
-
     message.textContent = 'Checking your driver profile...';
-
-    // Make sure the main profile exists. The rides table uses profiles.id.
-    const { data: mainProfile, error: mainProfileError } =
-      await db.from('profiles')
-        .select('id,role')
-        .eq('id', user.id)
-        .maybeSingle();
-
-    if (mainProfileError) throw mainProfileError;
-
+    const { data: mainProfile, error: mainProfileError } = await db.from('profiles')
+      .select('id,role').eq('id', user.id).maybeSingle();
+    if (mainProfileError) throw new Error('Could not check your main profile: ' + mainProfileError.message);
     if (!mainProfile) {
-      message.textContent =
-        'Your main profile is missing. Open Driver Account, ' +
-        'complete your details, and tap SAVE DRIVER PROFILE first.';
-      openDriverAccount();
-      return;
+      message.textContent = 'Your main profile is missing. Open Driver Account, complete your details, and tap SAVE DRIVER PROFILE first.';
+      openDriverAccount(); return;
     }
-
     if (mainProfile.role !== 'driver') {
-      message.textContent =
-        'Your account is not set as a driver. Save your driver profile again.';
-      openDriverAccount();
-      return;
+      message.textContent = 'Your account is not set as a driver. Open Driver Account and save your driver profile.';
+      openDriverAccount(); return;
     }
 
     message.textContent = 'Posting your ride...';
-
     const { error } = await db.from('rides').insert([{
-      driver_id: user.id,
-      pickup_location: pickup,
-      destination: destination,
-      travel_date: date,
-      travel_time: time,
-      available_seats: seats,
-      price: price,
-      notes: notes || null
+      driver_id: user.id, pickup_location: pickup, destination,
+      travel_date: date, travel_time: time, available_seats: seats,
+      price, notes: notes || null
     }]);
-
     if (error) throw error;
-
     message.textContent = 'Ride posted successfully!';
-
     document.getElementById('pickup').value = '';
     document.getElementById('destination').value = '';
     document.getElementById('travelDate').value = '';
@@ -687,313 +393,218 @@ async function publishRide() {
     document.getElementById('seats').value = '3';
     document.getElementById('price').value = '';
     document.getElementById('notes').value = '';
-  } catch (error) {
-    message.textContent =
-      'Could not post ride: ' + friendlyError(error);
-  }
+  } catch (error) { message.textContent = 'Could not post ride: ' + friendlyError(error); }
 }
 
 /* REGISTER DRIVER */
 async function registerDriver() {
-  const email =
-    document.getElementById('driverEmail').value.trim();
-  const password =
-    document.getElementById('driverPassword').value;
+  const email = document.getElementById('driverEmail').value.trim();
+  const password = document.getElementById('driverPassword').value;
   const message = document.getElementById('driverMessage');
-
   if (!email || password.length < 8) {
-    message.textContent =
-      'Enter a valid email and a password of at least 8 characters.';
-    return;
+    message.textContent = 'Enter a valid email and a password of at least 8 characters.'; return;
   }
-
   message.textContent = 'Creating your account...';
-
   try {
     const { data, error } = await db.auth.signUp({
-      email: email,
-      password: password,
-      options: {
-        emailRedirectTo: window.location.origin
-      }
+      email, password,
+      options: { emailRedirectTo: window.location.origin }
     });
-
     if (error) throw error;
-
     if (data.session && data.user) {
       await loadDriverProfile();
-      message.textContent =
-        'Account created. Complete your driver details and save your profile.';
+      message.textContent = 'Account created. Complete your driver details and save your profile.';
     } else {
-      message.textContent =
-        'Your registration request was submitted. Check your email ' +
-        'to confirm your account, then return here and sign in. ' +
-        'If no email arrives, check your spam folder.';
+      message.textContent = 'Your registration request was submitted. Confirm your email first, then return here and sign in before saving your profile. Check your spam folder if the email does not arrive.';
     }
-  } catch (error) {
-    message.textContent =
-      'Registration error: ' + friendlyError(error);
-  }
+  } catch (error) { message.textContent = 'Registration error: ' + friendlyError(error); }
 }
 
 /* SIGN IN DRIVER */
 async function loginDriver() {
-  const email =
-    document.getElementById('driverEmail').value.trim();
-  const password =
-    document.getElementById('driverPassword').value;
+  const email = document.getElementById('driverEmail').value.trim();
+  const password = document.getElementById('driverPassword').value;
   const message = document.getElementById('driverMessage');
-
-  if (!email || !password) {
-    message.textContent = 'Enter your email and password.';
-    return;
-  }
-
+  if (!email || !password) { message.textContent = 'Enter your email and password.'; return; }
   message.textContent = 'Signing in...';
-
   try {
-    const { data, error } = await db.auth.signInWithPassword({
-      email: email,
-      password: password
-    });
-
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
     if (error) throw error;
-
-    if (!data.session || !data.user) {
-      throw new Error(
-        'No active session was returned. Please try signing in again.'
-      );
-    }
-
+    if (!data.session || !data.user) throw new Error('No active session was returned. Please try signing in again.');
     await loadDriverProfile();
-
-    message.textContent =
-      'You are signed in. Check your driver details and save your profile if needed.';
-  } catch (error) {
-    message.textContent =
-      'Sign-in error: ' + friendlyError(error);
-  }
+    message.textContent = 'You are signed in. Check your details and tap SAVE DRIVER PROFILE if needed.';
+  } catch (error) { message.textContent = 'Sign-in error: ' + friendlyError(error); }
 }
 
 /* LOAD DRIVER PROFILE */
 async function loadDriverProfile() {
+  if (profileLoadInProgress) return;
+  profileLoadInProgress = true;
   const message = document.getElementById('driverMessage');
-
   try {
     const user = await getSignedInUser();
-
     if (!user) {
       document.getElementById('driverAuth').style.display = 'block';
       document.getElementById('driverProfileForm').style.display = 'none';
-
-      message.textContent =
-        'Please register or sign in to manage your profile.';
+      message.textContent = 'Please register or sign in to manage your profile.';
       return;
     }
-
     document.getElementById('driverAuth').style.display = 'none';
     document.getElementById('driverProfileForm').style.display = 'block';
+    document.getElementById('driverSignedIn').textContent = 'Signed in as ' + (user.email || 'your account');
 
-    document.getElementById('driverSignedIn').textContent =
-      'Signed in as ' + user.email;
+    const { data: mainProfile, error: mainError } = await db.from('profiles')
+      .select('full_name,phone,role,profile_picture_url').eq('id', user.id).maybeSingle();
+    if (mainError) throw new Error('Could not read your main profile: ' + mainError.message);
 
-    // Load the main profile, if it exists.
-    const { data: mainProfile, error: mainError } =
-      await db.from('profiles')
-        .select('full_name,phone,role')
-        .eq('id', user.id)
-        .maybeSingle();
-
-    if (mainError) throw mainError;
-
-    // Load vehicle details.
-    const { data: vehicleProfile, error: vehicleError } =
-      await db.from('driver_profiles')
-        .select(
-          'full_name,phone,car_model,registration_number,car_photo_url'
-        )
-        .eq('id', user.id)
-        .maybeSingle();
-
-    if (vehicleError) throw vehicleError;
+    const { data: vehicleProfile, error: vehicleError } = await db.from('driver_profiles')
+      .select('full_name,phone,car_model,registration_number,car_photo_url')
+      .eq('id', user.id).maybeSingle();
+    if (vehicleError) throw new Error('Could not read your driver vehicle details: ' + vehicleError.message);
 
     const profile = vehicleProfile || {};
+    document.getElementById('driverFullName').value = profile.full_name || mainProfile?.full_name || '';
+    document.getElementById('driverPhone').value = profile.phone || mainProfile?.phone || '';
+    document.getElementById('carModel').value = profile.car_model || '';
+    document.getElementById('registrationNumber').value = profile.registration_number || '';
+    savedDriverPhotoValue = mainProfile?.profile_picture_url || null;
+    savedCarPhotoValue = profile.car_photo_url || null;
+    document.getElementById('driverPhotoFile').value = '';
+    document.getElementById('carPhotoFile').value = '';
 
-    document.getElementById('driverFullName').value =
-      profile.full_name || (mainProfile && mainProfile.full_name) || '';
+    try { setPhotoPreview('driverPhotoPreview', await resolvePhotoValue(savedDriverPhotoValue)); }
+    catch (_) { setPhotoPreview('driverPhotoPreview', null); }
+    try { setPhotoPreview('carPhotoPreview', await resolvePhotoValue(savedCarPhotoValue)); }
+    catch (_) { setPhotoPreview('carPhotoPreview', null); }
 
-    document.getElementById('driverPhone').value =
-      profile.phone || (mainProfile && mainProfile.phone) || '';
-
-    document.getElementById('carModel').value =
-      profile.car_model || '';
-
-    document.getElementById('registrationNumber').value =
-      profile.registration_number || '';
-
-    document.getElementById('carPhotoUrl').value =
-      profile.car_photo_url || '';
-
-    if (vehicleProfile || mainProfile) {
-      message.textContent =
-        'Your saved details have been loaded. Review them and tap SAVE DRIVER PROFILE if needed.';
-    } else {
-      message.textContent =
-        'Complete your details and tap SAVE DRIVER PROFILE.';
-    }
+    message.textContent = (vehicleProfile || mainProfile)
+      ? 'Your saved details have been loaded. Review them and tap SAVE DRIVER PROFILE if needed.'
+      : 'Complete your details and tap SAVE DRIVER PROFILE.';
   } catch (error) {
-    message.textContent =
-      'Could not load profile: ' + friendlyError(error);
-  }
+    message.textContent = 'Could not load profile: ' + friendlyError(error);
+  } finally { profileLoadInProgress = false; }
 }
 
-/* SAVE BOTH PROFILES */
+/* SAVE BOTH PROFILES, USING THE SIGNED-IN USER'S REAL AUTH ID */
 async function saveDriverProfile() {
   const message = document.getElementById('driverMessage');
+  const saveButton = document.getElementById('saveDriverButton');
+  const fullName = document.getElementById('driverFullName').value.trim();
+  const phone = document.getElementById('driverPhone').value.trim();
+  const carModel = document.getElementById('carModel').value.trim();
+  const registrationNumber = document.getElementById('registrationNumber').value.trim();
+  const driverPhotoFile = document.getElementById('driverPhotoFile').files?.[0] || null;
+  const carPhotoFile = document.getElementById('carPhotoFile').files?.[0] || null;
 
-  const fullName =
-    document.getElementById('driverFullName').value.trim();
-  const phone =
-    document.getElementById('driverPhone').value.trim();
-  const carModel =
-    document.getElementById('carModel').value.trim();
-  const registrationNumber =
-    document.getElementById('registrationNumber').value.trim();
-  const carPhotoUrl =
-    document.getElementById('carPhotoUrl').value.trim();
-
-  if (!fullName) {
-    message.textContent = 'Please enter your full name.';
-    return;
+  if (!fullName) { message.textContent = 'Please enter your full name.'; return; }
+  for (const [name, file] of [['driver profile', driverPhotoFile], ['car', carPhotoFile]]) {
+    if (file && !ALLOWED_PHOTO_TYPES.includes(file.type)) {
+      message.textContent = 'The ' + name + ' photo must be JPG, PNG or WebP.'; return;
+    }
+    if (file && file.size > MAX_PHOTO_BYTES) {
+      message.textContent = 'The ' + name + ' photo must be 5 MB or smaller.'; return;
+    }
   }
 
-  if (carPhotoUrl && !/^https?:\/\//i.test(carPhotoUrl)) {
-    message.textContent =
-      'The car photo link must start with https:// or http://.';
-    return;
-  }
-
-  message.textContent = 'Saving your driver profile...';
-
+  saveButton.disabled = true;
+  message.textContent = 'Checking your sign-in session...';
   try {
     const user = await getSignedInUser();
+    if (!user) throw new Error('Your login session is missing. Please sign in again before saving.');
 
-    if (!user) {
-      throw new Error(
-        'Your login session is missing. Please sign in again.'
-      );
+    let driverPhotoValue = savedDriverPhotoValue;
+    let carPhotoValue = savedCarPhotoValue;
+    if (driverPhotoFile) {
+      message.textContent = 'Uploading your driver photo...';
+      driverPhotoValue = await uploadDriverPhoto(driverPhotoFile, 'driver-profile', user.id);
+    }
+    if (carPhotoFile) {
+      message.textContent = 'Uploading your car photo...';
+      carPhotoValue = await uploadDriverPhoto(carPhotoFile, 'car', user.id);
     }
 
-    // Create/update the main profile first. rides.driver_id references this.
-    const { error: mainProfileError } =
-      await db.from('profiles').upsert({
-        id: user.id,
-        full_name: fullName,
-        phone: phone || null,
-        role: 'driver'
-      }, {
-        onConflict: 'id'
-      });
-
+    // The profiles row must use the logged-in user's UUID; keep driver role for ride posting.
+    message.textContent = 'Saving your main profile...';
+    const { error: mainProfileError } = await db.from('profiles').upsert({
+      id: user.id,
+      full_name: fullName,
+      phone: phone || null,
+      role: 'driver',
+      profile_picture_url: driverPhotoValue || null
+    }, { onConflict: 'id' });
     if (mainProfileError) {
-      throw new Error(
-        'Could not save your main profile: ' +
-        mainProfileError.message
-      );
+      throw new Error('Could not save your main profile (profiles table): ' + mainProfileError.message + '. Confirm that profiles RLS allows authenticated users to insert/update only their own id.');
     }
 
-    // Save the vehicle details in driver_profiles.
-    const { error: driverProfileError } =
-      await db.from('driver_profiles').upsert({
-        id: user.id,
-        full_name: fullName,
-        phone: phone || null,
-        car_model: carModel || null,
-        registration_number: registrationNumber || null,
-        car_photo_url: carPhotoUrl || null
-      }, {
-        onConflict: 'id'
-      });
-
+    message.textContent = 'Saving your vehicle details...';
+    const { error: driverProfileError } = await db.from('driver_profiles').upsert({
+      id: user.id,
+      full_name: fullName,
+      phone: phone || null,
+      car_model: carModel || null,
+      registration_number: registrationNumber || null,
+      car_photo_url: carPhotoValue || null
+    }, { onConflict: 'id' });
     if (driverProfileError) {
-      throw new Error(
-        'Main profile saved, but vehicle details could not be saved: ' +
-        driverProfileError.message
-      );
+      throw new Error('Main profile saved, but vehicle details could not be saved (driver_profiles table): ' + driverProfileError.message + '. The id must equal your signed-in user id, and INSERT/UPDATE RLS policies must allow auth.uid() = id.');
     }
 
-    message.textContent =
-      'Driver profile saved successfully! You can now try posting a ride.';
+    savedDriverPhotoValue = driverPhotoValue;
+    savedCarPhotoValue = carPhotoValue;
+    document.getElementById('driverPhotoFile').value = '';
+    document.getElementById('carPhotoFile').value = '';
+    try { setPhotoPreview('driverPhotoPreview', await resolvePhotoValue(savedDriverPhotoValue)); } catch (_) {}
+    try { setPhotoPreview('carPhotoPreview', await resolvePhotoValue(savedCarPhotoValue)); } catch (_) {}
+    message.textContent = 'Driver profile saved successfully! Your details and any selected photos have been saved. You can now try posting a ride.';
   } catch (error) {
-    message.textContent =
-      'Could not save profile: ' + friendlyError(error);
-  }
+    message.textContent = 'Could not save profile: ' + friendlyError(error);
+  } finally { saveButton.disabled = false; }
 }
 
 /* SIGN OUT */
 async function logoutDriver() {
   const message = document.getElementById('driverMessage');
-
   try {
     const { error } = await db.auth.signOut();
-
     if (error) throw error;
-
-    document.getElementById('driverFullName').value = '';
-    document.getElementById('driverPhone').value = '';
-    document.getElementById('carModel').value = '';
-    document.getElementById('registrationNumber').value = '';
-    document.getElementById('carPhotoUrl').value = '';
-
+    ['driverFullName','driverPhone','carModel','registrationNumber','driverPhotoFile','carPhotoFile','driverEmail','driverPassword'].forEach(id => {
+      const input = document.getElementById(id); if (input) input.value = '';
+    });
+    setPhotoPreview('driverPhotoPreview', null);
+    setPhotoPreview('carPhotoPreview', null);
+    savedDriverPhotoValue = null; savedCarPhotoValue = null;
     document.getElementById('driverAuth').style.display = 'block';
     document.getElementById('driverProfileForm').style.display = 'none';
-
-    document.getElementById('driverEmail').value = '';
-    document.getElementById('driverPassword').value = '';
-
     message.textContent = 'You have signed out.';
-  } catch (error) {
-    message.textContent =
-      'Sign-out error: ' + friendlyError(error);
-  }
+  } catch (error) { message.textContent = 'Sign-out error: ' + friendlyError(error); }
 }
 
 /* KEEP THE DRIVER SCREEN IN SYNC WITH LOGIN STATE */
 db.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN' && session) {
-    // Defer the database work until after the auth callback returns.
-    setTimeout(() => {
-      loadDriverProfile();
-    }, 0);
+    // Avoid running Supabase database work inside the auth callback itself.
+    setTimeout(() => { loadDriverProfile(); }, 0);
   }
-
   if (event === 'SIGNED_OUT') {
     document.getElementById('driverAuth').style.display = 'block';
     document.getElementById('driverProfileForm').style.display = 'none';
-    document.getElementById('driverMessage').textContent =
-      'You have signed out. Sign in to manage your driver profile.';
+    document.getElementById('driverMessage').textContent = 'You have signed out. Sign in to manage your driver profile.';
   }
 });
 
-/* RESTORE AN EXISTING LOGIN SESSION WHEN THE WEBSITE OPENS */
 window.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('driverPhotoFile').addEventListener('change', () => previewSelectedFile('driverPhotoFile', 'driverPhotoPreview'));
+  document.getElementById('carPhotoFile').addEventListener('change', () => previewSelectedFile('carPhotoFile', 'carPhotoPreview'));
   const message = document.getElementById('driverMessage');
-
   try {
     const user = await getSignedInUser();
-
-    if (user) {
-      await loadDriverProfile();
-    } else {
+    if (user) await loadDriverProfile();
+    else {
       document.getElementById('driverAuth').style.display = 'block';
       document.getElementById('driverProfileForm').style.display = 'none';
-      message.textContent =
-        'Register a new account or sign in to continue.';
+      message.textContent = 'Register a new account or sign in to continue.';
     }
-  } catch (error) {
-    message.textContent =
-      'Could not check your login session: ' + friendlyError(error);
-  }
+  } catch (error) { message.textContent = 'Could not check your login session: ' + friendlyError(error); }
 });
 </script>
 </body>
