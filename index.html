@@ -28,11 +28,8 @@ input[type="file"] { font-size: 14px; padding: 10px; }
 .ride { border: 1px solid #dce5df; border-radius: 10px; padding: 14px; margin-top: 12px; overflow-wrap: anywhere; }
 .message { padding: 12px; background: #f1f5f2; border-radius: 8px; margin-top: 12px; overflow-wrap: anywhere; line-height: 1.5; }
 .muted { color: #607267; font-size: 14px; line-height: 1.5; }
-.shared-photo { display:block; width:100%; max-width:260px; max-height:220px; object-fit:cover; border:1px solid #dce5df; border-radius:10px; margin-top:6px; }
-.shared-photo-wrap { margin-top:10px; }
-.photo-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
-.photo-action { display:inline-block; padding:9px 11px; border:1px solid #087346; border-radius:7px; background:#fff; color:#087346; text-decoration:none; font-size:12px; font-weight:bold; cursor:pointer; }
 .photo-preview { display: block; width: 100%; max-width: 220px; max-height: 200px; object-fit: cover; border: 1px solid #dce5df; border-radius: 10px; margin-top: 10px; }
+.photo-preview[hidden] { display: none !important; }
 .photo-hint { font-size: 12px; color: #607267; line-height: 1.4; margin: 6px 0 0; }
 footer { padding: 18px; text-align: center; color: #607267; font-size: 12px; }
 .sos-dock { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; z-index: 100; padding: 9px 12px calc(9px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.98); border-top: 1px solid #dce5df; box-shadow: 0 -3px 12px rgba(0,0,0,.08); text-align: center; }
@@ -220,43 +217,6 @@ async function getSignedInUser() {
   return userData.user || null;
 }
 
-// Keep unsaved driver details for this browser tab in case Android's photo picker
-// returns to the page after a refresh. Passwords and image files are never stored.
-const DRIVER_DRAFT_KEY = 'kc_driver_profile_draft_v1';
-function saveDriverDraft() {
-  try {
-    const draft = {
-      fullName: document.getElementById('driverFullName')?.value || '',
-      phone: document.getElementById('driverPhone')?.value || '',
-      carModel: document.getElementById('carModel')?.value || '',
-      registrationNumber: document.getElementById('registrationNumber')?.value || ''
-    };
-    sessionStorage.setItem(DRIVER_DRAFT_KEY, JSON.stringify(draft));
-  } catch (_) { /* Continue normally if browser storage is unavailable. */ }
-}
-function restoreDriverDraft() {
-  try {
-    const raw = sessionStorage.getItem(DRIVER_DRAFT_KEY);
-    if (!raw) return false;
-    const draft = JSON.parse(raw);
-    const fields = [
-      ['driverFullName', draft.fullName],
-      ['driverPhone', draft.phone],
-      ['carModel', draft.carModel],
-      ['registrationNumber', draft.registrationNumber]
-    ];
-    let restored = false;
-    for (const [id, value] of fields) {
-      const input = document.getElementById(id);
-      if (input && typeof value === 'string' && value) { input.value = value; restored = true; }
-    }
-    return restored;
-  } catch (_) { return false; }
-}
-function clearDriverDraft() {
-  try { sessionStorage.removeItem(DRIVER_DRAFT_KEY); } catch (_) {}
-}
-
 function setPhotoPreview(previewId, source) {
   const img = document.getElementById(previewId);
   if (!img) return;
@@ -324,70 +284,49 @@ async function uploadDriverPhoto(file, kind, userId) {
   return objectPath;
 }
 
+// Convert old saved Supabase Storage URLs back into object paths. Signed URLs
+// expire, so a saved Supabase URL must be refreshed whenever the profile loads.
+function getDriverPhotoObjectPath(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
 
-// Turn a saved Storage path or URL into a viewable URL. Private-bucket URLs are short-lived.
+  if (/^https?:\/\//i.test(raw)) {
+    let parsed;
+    try { parsed = new URL(raw); } catch (_) { return null; }
+    if (!parsed.hostname.endsWith('.supabase.co')) return null; // external image URL
+    const marker = '/storage/v1/object/';
+    const markerIndex = parsed.pathname.indexOf(marker);
+    if (markerIndex === -1) return null;
+    let tail = parsed.pathname.slice(markerIndex + marker.length);
+    tail = tail.replace(/^(public|sign|authenticated)\//, '');
+    const prefix = DRIVER_PHOTO_BUCKET + '/';
+    if (!tail.startsWith(prefix)) return null;
+    try { return decodeURIComponent(tail.slice(prefix.length)); }
+    catch (_) { return tail.slice(prefix.length); }
+  }
+
+  let path = raw.replace(/^\/+/, '');
+  const bucketPrefix = DRIVER_PHOTO_BUCKET + '/';
+  if (path.startsWith(bucketPrefix)) path = path.slice(bucketPrefix.length);
+  return path || null;
+}
+
 async function resolvePhotoValue(value) {
   if (!value) return null;
-  if (/^https?:\/\//i.test(value)) return value;
-  try {
-    const { data: bucketData, error: bucketError } = await db.storage.getBucket(DRIVER_PHOTO_BUCKET);
-    if (!bucketError && bucketData?.public) return db.storage.from(DRIVER_PHOTO_BUCKET).getPublicUrl(value).data.publicUrl;
-  } catch (_) {}
-  const { data, error } = await db.storage.from(DRIVER_PHOTO_BUCKET).createSignedUrl(value, 3600);
-  if (error) throw error;
-  return data?.signedUrl || null;
-}
-
-async function downloadPhoto(value, label) {
-  try {
-    const url = await resolvePhotoValue(value);
-    if (!url) throw new Error('This photo is not available.');
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('The photo could not be downloaded. Check Storage access permissions.');
-    const blob = await response.blob();
-    const objectUrl = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = objectUrl;
-    link.download = cleanFileName((label || 'kc-photo') + '.jpg');
-    document.body.appendChild(link); link.click(); link.remove();
-    setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
-  } catch (error) {
-    alert('Could not download photo: ' + friendlyError(error) + '\nYou can try opening the photo first.');
+  const objectPath = getDriverPhotoObjectPath(value);
+  if (!objectPath) {
+    // Keep valid non-Supabase image links supported for older profiles.
+    if (/^https?:\/\//i.test(String(value).trim())) return String(value).trim();
+    throw new Error('The saved photo path is empty or not in the ' + DRIVER_PHOTO_BUCKET + ' bucket.');
   }
-}
 
-async function addPhotoControls(parent, value, label) {
-  try {
-    const url = await resolvePhotoValue(value);
-    if (!url) return;
-    const wrap = document.createElement('div'); wrap.className = 'shared-photo-wrap';
-    const caption = document.createElement('p'); caption.className = 'photo-hint'; caption.textContent = label; wrap.appendChild(caption);
-    const img = document.createElement('img'); img.className = 'shared-photo'; img.alt = label; img.src = url;
-    img.loading = 'lazy'; wrap.appendChild(img);
-    const actions = document.createElement('div'); actions.className = 'photo-actions';
-    const view = document.createElement('a'); view.className = 'photo-action'; view.href = url; view.target = '_blank'; view.rel = 'noopener'; view.textContent = 'VIEW PHOTO';
-    const download = document.createElement('button'); download.type = 'button'; download.className = 'photo-action'; download.textContent = 'DOWNLOAD PHOTO';
-    download.addEventListener('click', () => downloadPhoto(value, label));
-    actions.append(view, download); wrap.appendChild(actions); parent.appendChild(wrap);
-  } catch (error) {
-    const note = document.createElement('p'); note.className = 'photo-hint'; note.textContent = label + ' is saved but cannot currently be viewed. Check the Supabase Storage bucket and read policies.'; parent.appendChild(note);
-  }
+  // Use a fresh signed URL so this also works when the bucket is private and
+  // when an older saved URL has expired. This does not make the bucket public.
+  const { data, error } = await db.storage.from(DRIVER_PHOTO_BUCKET).createSignedUrl(objectPath, 3600);
+  if (error) throw new Error('Could not create a view link for ' + objectPath + ': ' + error.message + '. Check that Storage SELECT access is allowed for the signed-in user’s own folder.');
+  if (!data?.signedUrl) throw new Error('Supabase did not return a view link for ' + objectPath + '.');
+  return data.signedUrl;
 }
-
-function addOwnPhotoActions(previewId, value, label) {
-  const img = document.getElementById(previewId);
-  if (!img || !img.parentElement) return;
-  const old = document.getElementById(previewId + 'Actions');
-  if (old) old.remove();
-  if (!value) return;
-  const actions = document.createElement('div'); actions.id = previewId + 'Actions'; actions.className = 'photo-actions';
-  const view = document.createElement('button'); view.type = 'button'; view.className = 'photo-action'; view.textContent = 'VIEW PHOTO';
-  view.addEventListener('click', async () => { try { const url = await resolvePhotoValue(value); if (url) window.open(url, '_blank', 'noopener'); } catch (e) { alert(friendlyError(e)); } });
-  const download = document.createElement('button'); download.type = 'button'; download.className = 'photo-action'; download.textContent = 'DOWNLOAD PHOTO';
-  download.addEventListener('click', () => downloadPhoto(value, label));
-  actions.append(view, download); img.insertAdjacentElement('afterend', actions);
-}
-
 
 /* FIND RIDES */
 async function searchRides() {
@@ -399,7 +338,7 @@ async function searchRides() {
   results.textContent = 'Searching for rides...';
 
   try {
-    let query = db.from('rides').select('id,driver_id,pickup_location,destination,travel_date,travel_time,available_seats,price,notes')
+    let query = db.from('rides').select('id,pickup_location,destination,travel_date,travel_time,available_seats,price,notes')
       .ilike('pickup_location', from).ilike('destination', to)
       .gt('available_seats', 0).order('travel_date', { ascending: true });
     if (date) query = query.eq('travel_date', date);
@@ -410,20 +349,7 @@ async function searchRides() {
       results.textContent = 'No rides found for this route yet. Check the spelling or try another date.';
       return;
     }
-    // Fetch public-facing driver and vehicle details without changing existing tables or policies.
-    const driverIds = [...new Set(data.map(ride => ride.driver_id).filter(Boolean))];
-    let mainProfiles = [], vehicleProfiles = [];
-    if (driverIds.length) {
-      const [mainResult, vehicleResult] = await Promise.all([
-        db.from('profiles').select('id,full_name,profile_picture_url').in('id', driverIds),
-        db.from('driver_profiles').select('id,full_name,phone,car_model,registration_number,car_photo_url').in('id', driverIds)
-      ]);
-      if (!mainResult.error) mainProfiles = mainResult.data || [];
-      if (!vehicleResult.error) vehicleProfiles = vehicleResult.data || [];
-    }
-    const mainById = Object.fromEntries(mainProfiles.map(profile => [profile.id, profile]));
-    const vehicleById = Object.fromEntries(vehicleProfiles.map(profile => [profile.id, profile]));
-    for (const ride of data) {
+    data.forEach(ride => {
       const card = document.createElement('div'); card.className = 'ride';
       const title = document.createElement('strong');
       title.textContent = ride.pickup_location + ' → ' + ride.destination;
@@ -433,26 +359,9 @@ async function searchRides() {
         ' | Time: ' + (ride.travel_time || 'Not specified') +
         ' | Seats: ' + ride.available_seats + ' | Price: R' + ride.price;
       card.appendChild(details);
-      const mainProfile = mainById[ride.driver_id] || {};
-      const vehicle = vehicleById[ride.driver_id] || {};
-      if (mainProfile.full_name || vehicle.full_name) {
-        const name = document.createElement('p');
-        name.textContent = 'Driver: ' + (mainProfile.full_name || vehicle.full_name);
-        card.appendChild(name);
-      }
-      if (vehicle.phone) {
-        const phone = document.createElement('p'); phone.textContent = 'Phone: ' + vehicle.phone; card.appendChild(phone);
-      }
-      if (vehicle.car_model) {
-        const car = document.createElement('p');
-        car.textContent = 'Vehicle: ' + vehicle.car_model + (vehicle.registration_number ? ' | Registration: ' + vehicle.registration_number : '');
-        card.appendChild(car);
-      }
-      if (mainProfile.profile_picture_url) await addPhotoControls(card, mainProfile.profile_picture_url, 'Driver photo');
-      if (vehicle.car_photo_url) await addPhotoControls(card, vehicle.car_photo_url, 'Car photo');
       if (ride.notes) { const note = document.createElement('p'); note.textContent = ride.notes; card.appendChild(note); }
       results.appendChild(card);
-    }
+    });
   } catch (error) { results.textContent = 'Search error: ' + friendlyError(error); }
 }
 
@@ -592,19 +501,19 @@ async function loadDriverProfile() {
     document.getElementById('driverPhotoFile').value = '';
     document.getElementById('carPhotoFile').value = '';
 
+    const photoIssues = [];
     try { setPhotoPreview('driverPhotoPreview', await resolvePhotoValue(savedDriverPhotoValue)); }
-    catch (_) { setPhotoPreview('driverPhotoPreview', null); }
+    catch (photoError) { setPhotoPreview('driverPhotoPreview', null); if (savedDriverPhotoValue) photoIssues.push('Driver photo: ' + friendlyError(photoError)); }
     try { setPhotoPreview('carPhotoPreview', await resolvePhotoValue(savedCarPhotoValue)); }
-    catch (_) { setPhotoPreview('carPhotoPreview', null); }
-    addOwnPhotoActions('driverPhotoPreview', savedDriverPhotoValue, 'driver-photo');
-    addOwnPhotoActions('carPhotoPreview', savedCarPhotoValue, 'car-photo');
+    catch (photoError) { setPhotoPreview('carPhotoPreview', null); if (savedCarPhotoValue) photoIssues.push('Car photo: ' + friendlyError(photoError)); }
 
-    const draftRestored = restoreDriverDraft();
-    message.textContent = draftRestored
-      ? 'Your unsaved details have been restored. If the photo picker refreshed the page, select the photo again, then tap SAVE DRIVER PROFILE.'
-      : ((vehicleProfile || mainProfile)
-        ? 'Your saved details have been loaded. Review them and tap SAVE DRIVER PROFILE if needed.'
-        : 'Complete your details and tap SAVE DRIVER PROFILE.');
+    if (photoIssues.length) {
+      message.textContent = 'Your profile details loaded, but the photo display needs attention. ' + photoIssues.join(' | ');
+    } else {
+      message.textContent = (vehicleProfile || mainProfile)
+        ? 'Your saved details and photos have been loaded. Review them and tap SAVE DRIVER PROFILE if needed.'
+        : 'Complete your details and tap SAVE DRIVER PROFILE.';
+    }
   } catch (error) {
     message.textContent = 'Could not load profile: ' + friendlyError(error);
   } finally { profileLoadInProgress = false; }
@@ -676,14 +585,16 @@ async function saveDriverProfile() {
 
     savedDriverPhotoValue = driverPhotoValue;
     savedCarPhotoValue = carPhotoValue;
-    clearDriverDraft();
     document.getElementById('driverPhotoFile').value = '';
     document.getElementById('carPhotoFile').value = '';
-    try { setPhotoPreview('driverPhotoPreview', await resolvePhotoValue(savedDriverPhotoValue)); } catch (_) {}
-    try { setPhotoPreview('carPhotoPreview', await resolvePhotoValue(savedCarPhotoValue)); } catch (_) {}
-    addOwnPhotoActions('driverPhotoPreview', savedDriverPhotoValue, 'driver-photo');
-    addOwnPhotoActions('carPhotoPreview', savedCarPhotoValue, 'car-photo');
-    message.textContent = 'Driver profile saved successfully! Your details and any selected photos have been saved. You can now try posting a ride.';
+    const photoIssues = [];
+    try { setPhotoPreview('driverPhotoPreview', await resolvePhotoValue(savedDriverPhotoValue)); }
+    catch (photoError) { setPhotoPreview('driverPhotoPreview', null); if (savedDriverPhotoValue) photoIssues.push('Driver photo: ' + friendlyError(photoError)); }
+    try { setPhotoPreview('carPhotoPreview', await resolvePhotoValue(savedCarPhotoValue)); }
+    catch (photoError) { setPhotoPreview('carPhotoPreview', null); if (savedCarPhotoValue) photoIssues.push('Car photo: ' + friendlyError(photoError)); }
+    message.textContent = photoIssues.length
+      ? 'Your profile details were saved, but the photos could not be displayed yet. ' + photoIssues.join(' | ')
+      : 'Driver profile saved successfully! Your details and photos have been saved. You can now try posting a ride.';
   } catch (error) {
     message.textContent = 'Could not save profile: ' + friendlyError(error);
   } finally { saveButton.disabled = false; }
@@ -701,7 +612,6 @@ async function logoutDriver() {
     setPhotoPreview('driverPhotoPreview', null);
     setPhotoPreview('carPhotoPreview', null);
     savedDriverPhotoValue = null; savedCarPhotoValue = null;
-    clearDriverDraft();
     document.getElementById('driverAuth').style.display = 'block';
     document.getElementById('driverProfileForm').style.display = 'none';
     message.textContent = 'You have signed out.';
@@ -722,22 +632,8 @@ db.auth.onAuthStateChange((event, session) => {
 });
 
 window.addEventListener('DOMContentLoaded', async () => {
-  // Autosave non-secret text fields before the Android picker opens.
-  ['driverFullName','driverPhone','carModel','registrationNumber'].forEach(id => {
-    const field = document.getElementById(id);
-    field?.addEventListener('input', saveDriverDraft);
-    field?.addEventListener('change', saveDriverDraft);
-  });
-  document.getElementById('driverPhotoFile').addEventListener('change', () => {
-    saveDriverDraft();
-    previewSelectedFile('driverPhotoFile', 'driverPhotoPreview');
-    document.getElementById('driverPhotoPreviewActions')?.remove();
-  });
-  document.getElementById('carPhotoFile').addEventListener('change', () => {
-    saveDriverDraft();
-    previewSelectedFile('carPhotoFile', 'carPhotoPreview');
-    document.getElementById('carPhotoPreviewActions')?.remove();
-  });
+  document.getElementById('driverPhotoFile').addEventListener('change', () => previewSelectedFile('driverPhotoFile', 'driverPhotoPreview'));
+  document.getElementById('carPhotoFile').addEventListener('change', () => previewSelectedFile('carPhotoFile', 'carPhotoPreview'));
   const message = document.getElementById('driverMessage');
   try {
     const user = await getSignedInUser();
