@@ -14,14 +14,13 @@ header { background: #0b6040; color: white; padding: 22px 18px; }
 header h2 { margin: 0 0 8px; }
 header p { margin-bottom: 0; }
 nav { display: flex; flex-wrap: wrap; background: #e5eee8; position: sticky; top: 0; z-index: 10; }
-nav button { flex: 1 1 25%; min-width: 0; padding: 13px 3px; border: 0; background: transparent; font-size: 12px; font-weight: bold; cursor: pointer; }
+nav button { flex: 1 1 20%; min-width: 0; padding: 13px 3px; border: 0; background: transparent; font-size: 11px; font-weight: bold; cursor: pointer; }
 nav button.active { background: white; color: #087346; box-shadow: inset 0 -3px #087346; }
 main { padding: 18px; }
 .panel { display: none; }
 .panel.active { display: block; }
 label { display: block; font-size: 14px; font-weight: bold; margin: 12px 0 6px; }
-input, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5ce; border-radius: 8px; font-size: 16px; background: white; color: #17251d; }
-select { width: 100%; padding: 12px; border: 1px solid #cbd5ce; border-radius: 8px; font-size: 16px; background: white; color: #17251d; }
+input, textarea, select { width: 100%; padding: 12px; border: 1px solid #cbd5ce; border-radius: 8px; font-size: 16px; background: white; color: #17251d; }
 input:focus, textarea:focus { outline: 2px solid #087346; outline-offset: 1px; }
 input[type="file"] { font-size: 14px; padding: 10px; }
 .green { display: block; width: 100%; padding: 14px; border: 0; border-radius: 8px; background: #087346; color: white; font-size: 16px; font-weight: bold; margin-top: 16px; cursor: pointer; }
@@ -46,8 +45,16 @@ footer { padding: 18px; text-align: center; color: #607267; font-size: 12px; }
 .verification-status { white-space: pre-line; line-height: 1.5; }
 .verification-note { font-size: 13px; line-height: 1.5; color: #506257; }
 .verification-panel h4 { margin-top: 4px; }
+.package-card { border: 1px solid #dce5df; border-radius: 10px; padding: 13px; margin-top: 12px; overflow-wrap: anywhere; background: #fff; }
+.package-card h4 { margin: 0 0 8px; }
+.package-card p { line-height: 1.45; margin: 7px 0; }
+.package-subtitle { margin-top: 20px; padding-top: 12px; border-top: 1px solid #dce5df; }
+.package-private { border-left: 3px solid #087346; padding-left: 10px; margin-top: 10px; }
+.package-action { margin-top: 10px; padding: 11px; border: 0; border-radius: 8px; background: #087346; color: #fff; font-size: 14px; font-weight: bold; width: 100%; cursor: pointer; }
+.package-action.secondary { background: #e5eee8; color: #173c2b; }
+.package-action:disabled { opacity: .6; }
 @media (max-width: 360px) {
-  nav button { flex-basis: 50%; padding: 12px 4px; font-size: 13px; }
+  nav button { flex-basis: 33.333%; padding: 12px 4px; font-size: 12px; }
   .emergency-grid { gap: 5px; }
   .emergency-button { min-height: 60px; padding: 7px 2px; font-size: 11px; }
   .emergency-button small { font-size: 11px; }
@@ -59,13 +66,13 @@ footer { padding: 18px; text-align: center; color: #607267; font-size: 12px; }
 <div class="app">
 <header>
   <h2>KC Comfortable Long Distance Rides</h2>
-  <p>Find a ride. Offer a ride. Travel comfortably.</p>
+  <p>Long-distance rides and package transport across South Africa.</p>
 </header>
 
 <nav aria-label="Main navigation">
   <button type="button" class="active" onclick="showTab('find', this)">Find Ride</button>
+  <button type="button" onclick="showTab('packages', this)">Packages</button>
   <button type="button" onclick="showTab('offer', this)">Offer Ride</button>
-  <button type="button" onclick="showTab('packages', this)">Package Delivery</button>
   <button type="button" onclick="showTab('driver', this)">Driver Account</button>
   <button type="button" onclick="showTab('profile', this)">About KC</button>
 </nav>
@@ -84,60 +91,86 @@ footer { padding: 18px; text-align: center; color: #607267; font-size: 12px; }
   <div id="results" class="message" aria-live="polite">Enter your route to search for rides.</div>
 </section>
 
+
 <section id="packages" class="panel">
-  <h3>Package Delivery</h3>
-  <p class="muted">Request long-distance delivery for parcels between towns and provinces in South Africa. Sign in under Driver Account to submit and view your bookings. Your request is not confirmed until a driver accepts it.</p>
-  <form id="packageForm">
-    <h4>Recipient details</h4>
-    <label for="packageRecipient">Recipient full name</label>
-    <input id="packageRecipient" autocomplete="name" required maxlength="120" placeholder="Person receiving the parcel">
-    <label for="packagePhone">Recipient phone number</label>
-    <input id="packagePhone" type="tel" autocomplete="tel" required maxlength="40" placeholder="e.g. 071 234 5678">
+  <h3>Package Transport</h3>
+  <p class="muted">Send parcels, documents, clothes and household items between towns or provinces with a driver travelling that route. This is a request marketplace, not an automatic booking or payment service.</p>
 
-    <h4>Collection address</h4>
-    <label for="packagePickupProvince">Collection province</label>
-    <select id="packagePickupProvince" required>
-      <option value="">Choose province</option>
-      <option>Eastern Cape</option><option>Free State</option><option>Gauteng</option>
-      <option>KwaZulu-Natal</option><option>Limpopo</option><option>Mpumalanga</option>
-      <option>North West</option><option>Northern Cape</option><option>Western Cape</option>
-    </select>
-    <label for="packagePickupCity">Collection town or city</label>
-    <input id="packagePickupCity" required maxlength="120" placeholder="e.g. Boksburg">
-    <label for="packagePickupAddress">Collection street address / meeting point</label>
-    <textarea id="packagePickupAddress" rows="2" required maxlength="500" placeholder="Exact address or agreed safe meeting point"></textarea>
+  <div class="verification-panel">
+    <h4>Package account</h4>
+    <p id="packageAuthStatus" class="verification-note" aria-live="polite">Create a free account or sign in to request delivery. The account session is shared with Driver Account.</p>
+    <label for="packageAccountEmail">Email address</label>
+    <input id="packageAccountEmail" type="email" autocomplete="email" placeholder="you@example.com">
+    <label for="packageAccountPassword">Password</label>
+    <input id="packageAccountPassword" type="password" autocomplete="current-password" placeholder="At least 8 characters">
+    <button type="button" class="green" onclick="registerPackageAccount()">CREATE PACKAGE ACCOUNT</button>
+    <button type="button" class="green" onclick="loginPackageAccount()">SIGN IN</button>
+    <button type="button" class="green" onclick="logoutPackageAccount()">SIGN OUT OF APP</button>
+  </div>
 
-    <h4>Delivery address</h4>
-    <label for="packageDeliveryProvince">Delivery province</label>
-    <select id="packageDeliveryProvince" required>
-      <option value="">Choose province</option>
-      <option>Eastern Cape</option><option>Free State</option><option>Gauteng</option>
-      <option>KwaZulu-Natal</option><option>Limpopo</option><option>Mpumalanga</option>
-      <option>North West</option><option>Northern Cape</option><option>Western Cape</option>
-    </select>
-    <label for="packageDeliveryCity">Delivery town or city</label>
-    <input id="packageDeliveryCity" required maxlength="120" placeholder="e.g. Bushbuckridge">
-    <label for="packageDeliveryAddress">Delivery street address / meeting point</label>
-    <textarea id="packageDeliveryAddress" rows="2" required maxlength="500" placeholder="Exact address or agreed safe meeting point"></textarea>
+  <h4 class="package-subtitle">Request a package delivery</h4>
+  <p class="muted">Fill in the item and contact details. Exact addresses and phone numbers are kept private and are not shown on public package listings.</p>
 
-    <h4>Parcel details</h4>
-    <label for="packageDescription">What are you sending?</label>
-    <textarea id="packageDescription" rows="3" required maxlength="1000" placeholder="Describe the parcel and contents"></textarea>
-    <label for="packageSize">Package size</label>
-    <select id="packageSize" required>
-      <option value="">Choose size</option><option value="small">Small (envelope / small parcel)</option>
-      <option value="medium">Medium (box / bag)</option><option value="large">Large (bulky item)</option>
-    </select>
-    <label for="packageValue">Declared parcel value in rand (optional)</label>
-    <input id="packageValue" type="number" min="0" max="99999999" step="0.01" placeholder="e.g. 500">
-    <label for="packageFee">Proposed delivery fee / budget (R)</label>
-    <input id="packageFee" type="number" min="0" max="99999999" step="0.01" required placeholder="e.g. 150">
-    <p class="muted">The fee is a proposed budget, not an in-app payment. Do not send prohibited or dangerous items. Agree on the final fee and arrangements with the driver before paying.</p>
-    <button type="submit" class="green" id="submitPackageButton">REQUEST PACKAGE DELIVERY</button>
-  </form>
-  <div id="packageMessage" class="message" aria-live="polite">Complete the form to request delivery.</div>
-  <h4>Your package bookings</h4>
-  <div id="packageBookings" aria-live="polite" class="message">Sign in to view your package bookings.</div>
+  <label for="packageSenderName">Your full name</label>
+  <input id="packageSenderName" autocomplete="name" placeholder="Sender full name">
+  <label for="packageSenderPhone">Your phone number</label>
+  <input id="packageSenderPhone" type="tel" autocomplete="tel" placeholder="e.g. 071 234 5678">
+  <label for="packageRecipientName">Recipient full name</label>
+  <input id="packageRecipientName" placeholder="Person receiving the package">
+  <label for="packageRecipientPhone">Recipient phone number</label>
+  <input id="packageRecipientPhone" type="tel" placeholder="Recipient's phone number">
+
+  <label for="packageFromTown">Pickup town / city</label>
+  <input id="packageFromTown" placeholder="e.g. Boksburg, Gauteng">
+  <label for="packageToTown">Delivery town / city</label>
+  <input id="packageToTown" placeholder="e.g. Bushbuckridge, Mpumalanga">
+  <label for="packagePickupAddress">Pickup address or safe meeting point</label>
+  <input id="packagePickupAddress" placeholder="Street, suburb or agreed meeting point">
+  <label for="packageDeliveryAddress">Delivery address or safe meeting point</label>
+  <input id="packageDeliveryAddress" placeholder="Street, suburb or agreed meeting point">
+  <label for="packageDate">Preferred pickup date</label>
+  <input id="packageDate" type="date">
+
+  <label for="packageType">What are you sending?</label>
+  <select id="packageType">
+    <option value="Documents">Documents</option>
+    <option value="Clothing">Clothing</option>
+    <option value="Electronics">Electronics</option>
+    <option value="Household items">Household items</option>
+    <option value="Small parcel">Small parcel</option>
+    <option value="Other">Other (describe below)</option>
+  </select>
+  <label for="packageSize">Package size</label>
+  <select id="packageSize">
+    <option value="document">Envelope / documents</option>
+    <option value="small">Small (handheld)</option>
+    <option value="medium">Medium (shoebox-sized)</option>
+    <option value="large">Large (needs boot space)</option>
+    <option value="bulky">Bulky / household item</option>
+  </select>
+  <label for="packageDescription">Describe the contents</label>
+  <textarea id="packageDescription" rows="3" maxlength="1000" placeholder="Describe the item, approximate weight and dimensions. Do not put names, phone numbers or exact addresses here because this description is visible in public listings. Do not list prohibited or dangerous items."></textarea>
+  <label for="packageFragile">Is the package fragile?</label>
+  <select id="packageFragile">
+    <option value="false">No</option>
+    <option value="true">Yes — handle carefully</option>
+  </select>
+  <label for="packageOffer">Your delivery budget / offer (R, optional)</label>
+  <input id="packageOffer" type="number" min="0" max="100000" step="0.01" placeholder="e.g. 150">
+  <label for="packageInstructions">Extra delivery instructions (optional)</label>
+  <textarea id="packageInstructions" rows="2" maxlength="1000" placeholder="Timing or agreed instructions"></textarea>
+  <button type="button" class="green" onclick="createPackageRequest()">SUBMIT PACKAGE REQUEST</button>
+  <div id="packageSubmitMessage" class="message" aria-live="polite">Sign in before submitting a package request.</div>
+
+  <h4 class="package-subtitle">Available package requests</h4>
+  <p class="muted">Drivers may accept a delivery only when their PDP and criminal-record checks are both approved by the administrator.</p>
+  <button type="button" class="green" onclick="refreshOpenPackages()">REFRESH AVAILABLE PACKAGES</button>
+  <div id="openPackages" aria-live="polite" class="message">Loading available package requests...</div>
+
+  <h4 class="package-subtitle">My package requests / deliveries</h4>
+  <button type="button" class="green" onclick="refreshMyPackages()">REFRESH MY PACKAGES</button>
+  <div id="myPackages" aria-live="polite" class="message">Sign in to see your package requests and accepted deliveries.</div>
+  <p class="muted">KC does not collect payment in the app yet. Confirm the driver's identity, agreed price and delivery arrangements before paying. Do not send prohibited or dangerous items.</p>
 </section>
 
 <section id="offer" class="panel">
@@ -219,7 +252,7 @@ footer { padding: 18px; text-align: center; color: #607267; font-size: 12px; }
 
 <section id="profile" class="panel">
   <h3>About KC</h3>
-  <p>KC Comfortable Long Distance Rides helps passengers and drivers connect for long-distance journeys.</p>
+  <p>KC Comfortable Long Distance Rides helps passengers and drivers connect for long-distance journeys and package transport between towns and provinces.</p>
   <p class="muted">Confirm the driver, price, pickup point and travel arrangements before paying or travelling.</p>
   <div class="sos-help">
     <strong>Journey emergency help</strong>
@@ -247,7 +280,7 @@ const DRIVER_PHOTO_BUCKET = 'kc-driver-photos';
 const DRIVER_VERIFICATION_BUCKET = 'kc-driver-verification';
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const ALLOWED_VERIFICATION_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+const ALLOWED_VERIFICATION_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
 
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
@@ -279,7 +312,6 @@ function showTab(id, button) {
     const navButton = Array.from(document.querySelectorAll('nav button')).find(btn => btn.getAttribute('onclick')?.includes("'" + id + "'"));
     if (navButton) navButton.classList.add('active');
   }
-  if (id === 'packages') loadPackageBookings();
 }
 
 function openDriverAccount() { showTab('driver'); }
@@ -417,15 +449,15 @@ function displayVerificationStatus(record) {
   }
   const show = value => String(value || 'pending').toUpperCase();
   let text = 'PDP status: ' + show(record.pdp_status) + '\nCriminal-record status: ' + show(record.criminal_status);
-  if (record.submitted_at) {
-    const submitted = new Date(record.submitted_at);
-    if (!Number.isNaN(submitted.getTime())) text += '\nLast submitted: ' + submitted.toLocaleString();
+  if (record.updated_at) {
+    const submitted = new Date(record.updated_at);
+    if (!Number.isNaN(submitted.getTime())) text += '\nLast submitted or updated: ' + submitted.toLocaleString();
   }
   if (record.reviewed_at) {
     const reviewed = new Date(record.reviewed_at);
     if (!Number.isNaN(reviewed.getTime())) text += '\nLast reviewed: ' + reviewed.toLocaleString();
   }
-  if (record.reviewer_notes) text += '\nAdministrator note: ' + record.reviewer_notes;
+  if (record.admin_notes) text += '\nAdministrator note: ' + record.admin_notes;
   if (record.pdp_status !== 'approved' || record.criminal_status !== 'approved') {
     text += '\nRide posting stays blocked until BOTH checks are approved.';
   } else {
@@ -441,7 +473,7 @@ async function refreshDriverVerification(userId) {
     return null;
   }
   const { data, error } = await db.from('driver_verifications')
-    .select('pdp_status,criminal_status,submitted_at,reviewed_at,reviewer_notes')
+    .select('pdp_status,criminal_status,admin_notes,reviewed_at,updated_at')
     .eq('driver_id', userId).maybeSingle();
   if (error) {
     if (box) box.textContent = 'Could not load verification status. Confirm that the PDP/criminal verification SQL setup has been completed. Details: ' + friendlyError(error);
@@ -454,7 +486,7 @@ async function refreshDriverVerification(userId) {
 async function uploadVerificationDocument(file, kind, userId) {
   if (!file) throw new Error('Select both required documents before submitting.');
   if (!ALLOWED_VERIFICATION_TYPES.includes(file.type)) {
-    throw new Error('The ' + kind + ' document must be a PDF, JPG, PNG or WebP file.');
+    throw new Error('The ' + kind + ' document must be a PDF, JPG or PNG file.');
   }
   if (file.size > MAX_PHOTO_BYTES) {
     throw new Error('The ' + kind + ' document must be 5 MB or smaller.');
@@ -481,7 +513,7 @@ async function submitDriverVerification() {
   }
   for (const [kind, file] of [['PDP', pdpFile], ['criminal-record', criminalFile]]) {
     if (!ALLOWED_VERIFICATION_TYPES.includes(file.type)) {
-      box.textContent = 'The ' + kind + ' document must be a PDF, JPG, PNG or WebP file.';
+      box.textContent = 'The ' + kind + ' document must be a PDF, JPG or PNG file.';
       return;
     }
     if (file.size > MAX_PHOTO_BYTES) {
@@ -640,136 +672,6 @@ async function publishRide() {
     document.getElementById('price').value = '';
     document.getElementById('notes').value = '';
   } catch (error) { message.textContent = 'Could not post ride: ' + friendlyError(error); }
-}
-
-/* KC PACKAGE DELIVERY: request and view your own package bookings */
-function packageField(id) {
-  const element = document.getElementById(id);
-  return element ? element.value.trim() : '';
-}
-
-async function submitPackageBooking(event) {
-  event.preventDefault();
-  const message = document.getElementById('packageMessage');
-  const button = document.getElementById('submitPackageButton');
-  const recipient = packageField('packageRecipient');
-  const phone = packageField('packagePhone');
-  const pickupProvince = packageField('packagePickupProvince');
-  const pickupCity = packageField('packagePickupCity');
-  const pickupAddress = packageField('packagePickupAddress');
-  const deliveryProvince = packageField('packageDeliveryProvince');
-  const deliveryCity = packageField('packageDeliveryCity');
-  const deliveryAddress = packageField('packageDeliveryAddress');
-  const description = packageField('packageDescription');
-  const size = packageField('packageSize');
-  const feeText = packageField('packageFee');
-  const valueText = packageField('packageValue');
-
-  if (!recipient || !phone || !pickupProvince || !pickupCity || !pickupAddress || !deliveryProvince || !deliveryCity || !deliveryAddress || !description || !feeText) {
-    message.textContent = 'Please complete all required package fields.';
-    return;
-  }
-  if (pickupProvince === deliveryProvince && pickupCity.toLowerCase() === deliveryCity.toLowerCase() && pickupAddress.toLowerCase() === deliveryAddress.toLowerCase()) {
-    message.textContent = 'Collection and delivery addresses must be different.';
-    return;
-  }
-  const fee = Number(feeText);
-  const declaredValue = valueText === '' ? null : Number(valueText);
-  if (!Number.isFinite(fee) || fee < 0 || fee > 99999999) {
-    message.textContent = 'Enter a valid delivery fee.';
-    return;
-  }
-  if (declaredValue !== null && (!Number.isFinite(declaredValue) || declaredValue < 0 || declaredValue > 99999999)) {
-    message.textContent = 'Enter a valid declared parcel value.';
-    return;
-  }
-  if (!['small', 'medium', 'large'].includes(size)) {
-    message.textContent = 'Choose a valid package size.';
-    return;
-  }
-
-  button.disabled = true;
-  message.textContent = 'Checking your sign-in session...';
-  try {
-    const user = await getSignedInUser();
-    if (!user) {
-      message.textContent = 'Please register or sign in under Driver Account before submitting a package booking.';
-      openDriverAccount();
-      return;
-    }
-
-    message.textContent = 'Submitting your package booking...';
-    const { data, error } = await db.from('transport_packages').insert([{
-      sender_id: user.id,
-      assigned_driver_id: null,
-      recipient_name: recipient,
-      recipient_phone: phone,
-      pickup_province: pickupProvince,
-      pickup_city: pickupCity,
-      pickup_address: pickupAddress,
-      delivery_province: deliveryProvince,
-      delivery_city: deliveryCity,
-      delivery_address: deliveryAddress,
-      package_description: description,
-      package_size: size,
-      declared_value: declaredValue,
-      delivery_fee: fee,
-      status: 'pending'
-    }]).select('id,status,created_at').single();
-    if (error) throw error;
-
-    message.textContent = 'Package booking submitted. Reference: ' + data.id + '. Status: PENDING. Your delivery is not confirmed until a driver accepts it.';
-    document.getElementById('packageForm').reset();
-    await loadPackageBookings();
-  } catch (error) {
-    message.textContent = 'Could not submit package booking: ' + friendlyError(error);
-  } finally {
-    button.disabled = false;
-  }
-}
-
-async function loadPackageBookings() {
-  const box = document.getElementById('packageBookings');
-  if (!box) return;
-  box.textContent = 'Loading your package bookings...';
-  try {
-    const user = await getSignedInUser();
-    if (!user) {
-      box.textContent = 'Please sign in under Driver Account to view your package bookings.';
-      return;
-    }
-    const { data, error } = await db.from('transport_packages')
-      .select('id,recipient_name,pickup_province,pickup_city,delivery_province,delivery_city,package_description,package_size,delivery_fee,status,created_at')
-      .eq('sender_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(30);
-    if (error) throw error;
-
-    box.replaceChildren();
-    if (!data || data.length === 0) {
-      box.textContent = 'You have no package bookings yet.';
-      return;
-    }
-    data.forEach(pkg => {
-      const card = document.createElement('div');
-      card.className = 'ride';
-      const title = document.createElement('strong');
-      title.textContent = pkg.pickup_city + ', ' + pkg.pickup_province + ' → ' + pkg.delivery_city + ', ' + pkg.delivery_province;
-      card.appendChild(title);
-      const details = document.createElement('p');
-      details.style.whiteSpace = 'pre-line';
-      details.textContent = 'Recipient: ' + pkg.recipient_name +
-        '\nParcel: ' + pkg.package_description +
-        '\nSize: ' + pkg.package_size +
-        '\nProposed fee: R' + Number(pkg.delivery_fee).toFixed(2) +
-        '\nStatus: ' + String(pkg.status || 'pending').toUpperCase() +
-        '\nReference: ' + pkg.id;
-      card.appendChild(details);
-      box.appendChild(card);
-    });
-  } catch (error) {
-    box.textContent = 'Could not load package bookings: ' + friendlyError(error);
-  }
 }
 
 /* REGISTER DRIVER */
@@ -967,13 +869,331 @@ async function logoutDriver() {
   } catch (error) { message.textContent = 'Sign-out error: ' + friendlyError(error); }
 }
 
+
+/* PACKAGE TRANSPORT: PRIVATE CONTACTS, PUBLIC ROUTE LISTINGS */
+function setPackageMessage(id, message) {
+  const element = document.getElementById(id);
+  if (element) element.textContent = message;
+}
+
+async function updatePackageAuthStatus() {
+  try {
+    const user = await getSignedInUser();
+    setPackageMessage('packageAuthStatus', user
+      ? 'Signed in as ' + (user.email || 'your account') + '. You can request a package. Drivers need both verification checks approved before accepting a delivery. Signing out here signs you out of the entire app.'
+      : 'Not signed in. Create a free account or sign in to request a package. Drivers must be signed in and approved to accept deliveries.');
+  } catch (error) {
+    setPackageMessage('packageAuthStatus', 'Could not check account session: ' + friendlyError(error));
+  }
+}
+
+async function registerPackageAccount() {
+  const email = document.getElementById('packageAccountEmail').value.trim();
+  const password = document.getElementById('packageAccountPassword').value;
+  if (!email || password.length < 8) {
+    setPackageMessage('packageSubmitMessage', 'Enter a valid email and a password of at least 8 characters.');
+    return;
+  }
+  setPackageMessage('packageSubmitMessage', 'Creating your package account...');
+  try {
+    const { data, error } = await db.auth.signUp({
+      email, password,
+      options: { emailRedirectTo: window.location.origin }
+    });
+    if (error) throw error;
+    if (data.session && data.user) {
+      setPackageMessage('packageSubmitMessage', 'Account created and signed in. You can submit a package request now.');
+      await updatePackageAuthStatus();
+      await refreshPackageLists();
+    } else {
+      setPackageMessage('packageSubmitMessage', 'Registration submitted. Check your email and spam folder, confirm your email, then return here and sign in. If no email arrives, check your Supabase Auth email settings.');
+    }
+  } catch (error) {
+    setPackageMessage('packageSubmitMessage', 'Could not create package account: ' + friendlyError(error));
+  }
+}
+
+async function loginPackageAccount() {
+  const email = document.getElementById('packageAccountEmail').value.trim();
+  const password = document.getElementById('packageAccountPassword').value;
+  if (!email || !password) {
+    setPackageMessage('packageSubmitMessage', 'Enter your email and password first.');
+    return;
+  }
+  setPackageMessage('packageSubmitMessage', 'Signing in...');
+  try {
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    if (!data.session || !data.user) throw new Error('Supabase did not return an active login session. Please sign in again.');
+    setPackageMessage('packageSubmitMessage', 'You are signed in. You can submit a package request.');
+    await updatePackageAuthStatus();
+    await refreshPackageLists();
+  } catch (error) {
+    setPackageMessage('packageSubmitMessage', 'Sign-in error: ' + friendlyError(error));
+  }
+}
+
+async function logoutPackageAccount() {
+  try {
+    const { error } = await db.auth.signOut();
+    if (error) throw error;
+    setPackageMessage('packageSubmitMessage', 'You have signed out of the whole KC app.');
+    await updatePackageAuthStatus();
+    await refreshPackageLists();
+  } catch (error) {
+    setPackageMessage('packageSubmitMessage', 'Sign-out error: ' + friendlyError(error));
+  }
+}
+
+function formatPackageStatus(status) {
+  const labels = {
+    open: 'Waiting for a driver', accepted: 'Driver accepted',
+    picked_up: 'Package picked up', delivered: 'Delivered', cancelled: 'Cancelled'
+  };
+  return labels[status] || String(status || 'Unknown');
+}
+
+function formatPackageSize(size) {
+  const labels = { document: 'Envelope / documents', small: 'Small', medium: 'Medium', large: 'Large', bulky: 'Bulky / household item' };
+  return labels[size] || String(size || 'Not specified');
+}
+
+function makePackageParagraph(text) {
+  const p = document.createElement('p');
+  p.textContent = text;
+  return p;
+}
+
+function makePackageButton(label, callback, secondary = false) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = secondary ? 'package-action secondary' : 'package-action';
+  button.textContent = label;
+  button.addEventListener('click', callback);
+  return button;
+}
+
+async function createPackageRequest() {
+  const values = {
+    senderName: document.getElementById('packageSenderName').value.trim(),
+    senderPhone: document.getElementById('packageSenderPhone').value.trim(),
+    recipientName: document.getElementById('packageRecipientName').value.trim(),
+    recipientPhone: document.getElementById('packageRecipientPhone').value.trim(),
+    from: document.getElementById('packageFromTown').value.trim(),
+    to: document.getElementById('packageToTown').value.trim(),
+    pickupAddress: document.getElementById('packagePickupAddress').value.trim(),
+    deliveryAddress: document.getElementById('packageDeliveryAddress').value.trim(),
+    date: document.getElementById('packageDate').value,
+    type: document.getElementById('packageType').value,
+    size: document.getElementById('packageSize').value,
+    description: document.getElementById('packageDescription').value.trim(),
+    fragile: document.getElementById('packageFragile').value === 'true',
+    offerText: document.getElementById('packageOffer').value,
+    instructions: document.getElementById('packageInstructions').value.trim()
+  };
+  const required = [values.senderName, values.senderPhone, values.recipientName, values.recipientPhone,
+    values.from, values.to, values.pickupAddress, values.deliveryAddress, values.date, values.type,
+    values.size, values.description];
+  if (required.some(value => !value)) {
+    setPackageMessage('packageSubmitMessage', 'Please complete all required fields, including both phone numbers and both addresses.');
+    return;
+  }
+  if (values.from.toLowerCase() === values.to.toLowerCase()) {
+    setPackageMessage('packageSubmitMessage', 'Pickup and delivery towns cannot be the same.');
+    return;
+  }
+  if (values.senderPhone.length < 7 || values.senderPhone.length > 25 || values.recipientPhone.length < 7 || values.recipientPhone.length > 25) {
+    setPackageMessage('packageSubmitMessage', 'Please enter valid sender and recipient phone numbers.');
+    return;
+  }
+  let offer = null;
+  if (values.offerText !== '') {
+    offer = Number(values.offerText);
+    if (!Number.isFinite(offer) || offer < 0 || offer > 100000) {
+      setPackageMessage('packageSubmitMessage', 'Enter a valid delivery budget from R0 to R100,000, or leave it empty.');
+      return;
+    }
+  }
+
+  setPackageMessage('packageSubmitMessage', 'Checking account and securely submitting the request...');
+  try {
+    const user = await getSignedInUser();
+    if (!user) {
+      setPackageMessage('packageSubmitMessage', 'Please create an account or sign in above before submitting this package request.');
+      document.getElementById('packageAccountEmail').focus();
+      return;
+    }
+    const { data: packageId, error } = await db.rpc('create_package_delivery', {
+      p_pickup_location: values.from,
+      p_destination: values.to,
+      p_pickup_date: values.date,
+      p_package_type: values.type,
+      p_package_size: values.size,
+      p_description: values.description,
+      p_is_fragile: values.fragile,
+      p_sender_offer: offer,
+      p_sender_name: values.senderName,
+      p_sender_phone: values.senderPhone,
+      p_recipient_name: values.recipientName,
+      p_recipient_phone: values.recipientPhone,
+      p_pickup_address: values.pickupAddress,
+      p_delivery_address: values.deliveryAddress,
+      p_instructions: values.instructions || null
+    });
+    if (error) throw error;
+    setPackageMessage('packageSubmitMessage', 'Package request submitted successfully. Reference: ' + packageId + '. It is now visible in Available Package Requests. A driver has not accepted it yet, and no payment has been taken.');
+    ['packageRecipientName','packageRecipientPhone','packageFromTown','packageToTown','packagePickupAddress','packageDeliveryAddress','packageDescription','packageOffer','packageInstructions'].forEach(id => {
+      const input = document.getElementById(id);
+      if (input) input.value = '';
+    });
+    document.getElementById('packageFragile').value = 'false';
+    await refreshPackageLists();
+  } catch (error) {
+    setPackageMessage('packageSubmitMessage', 'Could not submit package request: ' + friendlyError(error) + '. Confirm that KC_package_transport_setup.sql has been run in Supabase SQL Editor.');
+  }
+}
+
+async function refreshOpenPackages() {
+  const box = document.getElementById('openPackages');
+  if (!box) return;
+  box.textContent = 'Loading available package requests...';
+  try {
+    const { data, error } = await db.from('package_deliveries')
+      .select('id,pickup_location,destination,pickup_date,package_type,package_size,description,is_fragile,sender_offer,status,created_at')
+      .eq('status', 'open').order('pickup_date', { ascending: true }).limit(50);
+    if (error) throw error;
+    box.replaceChildren();
+    if (!data || data.length === 0) {
+      box.textContent = 'There are no open package requests yet. New requests will appear here.';
+      return;
+    }
+    data.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'package-card';
+      const heading = document.createElement('h4');
+      heading.textContent = item.pickup_location + ' → ' + item.destination;
+      card.appendChild(heading);
+      card.appendChild(makePackageParagraph('Pickup date: ' + (item.pickup_date || 'Not specified')));
+      card.appendChild(makePackageParagraph('Item: ' + item.package_type + ' • Size: ' + formatPackageSize(item.package_size)));
+      card.appendChild(makePackageParagraph('Description: ' + item.description));
+      card.appendChild(makePackageParagraph('Fragile: ' + (item.is_fragile ? 'Yes — handle carefully' : 'No')));
+      card.appendChild(makePackageParagraph('Sender delivery offer: ' + (item.sender_offer === null ? 'Not specified' : 'R' + Number(item.sender_offer).toFixed(2))));
+      card.appendChild(makePackageParagraph('Status: ' + formatPackageStatus(item.status)));
+      card.appendChild(makePackageButton('ACCEPT PACKAGE DELIVERY', () => acceptPackageDelivery(item.id)));
+      box.appendChild(card);
+    });
+  } catch (error) {
+    box.textContent = 'Could not load package requests: ' + friendlyError(error) + '. Check that the package SQL setup has been run.';
+  }
+}
+
+async function acceptPackageDelivery(packageId) {
+  setPackageMessage('packageSubmitMessage', 'Checking driver account and document approvals...');
+  try {
+    const user = await getSignedInUser();
+    if (!user) {
+      setPackageMessage('packageSubmitMessage', 'Sign in above first. Only a driver with approved PDP and criminal-record checks can accept a package.');
+      document.getElementById('packageAccountEmail').focus();
+      return;
+    }
+    const { data, error } = await db.rpc('assign_package_delivery', { p_package_id: packageId });
+    if (error) throw error;
+    setPackageMessage('packageSubmitMessage', 'Package delivery accepted. Open My Package Requests / Deliveries to see the private contact details and address.');
+    await refreshPackageLists();
+  } catch (error) {
+    setPackageMessage('packageSubmitMessage', 'Could not accept package: ' + friendlyError(error) + '. You must be signed in as a driver and both PDP and criminal-record statuses must be APPROVED.');
+  }
+}
+
+async function updatePackageDeliveryStatus(packageId, newStatus) {
+  try {
+    const { data, error } = await db.rpc('update_package_delivery_status', {
+      p_package_id: packageId,
+      p_new_status: newStatus
+    });
+    if (error) throw error;
+    setPackageMessage('packageSubmitMessage', 'Package status updated to: ' + formatPackageStatus(newStatus) + '.');
+    await refreshPackageLists();
+  } catch (error) {
+    setPackageMessage('packageSubmitMessage', 'Could not update package status: ' + friendlyError(error));
+  }
+}
+
+async function refreshMyPackages() {
+  const box = document.getElementById('myPackages');
+  if (!box) return;
+  box.textContent = 'Loading your package requests and deliveries...';
+  try {
+    const user = await getSignedInUser();
+    if (!user) {
+      box.textContent = 'Sign in above to see your own requests and deliveries assigned to you.';
+      return;
+    }
+    const { data, error } = await db.from('package_deliveries')
+      .select('id,sender_id,driver_id,pickup_location,destination,pickup_date,package_type,package_size,description,is_fragile,sender_offer,status,created_at')
+      .or('sender_id.eq.' + user.id + ',driver_id.eq.' + user.id)
+      .order('created_at', { ascending: false }).limit(50);
+    if (error) throw error;
+    box.replaceChildren();
+    if (!data || data.length === 0) {
+      box.textContent = 'You do not have any package requests or accepted deliveries yet.';
+      return;
+    }
+    const ids = data.map(item => item.id);
+    const { data: contacts, error: contactError } = await db.from('package_delivery_contacts')
+      .select('package_id,sender_name,sender_phone,recipient_name,recipient_phone,pickup_address,delivery_address,instructions')
+      .in('package_id', ids);
+    if (contactError) throw contactError;
+    const contactById = new Map((contacts || []).map(item => [item.package_id, item]));
+    data.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'package-card';
+      const heading = document.createElement('h4');
+      heading.textContent = item.pickup_location + ' → ' + item.destination;
+      card.appendChild(heading);
+      card.appendChild(makePackageParagraph('Pickup date: ' + (item.pickup_date || 'Not specified')));
+      card.appendChild(makePackageParagraph('Item: ' + item.package_type + ' • Size: ' + formatPackageSize(item.package_size)));
+      card.appendChild(makePackageParagraph('Status: ' + formatPackageStatus(item.status)));
+      card.appendChild(makePackageParagraph('Reference: ' + item.id));
+      const contact = contactById.get(item.id);
+      if (contact) {
+        const privateBox = document.createElement('div');
+        privateBox.className = 'package-private';
+        privateBox.appendChild(makePackageParagraph('Sender: ' + contact.sender_name + ' • ' + contact.sender_phone));
+        privateBox.appendChild(makePackageParagraph('Recipient: ' + contact.recipient_name + ' • ' + contact.recipient_phone));
+        privateBox.appendChild(makePackageParagraph('Pickup address: ' + contact.pickup_address));
+        privateBox.appendChild(makePackageParagraph('Delivery address: ' + contact.delivery_address));
+        if (contact.instructions) privateBox.appendChild(makePackageParagraph('Instructions: ' + contact.instructions));
+        card.appendChild(privateBox);
+      }
+      if (item.sender_id === user.id && item.status === 'open') {
+        card.appendChild(makePackageButton('CANCEL REQUEST', () => updatePackageDeliveryStatus(item.id, 'cancelled'), true));
+      } else if (item.driver_id === user.id && item.status === 'accepted') {
+        card.appendChild(makePackageButton('MARK PACKAGE AS PICKED UP', () => updatePackageDeliveryStatus(item.id, 'picked_up')));
+      } else if (item.driver_id === user.id && item.status === 'picked_up') {
+        card.appendChild(makePackageButton('MARK AS DELIVERED', () => updatePackageDeliveryStatus(item.id, 'delivered')));
+      }
+      box.appendChild(card);
+    });
+  } catch (error) {
+    box.textContent = 'Could not load your packages: ' + friendlyError(error) + '. Confirm the package SQL setup is complete.';
+  }
+}
+
+async function refreshPackageLists() {
+  await updatePackageAuthStatus();
+  await Promise.all([refreshOpenPackages(), refreshMyPackages()]);
+}
+
+
 /* KEEP THE DRIVER SCREEN IN SYNC WITH LOGIN STATE */
 db.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN' && session) {
     // Avoid running Supabase database work inside the auth callback itself.
-    setTimeout(() => { loadDriverProfile(); }, 0);
+    setTimeout(() => { loadDriverProfile(); refreshPackageLists(); }, 0);
   }
   if (event === 'SIGNED_OUT') {
+    setTimeout(() => { refreshPackageLists(); }, 0);
     document.getElementById('driverAuth').style.display = 'block';
     document.getElementById('driverProfileForm').style.display = 'none';
     document.getElementById('driverMessage').textContent = 'You have signed out. Sign in to manage your driver profile.';
@@ -981,9 +1201,16 @@ db.auth.onAuthStateChange((event, session) => {
 });
 
 window.addEventListener('DOMContentLoaded', async () => {
-  document.getElementById('packageForm').addEventListener('submit', submitPackageBooking);
   document.getElementById('driverPhotoFile').addEventListener('change', () => previewSelectedFile('driverPhotoFile', 'driverPhotoPreview'));
   document.getElementById('carPhotoFile').addEventListener('change', () => previewSelectedFile('carPhotoFile', 'carPhotoPreview'));
+  const packageDate = document.getElementById('packageDate');
+  if (packageDate) {
+    const now = new Date();
+    const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    packageDate.min = localDate;
+    packageDate.value = localDate;
+  }
+  refreshPackageLists();
   const message = document.getElementById('driverMessage');
   try {
     const user = await getSignedInUser();
