@@ -41,6 +41,10 @@ footer { padding: 18px; text-align: center; color: #607267; font-size: 12px; }
 .emergency-police { background: #1d4ed8; border-color: #173ca4; }
 .emergency-caption { margin: 6px 0 0; font-size: 10px; line-height: 1.3; color: #4b5b51; }
 .sos-help { border: 1px solid #f0c6c6; border-radius: 10px; background: #fff7f7; padding: 12px; margin-top: 12px; line-height: 1.5; }
+.verification-panel { border: 1px solid #cbded1; border-radius: 10px; padding: 14px; margin-top: 18px; background: #f8fbf9; }
+.verification-status { white-space: pre-line; line-height: 1.5; }
+.verification-note { font-size: 13px; line-height: 1.5; color: #506257; }
+.verification-panel h4 { margin-top: 4px; }
 @media (max-width: 360px) {
   nav button { flex-basis: 50%; padding: 12px 4px; font-size: 13px; }
   .emergency-grid { gap: 5px; }
@@ -136,6 +140,20 @@ footer { padding: 18px; text-align: center; color: #607267; font-size: 12px; }
     <img id="carPhotoPreview" class="photo-preview" alt="Car photo preview" hidden>
 
     <button type="button" class="green" id="saveDriverButton" onclick="saveDriverProfile()">SAVE DRIVER PROFILE</button>
+
+    <div class="verification-panel">
+      <h4>Required Driver Verification</h4>
+      <p class="verification-note">Before you can post rides, submit your Professional Driving Permit (PDP) and your official criminal-record check or clearance document. An administrator must review both documents. Uploading a file never approves it automatically. Files are stored in private storage.</p>
+      <label for="pdpDocumentFile">Professional Driving Permit (PDP) document</label>
+      <input id="pdpDocumentFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp">
+      <p class="photo-hint">PDF, JPG, PNG or WebP. Maximum 5 MB.</p>
+      <label for="criminalDocumentFile">Criminal-record check / clearance document</label>
+      <input id="criminalDocumentFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp">
+      <p class="photo-hint">PDF, JPG, PNG or WebP. Maximum 5 MB. Do not upload unrelated personal documents.</p>
+      <button type="button" class="green" id="submitVerificationButton" onclick="submitDriverVerification()">SUBMIT DOCUMENTS FOR REVIEW</button>
+      <div id="verificationStatus" class="message verification-status" aria-live="polite">Sign in to view your verification status.</div>
+    </div>
+
     <button type="button" class="green" onclick="logoutDriver()">SIGN OUT</button>
   </div>
   <div id="driverMessage" class="message" aria-live="polite">Register a new account or sign in to continue.</div>
@@ -168,8 +186,10 @@ footer { padding: 18px; text-align: center; color: #607267; font-size: 12px; }
 const SUPABASE_URL = 'https://ndagpnohncjudssgtsvg.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_h4zgJO-RfPnnCXG5-QwPlA_geL4XqkI';
 const DRIVER_PHOTO_BUCKET = 'kc-driver-photos';
+const DRIVER_VERIFICATION_BUCKET = 'kc-driver-verification';
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const ALLOWED_VERIFICATION_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
 
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
@@ -328,6 +348,131 @@ async function resolvePhotoValue(value) {
   return data.signedUrl;
 }
 
+/* DRIVER PDP AND CRIMINAL-RECORD VERIFICATION */
+function displayVerificationStatus(record) {
+  const box = document.getElementById('verificationStatus');
+  if (!box) return;
+  if (!record) {
+    box.textContent = 'No documents have been submitted yet. Select both required documents and tap SUBMIT DOCUMENTS FOR REVIEW.';
+    return;
+  }
+  const show = value => String(value || 'pending').toUpperCase();
+  let text = 'PDP status: ' + show(record.pdp_status) + '\nCriminal-record status: ' + show(record.criminal_status);
+  if (record.submitted_at) {
+    const submitted = new Date(record.submitted_at);
+    if (!Number.isNaN(submitted.getTime())) text += '\nLast submitted: ' + submitted.toLocaleString();
+  }
+  if (record.reviewed_at) {
+    const reviewed = new Date(record.reviewed_at);
+    if (!Number.isNaN(reviewed.getTime())) text += '\nLast reviewed: ' + reviewed.toLocaleString();
+  }
+  if (record.reviewer_notes) text += '\nAdministrator note: ' + record.reviewer_notes;
+  if (record.pdp_status !== 'approved' || record.criminal_status !== 'approved') {
+    text += '\nRide posting stays blocked until BOTH checks are approved.';
+  } else {
+    text += '\nBoth checks are approved. You may post a ride.';
+  }
+  box.textContent = text;
+}
+
+async function refreshDriverVerification(userId) {
+  const box = document.getElementById('verificationStatus');
+  if (!userId) {
+    if (box) box.textContent = 'Sign in to view your verification status.';
+    return null;
+  }
+  const { data, error } = await db.from('driver_verifications')
+    .select('pdp_status,criminal_status,submitted_at,reviewed_at,reviewer_notes')
+    .eq('driver_id', userId).maybeSingle();
+  if (error) {
+    if (box) box.textContent = 'Could not load verification status. Confirm that the PDP/criminal verification SQL setup has been completed. Details: ' + friendlyError(error);
+    return null;
+  }
+  displayVerificationStatus(data);
+  return data;
+}
+
+async function uploadVerificationDocument(file, kind, userId) {
+  if (!file) throw new Error('Select both required documents before submitting.');
+  if (!ALLOWED_VERIFICATION_TYPES.includes(file.type)) {
+    throw new Error('The ' + kind + ' document must be a PDF, JPG, PNG or WebP file.');
+  }
+  if (file.size > MAX_PHOTO_BYTES) {
+    throw new Error('The ' + kind + ' document must be 5 MB or smaller.');
+  }
+  const uniquePart = Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+  const path = userId + '/' + kind + '/' + uniquePart + '-' + cleanFileName(file.name);
+  const { error } = await db.storage.from(DRIVER_VERIFICATION_BUCKET).upload(path, file, {
+    cacheControl: '3600', contentType: file.type, upsert: false
+  });
+  if (error) {
+    throw new Error('Could not upload the ' + kind + ' document. Confirm the private ' + DRIVER_VERIFICATION_BUCKET + ' bucket and its upload policy are set up. Details: ' + error.message);
+  }
+  return path;
+}
+
+async function submitDriverVerification() {
+  const button = document.getElementById('submitVerificationButton');
+  const box = document.getElementById('verificationStatus');
+  const pdpFile = document.getElementById('pdpDocumentFile').files?.[0] || null;
+  const criminalFile = document.getElementById('criminalDocumentFile').files?.[0] || null;
+  if (!pdpFile || !criminalFile) {
+    box.textContent = 'Please select BOTH your PDP document and criminal-record check / clearance document.';
+    return;
+  }
+  for (const [kind, file] of [['PDP', pdpFile], ['criminal-record', criminalFile]]) {
+    if (!ALLOWED_VERIFICATION_TYPES.includes(file.type)) {
+      box.textContent = 'The ' + kind + ' document must be a PDF, JPG, PNG or WebP file.';
+      return;
+    }
+    if (file.size > MAX_PHOTO_BYTES) {
+      box.textContent = 'The ' + kind + ' document is larger than 5 MB. Please choose a smaller file.';
+      return;
+    }
+  }
+
+  button.disabled = true;
+  box.textContent = 'Checking your sign-in session...';
+  try {
+    const user = await getSignedInUser();
+    if (!user) throw new Error('Your login session is missing. Please sign in again.');
+
+    const { data: profile, error: profileError } = await db.from('profiles')
+      .select('role').eq('id', user.id).maybeSingle();
+    if (profileError) throw new Error('Could not check your driver profile: ' + profileError.message);
+    if (!profile || profile.role !== 'driver') {
+      throw new Error('Please save your Driver Account profile first, then submit the documents.');
+    }
+
+    box.textContent = 'Uploading your PDP document securely...';
+    const pdpPath = await uploadVerificationDocument(pdpFile, 'pdp', user.id);
+    box.textContent = 'PDP uploaded. Uploading your criminal-record document securely...';
+    const criminalPath = await uploadVerificationDocument(criminalFile, 'criminal', user.id);
+
+    box.textContent = 'Registering your documents for administrator review...';
+    const { error: submitError } = await db.rpc('submit_driver_verification', {
+      p_pdp_path: pdpPath,
+      p_criminal_path: criminalPath
+    });
+    if (submitError) {
+      throw new Error('The files uploaded, but the submission could not be registered. Do not post rides yet. Details: ' + submitError.message);
+    }
+
+    document.getElementById('pdpDocumentFile').value = '';
+    document.getElementById('criminalDocumentFile').value = '';
+    const refreshedVerification = await refreshDriverVerification(user.id);
+    if (refreshedVerification) {
+      box.textContent += '\n\nSubmission received. Both checks are PENDING until an administrator reviews them. You cannot post rides until both statuses are approved.';
+    } else {
+      box.textContent = 'Your documents were submitted, but the app could not reload your status. Refresh Driver Account and confirm both statuses. Ride posting remains blocked unless both show APPROVED.';
+    }
+  } catch (error) {
+    box.textContent = 'Could not submit verification documents: ' + friendlyError(error);
+  } finally {
+    button.disabled = false;
+  }
+}
+
 /* FIND RIDES */
 async function searchRides() {
   const from = document.getElementById('searchPickup').value.trim();
@@ -405,6 +550,19 @@ async function publishRide() {
     if (mainProfile.role !== 'driver') {
       message.textContent = 'Your account is not set as a driver. Open Driver Account and save your driver profile.';
       openDriverAccount(); return;
+    }
+
+    message.textContent = 'Checking PDP and criminal-record approval...';
+    const { data: verification, error: verificationError } = await db.from('driver_verifications')
+      .select('pdp_status,criminal_status').eq('driver_id', user.id).maybeSingle();
+    if (verificationError) {
+      message.textContent = 'Could not verify your documents. Please contact the app administrator and confirm the verification setup has been completed. Details: ' + verificationError.message;
+      return;
+    }
+    if (!verification || verification.pdp_status !== 'approved' || verification.criminal_status !== 'approved') {
+      message.textContent = 'Ride posting is blocked. Both your PDP and criminal-record check must be submitted and approved by the administrator. Open Driver Account to upload or check your document status.';
+      showTab('driver');
+      return;
     }
 
     message.textContent = 'Posting your ride...';
@@ -514,6 +672,7 @@ async function loadDriverProfile() {
         ? 'Your saved details and photos have been loaded. Review them and tap SAVE DRIVER PROFILE if needed.'
         : 'Complete your details and tap SAVE DRIVER PROFILE.';
     }
+    await refreshDriverVerification(user.id);
   } catch (error) {
     message.textContent = 'Could not load profile: ' + friendlyError(error);
   } finally { profileLoadInProgress = false; }
@@ -594,7 +753,7 @@ async function saveDriverProfile() {
     catch (photoError) { setPhotoPreview('carPhotoPreview', null); if (savedCarPhotoValue) photoIssues.push('Car photo: ' + friendlyError(photoError)); }
     message.textContent = photoIssues.length
       ? 'Your profile details were saved, but the photos could not be displayed yet. ' + photoIssues.join(' | ')
-      : 'Driver profile saved successfully! Your details and photos have been saved. You can now try posting a ride.';
+      : 'Driver profile saved successfully! Your details and photos have been saved. Next, submit your PDP and criminal-record documents for administrator approval before posting rides.';
   } catch (error) {
     message.textContent = 'Could not save profile: ' + friendlyError(error);
   } finally { saveButton.disabled = false; }
@@ -606,11 +765,12 @@ async function logoutDriver() {
   try {
     const { error } = await db.auth.signOut();
     if (error) throw error;
-    ['driverFullName','driverPhone','carModel','registrationNumber','driverPhotoFile','carPhotoFile','driverEmail','driverPassword'].forEach(id => {
+    ['driverFullName','driverPhone','carModel','registrationNumber','driverPhotoFile','carPhotoFile','pdpDocumentFile','criminalDocumentFile','driverEmail','driverPassword'].forEach(id => {
       const input = document.getElementById(id); if (input) input.value = '';
     });
     setPhotoPreview('driverPhotoPreview', null);
     setPhotoPreview('carPhotoPreview', null);
+    document.getElementById('verificationStatus').textContent = 'Sign in to view your verification status.';
     savedDriverPhotoValue = null; savedCarPhotoValue = null;
     document.getElementById('driverAuth').style.display = 'block';
     document.getElementById('driverProfileForm').style.display = 'none';
