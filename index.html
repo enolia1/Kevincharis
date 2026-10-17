@@ -220,6 +220,43 @@ async function getSignedInUser() {
   return userData.user || null;
 }
 
+// Keep unsaved driver details for this browser tab in case Android's photo picker
+// returns to the page after a refresh. Passwords and image files are never stored.
+const DRIVER_DRAFT_KEY = 'kc_driver_profile_draft_v1';
+function saveDriverDraft() {
+  try {
+    const draft = {
+      fullName: document.getElementById('driverFullName')?.value || '',
+      phone: document.getElementById('driverPhone')?.value || '',
+      carModel: document.getElementById('carModel')?.value || '',
+      registrationNumber: document.getElementById('registrationNumber')?.value || ''
+    };
+    sessionStorage.setItem(DRIVER_DRAFT_KEY, JSON.stringify(draft));
+  } catch (_) { /* Continue normally if browser storage is unavailable. */ }
+}
+function restoreDriverDraft() {
+  try {
+    const raw = sessionStorage.getItem(DRIVER_DRAFT_KEY);
+    if (!raw) return false;
+    const draft = JSON.parse(raw);
+    const fields = [
+      ['driverFullName', draft.fullName],
+      ['driverPhone', draft.phone],
+      ['carModel', draft.carModel],
+      ['registrationNumber', draft.registrationNumber]
+    ];
+    let restored = false;
+    for (const [id, value] of fields) {
+      const input = document.getElementById(id);
+      if (input && typeof value === 'string' && value) { input.value = value; restored = true; }
+    }
+    return restored;
+  } catch (_) { return false; }
+}
+function clearDriverDraft() {
+  try { sessionStorage.removeItem(DRIVER_DRAFT_KEY); } catch (_) {}
+}
+
 function setPhotoPreview(previewId, source) {
   const img = document.getElementById(previewId);
   if (!img) return;
@@ -562,9 +599,12 @@ async function loadDriverProfile() {
     addOwnPhotoActions('driverPhotoPreview', savedDriverPhotoValue, 'driver-photo');
     addOwnPhotoActions('carPhotoPreview', savedCarPhotoValue, 'car-photo');
 
-    message.textContent = (vehicleProfile || mainProfile)
-      ? 'Your saved details have been loaded. Review them and tap SAVE DRIVER PROFILE if needed.'
-      : 'Complete your details and tap SAVE DRIVER PROFILE.';
+    const draftRestored = restoreDriverDraft();
+    message.textContent = draftRestored
+      ? 'Your unsaved details have been restored. If the photo picker refreshed the page, select the photo again, then tap SAVE DRIVER PROFILE.'
+      : ((vehicleProfile || mainProfile)
+        ? 'Your saved details have been loaded. Review them and tap SAVE DRIVER PROFILE if needed.'
+        : 'Complete your details and tap SAVE DRIVER PROFILE.');
   } catch (error) {
     message.textContent = 'Could not load profile: ' + friendlyError(error);
   } finally { profileLoadInProgress = false; }
@@ -636,6 +676,7 @@ async function saveDriverProfile() {
 
     savedDriverPhotoValue = driverPhotoValue;
     savedCarPhotoValue = carPhotoValue;
+    clearDriverDraft();
     document.getElementById('driverPhotoFile').value = '';
     document.getElementById('carPhotoFile').value = '';
     try { setPhotoPreview('driverPhotoPreview', await resolvePhotoValue(savedDriverPhotoValue)); } catch (_) {}
@@ -660,6 +701,7 @@ async function logoutDriver() {
     setPhotoPreview('driverPhotoPreview', null);
     setPhotoPreview('carPhotoPreview', null);
     savedDriverPhotoValue = null; savedCarPhotoValue = null;
+    clearDriverDraft();
     document.getElementById('driverAuth').style.display = 'block';
     document.getElementById('driverProfileForm').style.display = 'none';
     message.textContent = 'You have signed out.';
@@ -680,8 +722,22 @@ db.auth.onAuthStateChange((event, session) => {
 });
 
 window.addEventListener('DOMContentLoaded', async () => {
-  document.getElementById('driverPhotoFile').addEventListener('change', () => { previewSelectedFile('driverPhotoFile', 'driverPhotoPreview'); document.getElementById('driverPhotoPreviewActions')?.remove(); });
-  document.getElementById('carPhotoFile').addEventListener('change', () => { previewSelectedFile('carPhotoFile', 'carPhotoPreview'); document.getElementById('carPhotoPreviewActions')?.remove(); });
+  // Autosave non-secret text fields before the Android picker opens.
+  ['driverFullName','driverPhone','carModel','registrationNumber'].forEach(id => {
+    const field = document.getElementById(id);
+    field?.addEventListener('input', saveDriverDraft);
+    field?.addEventListener('change', saveDriverDraft);
+  });
+  document.getElementById('driverPhotoFile').addEventListener('change', () => {
+    saveDriverDraft();
+    previewSelectedFile('driverPhotoFile', 'driverPhotoPreview');
+    document.getElementById('driverPhotoPreviewActions')?.remove();
+  });
+  document.getElementById('carPhotoFile').addEventListener('change', () => {
+    saveDriverDraft();
+    previewSelectedFile('carPhotoFile', 'carPhotoPreview');
+    document.getElementById('carPhotoPreviewActions')?.remove();
+  });
   const message = document.getElementById('driverMessage');
   try {
     const user = await getSignedInUser();
