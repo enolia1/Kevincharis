@@ -28,6 +28,10 @@ input[type="file"] { font-size: 14px; padding: 10px; }
 .ride { border: 1px solid #dce5df; border-radius: 10px; padding: 14px; margin-top: 12px; overflow-wrap: anywhere; }
 .message { padding: 12px; background: #f1f5f2; border-radius: 8px; margin-top: 12px; overflow-wrap: anywhere; line-height: 1.5; }
 .muted { color: #607267; font-size: 14px; line-height: 1.5; }
+.shared-photo { display:block; width:100%; max-width:260px; max-height:220px; object-fit:cover; border:1px solid #dce5df; border-radius:10px; margin-top:6px; }
+.shared-photo-wrap { margin-top:10px; }
+.photo-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.photo-action { display:inline-block; padding:9px 11px; border:1px solid #087346; border-radius:7px; background:#fff; color:#087346; text-decoration:none; font-size:12px; font-weight:bold; cursor:pointer; }
 .photo-preview { display: block; width: 100%; max-width: 220px; max-height: 200px; object-fit: cover; border: 1px solid #dce5df; border-radius: 10px; margin-top: 10px; }
 .photo-hint { font-size: 12px; color: #607267; line-height: 1.4; margin: 6px 0 0; }
 footer { padding: 18px; text-align: center; color: #607267; font-size: 12px; }
@@ -283,21 +287,70 @@ async function uploadDriverPhoto(file, kind, userId) {
   return objectPath;
 }
 
+
+// Turn a saved Storage path or URL into a viewable URL. Private-bucket URLs are short-lived.
 async function resolvePhotoValue(value) {
   if (!value) return null;
-  if (/^https?:\/\//i.test(value)) return value; // existing saved URL
-
+  if (/^https?:\/\//i.test(value)) return value;
   try {
     const { data: bucketData, error: bucketError } = await db.storage.getBucket(DRIVER_PHOTO_BUCKET);
-    if (!bucketError && bucketData?.public) {
-      return db.storage.from(DRIVER_PHOTO_BUCKET).getPublicUrl(value).data.publicUrl;
-    }
+    if (!bucketError && bucketData?.public) return db.storage.from(DRIVER_PHOTO_BUCKET).getPublicUrl(value).data.publicUrl;
   } catch (_) {}
-
   const { data, error } = await db.storage.from(DRIVER_PHOTO_BUCKET).createSignedUrl(value, 3600);
   if (error) throw error;
   return data?.signedUrl || null;
 }
+
+async function downloadPhoto(value, label) {
+  try {
+    const url = await resolvePhotoValue(value);
+    if (!url) throw new Error('This photo is not available.');
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('The photo could not be downloaded. Check Storage access permissions.');
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.download = cleanFileName((label || 'kc-photo') + '.jpg');
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
+  } catch (error) {
+    alert('Could not download photo: ' + friendlyError(error) + '\nYou can try opening the photo first.');
+  }
+}
+
+async function addPhotoControls(parent, value, label) {
+  try {
+    const url = await resolvePhotoValue(value);
+    if (!url) return;
+    const wrap = document.createElement('div'); wrap.className = 'shared-photo-wrap';
+    const caption = document.createElement('p'); caption.className = 'photo-hint'; caption.textContent = label; wrap.appendChild(caption);
+    const img = document.createElement('img'); img.className = 'shared-photo'; img.alt = label; img.src = url;
+    img.loading = 'lazy'; wrap.appendChild(img);
+    const actions = document.createElement('div'); actions.className = 'photo-actions';
+    const view = document.createElement('a'); view.className = 'photo-action'; view.href = url; view.target = '_blank'; view.rel = 'noopener'; view.textContent = 'VIEW PHOTO';
+    const download = document.createElement('button'); download.type = 'button'; download.className = 'photo-action'; download.textContent = 'DOWNLOAD PHOTO';
+    download.addEventListener('click', () => downloadPhoto(value, label));
+    actions.append(view, download); wrap.appendChild(actions); parent.appendChild(wrap);
+  } catch (error) {
+    const note = document.createElement('p'); note.className = 'photo-hint'; note.textContent = label + ' is saved but cannot currently be viewed. Check the Supabase Storage bucket and read policies.'; parent.appendChild(note);
+  }
+}
+
+function addOwnPhotoActions(previewId, value, label) {
+  const img = document.getElementById(previewId);
+  if (!img || !img.parentElement) return;
+  const old = document.getElementById(previewId + 'Actions');
+  if (old) old.remove();
+  if (!value) return;
+  const actions = document.createElement('div'); actions.id = previewId + 'Actions'; actions.className = 'photo-actions';
+  const view = document.createElement('button'); view.type = 'button'; view.className = 'photo-action'; view.textContent = 'VIEW PHOTO';
+  view.addEventListener('click', async () => { try { const url = await resolvePhotoValue(value); if (url) window.open(url, '_blank', 'noopener'); } catch (e) { alert(friendlyError(e)); } });
+  const download = document.createElement('button'); download.type = 'button'; download.className = 'photo-action'; download.textContent = 'DOWNLOAD PHOTO';
+  download.addEventListener('click', () => downloadPhoto(value, label));
+  actions.append(view, download); img.insertAdjacentElement('afterend', actions);
+}
+
 
 /* FIND RIDES */
 async function searchRides() {
@@ -309,7 +362,7 @@ async function searchRides() {
   results.textContent = 'Searching for rides...';
 
   try {
-    let query = db.from('rides').select('id,pickup_location,destination,travel_date,travel_time,available_seats,price,notes')
+    let query = db.from('rides').select('id,driver_id,pickup_location,destination,travel_date,travel_time,available_seats,price,notes')
       .ilike('pickup_location', from).ilike('destination', to)
       .gt('available_seats', 0).order('travel_date', { ascending: true });
     if (date) query = query.eq('travel_date', date);
@@ -320,7 +373,20 @@ async function searchRides() {
       results.textContent = 'No rides found for this route yet. Check the spelling or try another date.';
       return;
     }
-    data.forEach(ride => {
+    // Fetch public-facing driver and vehicle details without changing existing tables or policies.
+    const driverIds = [...new Set(data.map(ride => ride.driver_id).filter(Boolean))];
+    let mainProfiles = [], vehicleProfiles = [];
+    if (driverIds.length) {
+      const [mainResult, vehicleResult] = await Promise.all([
+        db.from('profiles').select('id,full_name,profile_picture_url').in('id', driverIds),
+        db.from('driver_profiles').select('id,full_name,phone,car_model,registration_number,car_photo_url').in('id', driverIds)
+      ]);
+      if (!mainResult.error) mainProfiles = mainResult.data || [];
+      if (!vehicleResult.error) vehicleProfiles = vehicleResult.data || [];
+    }
+    const mainById = Object.fromEntries(mainProfiles.map(profile => [profile.id, profile]));
+    const vehicleById = Object.fromEntries(vehicleProfiles.map(profile => [profile.id, profile]));
+    for (const ride of data) {
       const card = document.createElement('div'); card.className = 'ride';
       const title = document.createElement('strong');
       title.textContent = ride.pickup_location + ' → ' + ride.destination;
@@ -330,9 +396,26 @@ async function searchRides() {
         ' | Time: ' + (ride.travel_time || 'Not specified') +
         ' | Seats: ' + ride.available_seats + ' | Price: R' + ride.price;
       card.appendChild(details);
+      const mainProfile = mainById[ride.driver_id] || {};
+      const vehicle = vehicleById[ride.driver_id] || {};
+      if (mainProfile.full_name || vehicle.full_name) {
+        const name = document.createElement('p');
+        name.textContent = 'Driver: ' + (mainProfile.full_name || vehicle.full_name);
+        card.appendChild(name);
+      }
+      if (vehicle.phone) {
+        const phone = document.createElement('p'); phone.textContent = 'Phone: ' + vehicle.phone; card.appendChild(phone);
+      }
+      if (vehicle.car_model) {
+        const car = document.createElement('p');
+        car.textContent = 'Vehicle: ' + vehicle.car_model + (vehicle.registration_number ? ' | Registration: ' + vehicle.registration_number : '');
+        card.appendChild(car);
+      }
+      if (mainProfile.profile_picture_url) await addPhotoControls(card, mainProfile.profile_picture_url, 'Driver photo');
+      if (vehicle.car_photo_url) await addPhotoControls(card, vehicle.car_photo_url, 'Car photo');
       if (ride.notes) { const note = document.createElement('p'); note.textContent = ride.notes; card.appendChild(note); }
       results.appendChild(card);
-    });
+    }
   } catch (error) { results.textContent = 'Search error: ' + friendlyError(error); }
 }
 
@@ -476,6 +559,8 @@ async function loadDriverProfile() {
     catch (_) { setPhotoPreview('driverPhotoPreview', null); }
     try { setPhotoPreview('carPhotoPreview', await resolvePhotoValue(savedCarPhotoValue)); }
     catch (_) { setPhotoPreview('carPhotoPreview', null); }
+    addOwnPhotoActions('driverPhotoPreview', savedDriverPhotoValue, 'driver-photo');
+    addOwnPhotoActions('carPhotoPreview', savedCarPhotoValue, 'car-photo');
 
     message.textContent = (vehicleProfile || mainProfile)
       ? 'Your saved details have been loaded. Review them and tap SAVE DRIVER PROFILE if needed.'
@@ -555,6 +640,8 @@ async function saveDriverProfile() {
     document.getElementById('carPhotoFile').value = '';
     try { setPhotoPreview('driverPhotoPreview', await resolvePhotoValue(savedDriverPhotoValue)); } catch (_) {}
     try { setPhotoPreview('carPhotoPreview', await resolvePhotoValue(savedCarPhotoValue)); } catch (_) {}
+    addOwnPhotoActions('driverPhotoPreview', savedDriverPhotoValue, 'driver-photo');
+    addOwnPhotoActions('carPhotoPreview', savedCarPhotoValue, 'car-photo');
     message.textContent = 'Driver profile saved successfully! Your details and any selected photos have been saved. You can now try posting a ride.';
   } catch (error) {
     message.textContent = 'Could not save profile: ' + friendlyError(error);
@@ -593,8 +680,8 @@ db.auth.onAuthStateChange((event, session) => {
 });
 
 window.addEventListener('DOMContentLoaded', async () => {
-  document.getElementById('driverPhotoFile').addEventListener('change', () => previewSelectedFile('driverPhotoFile', 'driverPhotoPreview'));
-  document.getElementById('carPhotoFile').addEventListener('change', () => previewSelectedFile('carPhotoFile', 'carPhotoPreview'));
+  document.getElementById('driverPhotoFile').addEventListener('change', () => { previewSelectedFile('driverPhotoFile', 'driverPhotoPreview'); document.getElementById('driverPhotoPreviewActions')?.remove(); });
+  document.getElementById('carPhotoFile').addEventListener('change', () => { previewSelectedFile('carPhotoFile', 'carPhotoPreview'); document.getElementById('carPhotoPreviewActions')?.remove(); });
   const message = document.getElementById('driverMessage');
   try {
     const user = await getSignedInUser();
