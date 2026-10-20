@@ -1,1192 +1,1552 @@
-<!DOCTYPE html>  <html lang="en">  
-<head>  
-<meta charset="UTF-8">  
-<meta name="viewport" content="width=device-width, initial-scale=1">  
-<meta name="theme-color" content="#0b6040">  
-<title>KC Comfortable Long Distance Rides</title>  <style>  
-* { box-sizing: border-box; }  
-body { font-family: Arial, sans-serif; margin: 0; background: #f1f5f2; color: #17251d; }  
-.app { max-width: 480px; margin: auto; background: white; min-height: 100vh; padding-bottom: 118px; }  
-header { background: #0b6040; color: white; padding: 22px 18px; }  
-header h2 { margin: 0 0 8px; }  
-header p { margin-bottom: 0; }  
-nav { display: flex; flex-wrap: wrap; background: #e5eee8; position: sticky; top: 0; z-index: 10; }  
-nav button { flex: 1 1 20%; min-width: 0; padding: 13px 3px; border: 0; background: transparent; font-size: 11px; font-weight: bold; cursor: pointer; }  
-nav button.active { background: white; color: #087346; box-shadow: inset 0 -3px #087346; }  
-main { padding: 18px; }  
-.panel { display: none; }  
-.panel.active { display: block; }  
-label { display: block; font-size: 14px; font-weight: bold; margin: 12px 0 6px; }  
-input, textarea, select { width: 100%; padding: 12px; border: 1px solid #cbd5ce; border-radius: 8px; font-size: 16px; background: white; color: #17251d; }  
-input:focus, textarea:focus { outline: 2px solid #087346; outline-offset: 1px; }  
-input[type="file"] { font-size: 14px; padding: 10px; }  
-.green { display: block; width: 100%; padding: 14px; border: 0; border-radius: 8px; background: #087346; color: white; font-size: 16px; font-weight: bold; margin-top: 16px; cursor: pointer; }  
-.green:disabled { opacity: 0.6; cursor: wait; }  
-.ride { border: 1px solid #dce5df; border-radius: 10px; padding: 14px; margin-top: 12px; overflow-wrap: anywhere; }  
-.message { padding: 12px; background: #f1f5f2; border-radius: 8px; margin-top: 12px; overflow-wrap: anywhere; line-height: 1.5; }  
-.muted { color: #607267; font-size: 14px; line-height: 1.5; }  
-.photo-preview { display: block; width: 100%; max-width: 220px; max-height: 200px; object-fit: cover; border: 1px solid #dce5df; border-radius: 10px; margin-top: 10px; }  
-.photo-preview[hidden] { display: none !important; }  
-.photo-hint { font-size: 12px; color: #607267; line-height: 1.4; margin: 6px 0 0; }  
-footer { padding: 18px; text-align: center; color: #607267; font-size: 12px; }  
-.sos-dock { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; z-index: 100; padding: 9px 12px calc(9px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.98); border-top: 1px solid #dce5df; box-shadow: 0 -3px 12px rgba(0,0,0,.08); text-align: center; }  
-.emergency-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }  
-.emergency-button { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; min-height: 62px; padding: 8px 4px; border: 2px solid transparent; border-radius: 10px; color: #fff; font-size: 13px; line-height: 1.15; font-weight: 800; cursor: pointer; overflow-wrap: anywhere; }  
-.emergency-button small { display: block; margin-top: 4px; font-size: 12px; font-weight: 700; }  
-.emergency-sos { background: #c90000; border-color: #9f0000; }  
-.emergency-fire { background: #c65300; border-color: #963e00; }  
-.emergency-police { background: #1d4ed8; border-color: #173ca4; }  
-.emergency-caption { margin: 6px 0 0; font-size: 10px; line-height: 1.3; color: #4b5b51; }  
-.sos-help { border: 1px solid #f0c6c6; border-radius: 10px; background: #fff7f7; padding: 12px; margin-top: 12px; line-height: 1.5; }  
-.verification-panel { border: 1px solid #cbded1; border-radius: 10px; padding: 14px; margin-top: 18px; background: #f8fbf9; }  
-.verification-status { white-space: pre-line; line-height: 1.5; }  
-.verification-note { font-size: 13px; line-height: 1.5; color: #506257; }  
-.verification-panel h4 { margin-top: 4px; }  
-.package-card { border: 1px solid #dce5df; border-radius: 10px; padding: 13px; margin-top: 12px; overflow-wrap: anywhere; background: #fff; }  
-.package-card h4 { margin: 0 0 8px; }  
-.package-card p { line-height: 1.45; margin: 7px 0; }  
-.package-subtitle { margin-top: 20px; padding-top: 12px; border-top: 1px solid #dce5df; }  
-.package-private { border-left: 3px solid #087346; padding-left: 10px; margin-top: 10px; }  
-.package-action { margin-top: 10px; padding: 11px; border: 0; border-radius: 8px; background: #087346; color: #fff; font-size: 14px; font-weight: bold; width: 100%; cursor: pointer; }  
-.package-action.secondary { background: #e5eee8; color: #173c2b; }  
-.package-action:disabled { opacity: .6; }  
-@media (max-width: 360px) {  
-  nav button { flex-basis: 33.333%; padding: 12px 4px; font-size: 12px; }  
-  .emergency-grid { gap: 5px; }  
-  .emergency-button { min-height: 60px; padding: 7px 2px; font-size: 11px; }  
-  .emergency-button small { font-size: 11px; }  
-  .sos-dock { padding-left: 8px; padding-right: 8px; }  
-}  
-</style>  </head>  
-<body>  
-<div class="app">  
-<header>  
-  <h2>KC Comfortable Long Distance Rides</h2>  
-  <p>Long-distance rides and package transport across South Africa.</p>  
-</header>  <nav aria-label="Main navigation">  <button type="button" onclick="showTab('messages', this)">Messages</button>
-  <button type="button" class="active" onclick="showTab('find', this)">Find Ride</button>  
-  <button type="button" onclick="showTab('packages', this)">Packages</button>  
-  <button type="button" onclick="showTab('offer', this)">Offer Ride</button>  
-  <button type="button" onclick="showTab('driver', this)">Driver Account</button>  
-  <button type="button" onclick="showTab('profile', this)">About KC</button>  
-</nav>  <main>  
-<section id="find" class="panel active">  
-  <h3>Find a Ride</h3>  
-  <p class="muted">Search for available long-distance rides.</p>  
-  <label for="searchPickup">Leaving from</label>  
-  <input id="searchPickup" placeholder="e.g. Boksburg">  
-  <label for="searchDestination">Going to</label>  
-  <input id="searchDestination" placeholder="e.g. Durban">  
-  <label for="searchDate">Travel date (optional)</label>  
-  <input id="searchDate" type="date">  
-  <button type="button" class="green" onclick="searchRides()">SEARCH RIDES</button>  
-  <div id="results" class="message" aria-live="polite">Enter your route to search for rides.</div>  
-</section>  <section id="packages" class="panel">  
-  <h3>Package Transport</h3>  
-  <p class="muted">Send parcels, documents, clothes and household items between towns or provinces with a driver travelling that route. This is a request marketplace, not an automatic booking or payment service.</p>    <div class="verification-panel">  
-    <h4>Package account</h4>  
-    <p id="packageAuthStatus" class="verification-note" aria-live="polite">Create a free account or sign in to request delivery. The account session is shared with Driver Account.</p>  
-    <label for="packageAccountEmail">Email address</label>  
-    <input id="packageAccountEmail" type="email" autocomplete="email" placeholder="you@example.com">  
-    <label for="packageAccountPassword">Password</label>  
-    <input id="packageAccountPassword" type="password" autocomplete="current-password" placeholder="At least 8 characters">  
-    <button type="button" class="green" onclick="registerPackageAccount()">CREATE PACKAGE ACCOUNT</button>  
-    <button type="button" class="green" onclick="loginPackageAccount()">SIGN IN</button>  
-    <button type="button" class="green" onclick="logoutPackageAccount()">SIGN OUT OF APP</button>  
-  </div>    <h4 class="package-subtitle">Request a package delivery</h4>  
-  <p class="muted">Fill in the item and contact details. Exact addresses and phone numbers are kept private and are not shown on public package listings.</p>  <label for="packageSenderName">Your full name</label>
-<input id="packageSenderName" autocomplete="name" placeholder="Sender full name">
-<label for="packageSenderPhone">Your phone number</label>
-<input id="packageSenderPhone" type="tel" autocomplete="tel" placeholder="e.g. 071 234 5678">
-<label for="packageRecipientName">Recipient full name</label>
-<input id="packageRecipientName" placeholder="Person receiving the package">
-<label for="packageRecipientPhone">Recipient phone number</label>
-<input id="packageRecipientPhone" type="tel" placeholder="Recipient's phone number">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b6040">
+<title>KC Comfortable Long Distance Rides</title>
 
-<label for="packageFromTown">Pickup town / city</label>
-<input id="packageFromTown" placeholder="e.g. Boksburg, Gauteng">
-<label for="packageToTown">Delivery town / city</label>
-<input id="packageToTown" placeholder="e.g. Bushbuckridge, Mpumalanga">
-<label for="packagePickupAddress">Pickup address or safe meeting point</label>
-<input id="packagePickupAddress" placeholder="Street, suburb or agreed meeting point">
-<label for="packageDeliveryAddress">Delivery address or safe meeting point</label>
-<input id="packageDeliveryAddress" placeholder="Street, suburb or agreed meeting point">
-<label for="packageDate">Preferred pickup date</label>
-<input id="packageDate" type="date">
+<style>
+* { box-sizing: border-box; }
+body { font-family: Arial, sans-serif; margin: 0; background: #f1f5f2; color: #17251d; }
+.app { max-width: 480px; margin: auto; background: white; min-height: 100vh; padding-bottom: 118px; }
+header { background: #0b6040; color: white; padding: 22px 18px; }
+header h2 { margin: 0 0 8px; }
+header p { margin-bottom: 0; }
+nav { display: flex; flex-wrap: wrap; background: #e5eee8; position: sticky; top: 0; z-index: 10; }
+nav button { flex: 1 1 20%; min-width: 0; padding: 13px 3px; border: 0; background: transparent; font-size: 11px; font-weight: bold; cursor: pointer; }
+nav button.active { background: white; color: #087346; box-shadow: inset 0 -3px #087346; }
+main { padding: 18px; }
+.panel { display: none; }
+.panel.active { display: block; }
+label { display: block; font-size: 14px; font-weight: bold; margin: 12px 0 6px; }
+input, textarea, select { width: 100%; padding: 12px; border: 1px solid #cbd5ce; border-radius: 8px; font-size: 16px; background: white; color: #17251d; }
+input:focus, textarea:focus { outline: 2px solid #087346; outline-offset: 1px; }
+input[type="file"] { font-size: 14px; padding: 10px; }
+.green { display: block; width: 100%; padding: 14px; border: 0; border-radius: 8px; background: #087346; color: white; font-size: 16px; font-weight: bold; margin-top: 16px; cursor: pointer; }
+.green:disabled { opacity: 0.6; cursor: wait; }
+.ride { border: 1px solid #dce5df; border-radius: 10px; padding: 14px; margin-top: 12px; overflow-wrap: anywhere; }
+.message { padding: 12px; background: #f1f5f2; border-radius: 8px; margin-top: 12px; overflow-wrap: anywhere; line-height: 1.5; }
+.muted { color: #607267; font-size: 14px; line-height: 1.5; }
+.photo-preview { display: block; width: 100%; max-width: 220px; max-height: 200px; object-fit: cover; border: 1px solid #dce5df; border-radius: 10px; margin-top: 10px; }
+.photo-preview[hidden] { display: none !important; }
+.photo-hint { font-size: 12px; color: #607267; line-height: 1.4; margin: 6px 0 0; }
+footer { padding: 18px; text-align: center; color: #607267; font-size: 12px; }
+.sos-dock { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; z-index: 100; padding: 9px 12px calc(9px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.98); border-top: 1px solid #dce5df; box-shadow: 0 -3px 12px rgba(0,0,0,.08); text-align: center; }
+.emergency-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.emergency-button { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; min-height: 62px; padding: 8px 4px; border: 2px solid transparent; border-radius: 10px; color: #fff; font-size: 13px; line-height: 1.15; font-weight: 800; cursor: pointer; overflow-wrap: anywhere; }
+.emergency-button small { display: block; margin-top: 4px; font-size: 12px; font-weight: 700; }
+.emergency-sos { background: #c90000; border-color: #9f0000; }
+.emergency-fire { background: #c65300; border-color: #963e00; }
+.emergency-police { background: #1d4ed8; border-color: #173ca4; }
+.emergency-caption { margin: 6px 0 0; font-size: 10px; line-height: 1.3; color: #4b5b51; }
+.sos-help { border: 1px solid #f0c6c6; border-radius: 10px; background: #fff7f7; padding: 12px; margin-top: 12px; line-height: 1.5; }
+.verification-panel { border: 1px solid #cbded1; border-radius: 10px; padding: 14px; margin-top: 18px; background: #f8fbf9; }
+.verification-status { white-space: pre-line; line-height: 1.5; }
+.verification-note { font-size: 13px; line-height: 1.5; color: #506257; }
+.verification-panel h4 { margin-top: 4px; }
+.package-card { border: 1px solid #dce5df; border-radius: 10px; padding: 13px; margin-top: 12px; overflow-wrap: anywhere; background: #fff; }
+.package-card h4 { margin: 0 0 8px; }
+.package-card p { line-height: 1.45; margin: 7px 0; }
+.package-subtitle { margin-top: 20px; padding-top: 12px; border-top: 1px solid #dce5df; }
+.package-private { border-left: 3px solid #087346; padding-left: 10px; margin-top: 10px; }
+.package-action { margin-top: 10px; padding: 11px; border: 0; border-radius: 8px; background: #087346; color: #fff; font-size: 14px; font-weight: bold; width: 100%; cursor: pointer; }
+.package-action.secondary { background: #e5eee8; color: #173c2b; }
+.package-action:disabled { opacity: .6; }
+@media (max-width: 360px) {
+  nav button { flex-basis: 33.333%; padding: 12px 4px; font-size: 12px; }
+  .emergency-grid { gap: 5px; }
+  .emergency-button { min-height: 60px; padding: 7px 2px; font-size: 11px; }
+  .emergency-button small { font-size: 11px; }
+  .sos-dock { padding-left: 8px; padding-right: 8px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <h2>KC Comfortable Long Distance Rides</h2>
+  <p>Long-distance rides and package transport across South Africa.</p>
+</header>
 
-<label for="packageType">What are you sending?</label>
-<select id="packageType">
-<option value="Documents">Documents</option>
-<option value="Clothing">Clothing</option>
-<option value="Electronics">Electronics</option>
-<option value="Household items">Household items</option>
-<option value="Small parcel">Small parcel</option>
-<option value="Other">Other (describe below)</option>
-</select>
-<label for="packageSize">Package size</label>
-<select id="packageSize">
-<option value="document">Envelope / documents</option>
-<option value="small">Small (handheld)</option>
-<option value="medium">Medium (shoebox-sized)</option>
-<option value="large">Large (needs boot space)</option>
-<option value="bulky">Bulky / household item</option>
-</select>
-<label for="packageDescription">Describe the contents</label>
+<nav aria-label="Main navigation">
+  <button type="button" class="active" onclick="showTab('find', this)">Find Ride</button>
+  <button type="button" onclick="showTab('packages', this)">Packages</button>
+  <button type="button" onclick="showTab('messages', this)">Messages</button>
+  <button type="button" onclick="showTab('offer', this)">Offer Ride</button>
+  <button type="button" onclick="showTab('driver', this)">Driver Account</button>
+  <button type="button" onclick="showTab('profile', this)">About KC</button>
+</nav>
 
-  <textarea id="packageDescription" rows="3" maxlength="1000" placeholder="Describe the item, approximate weight and dimensions. Do not put names, phone numbers or exact addresses here because this description is visible in public listings. Do not list prohibited or dangerous items."></textarea>  <label for="packageFragile">Is the package fragile?</label>
-<select id="packageFragile">
-<option value="false">No</option>
-<option value="true">Yes — handle carefully</option>
-</select>
-<label for="packageOffer">Your delivery budget / offer (R, optional)</label>
-<input id="packageOffer" type="number" min="0" max="100000" step="0.01" placeholder="e.g. 150">
-<label for="packageInstructions">Extra delivery instructions (optional)</label>
+<main>
+<section id="find" class="panel active">
+  <h3>Find a Ride</h3>
+  <p class="muted">Search for available long-distance rides.</p>
+  <label for="searchPickup">Leaving from</label>
+  <input id="searchPickup" placeholder="e.g. Boksburg">
+  <label for="searchDestination">Going to</label>
+  <input id="searchDestination" placeholder="e.g. Durban">
+  <label for="searchDate">Travel date (optional)</label>
+  <input id="searchDate" type="date">
+  <button type="button" class="green" onclick="searchRides()">SEARCH RIDES</button>
+  <div id="results" class="message" aria-live="polite">Enter your route to search for rides.</div>
+</section>
 
-  <textarea id="packageInstructions" rows="2" maxlength="1000" placeholder="Timing or agreed instructions"></textarea>  <button type="button" class="green" onclick="createPackageRequest()">SUBMIT PACKAGE REQUEST</button>
 
-  <div id="packageSubmitMessage" class="message" aria-live="polite">Sign in before submitting a package request.</div>    <h4 class="package-subtitle">Available package requests</h4>  
-  <p class="muted">Drivers may accept a delivery only when their PDP and criminal-record checks are both approved by the administrator.</p>  
-  <button type="button" class="green" onclick="refreshOpenPackages()">REFRESH AVAILABLE PACKAGES</button>  
-  <div id="openPackages" aria-live="polite" class="message">Loading available package requests...</div>    <h4 class="package-subtitle">My package requests / deliveries</h4>  
-  <button type="button" class="green" onclick="refreshMyPackages()">REFRESH MY PACKAGES</button>  
-  <div id="myPackages" aria-live="polite" class="message">Sign in to see your package requests and accepted deliveries.</div>  
-  <p class="muted">KC does not collect payment in the app yet. Confirm the driver's identity, agreed price and delivery arrangements before paying. Do not send prohibited or dangerous items.</p>  
-</section>  <section id="offer" class="panel">  
-  <h3>Offer a Ride</h3>  
-  <p class="muted">Enter your trip details. Sign in to your driver account before posting a ride.</p>  
-  <label for="pickup">Leaving from</label>  
-  <input id="pickup" placeholder="Pickup town or city">  
-  <label for="destination">Going to</label>  
-  <input id="destination" placeholder="Destination town or city">  
-  <label for="travelDate">Travel date</label>  
-  <input id="travelDate" type="date">  
-  <label for="travelTime">Departure time</label>  
-  <input id="travelTime" type="time">  
-  <label for="seats">Available seats</label>  
-  <input id="seats" type="number" min="1" max="20" value="3">  
-  <label for="price">Price per passenger (R)</label>  
-  <input id="price" type="number" min="0" step="0.01" placeholder="e.g. 350">  
-  <label for="notes">Extra details (optional)</label>  
-  <textarea id="notes" rows="3" placeholder="Vehicle or meeting point details"></textarea>  
-  <button type="button" class="green" onclick="publishRide()">POST MY RIDE</button>  
-  <div id="publishMessage" class="message" aria-live="polite"></div>  
-</section>  <section id="driver" class="panel">  
-  <h3>Driver Account</h3>  
-  <p class="muted">Register or sign in to manage your driver profile and vehicle details.</p>  
-  <div id="driverAuth">  
-    <h4>Register a New Account</h4>  
-    <label for="driverEmail">Email address</label>  
-    <input id="driverEmail" type="email" autocomplete="email" placeholder="you@example.com">  
-    <label for="driverPassword">Password</label>  
-    <input id="driverPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters">  
-    <button type="button" class="green" onclick="registerDriver()">REGISTER</button>  
-    <button type="button" class="green" onclick="loginDriver()">SIGN IN</button>  
-  </div>    <div id="driverProfileForm" style="display:none">  
-    <p id="driverSignedIn" class="message"></p>  
-    <h4>Your Driver Details</h4>  
-    <label for="driverFullName">Full name</label>  
-    <input id="driverFullName" type="text" autocomplete="name" placeholder="Your full name">  
-    <label for="driverPhone">Phone number</label>  
-    <input id="driverPhone" type="tel" autocomplete="tel" placeholder="Your phone number">  <label for="driverPhotoFile">Driver profile photo (optional)</label>  
-<input id="driverPhotoFile" type="file" accept="image/jpeg,image/png,image/webp">  
-<p class="photo-hint">Choose a photo from your phone or take one with your camera. JPG, PNG or WebP; maximum 5 MB.</p>  
-<img id="driverPhotoPreview" class="photo-preview" alt="Driver profile photo preview" hidden>  
+<section id="packages" class="panel">
+  <h3>Package Transport</h3>
+  <p class="muted">Send parcels, documents, clothes and household items between towns or provinces with a driver travelling that route. This is a request marketplace, not an automatic booking or payment service.</p>
 
-<label for="carModel">Car model</label>  
-<input id="carModel" type="text" placeholder="e.g. Toyota Corolla">  
-<label for="registrationNumber">Vehicle registration number</label>  
-<input id="registrationNumber" type="text" placeholder="Vehicle registration">  
+  <div class="verification-panel">
+    <h4>Package account</h4>
+    <p id="packageAuthStatus" class="verification-note" aria-live="polite">Create a free account or sign in to request delivery. The account session is shared with Driver Account.</p>
+    <label for="packageAccountEmail">Email address</label>
+    <input id="packageAccountEmail" type="email" autocomplete="email" placeholder="you@example.com">
+    <label for="packageAccountPassword">Password</label>
+    <input id="packageAccountPassword" type="password" autocomplete="current-password" placeholder="At least 8 characters">
+    <button type="button" class="green" onclick="registerPackageAccount()">CREATE PACKAGE ACCOUNT</button>
+    <button type="button" class="green" onclick="loginPackageAccount()">SIGN IN</button>
+    <button type="button" class="green" onclick="logoutPackageAccount()">SIGN OUT OF APP</button>
+  </div>
 
-<label for="carPhotoFile">Car photo (optional)</label>  
-<input id="carPhotoFile" type="file" accept="image/jpeg,image/png,image/webp">  
-<p class="photo-hint">Choose a clear photo of the vehicle from your phone or take a new one. Maximum 5 MB.</p>  
-<img id="carPhotoPreview" class="photo-preview" alt="Car photo preview" hidden>  
+  <h4 class="package-subtitle">Request a package delivery</h4>
+  <p class="muted">Fill in the item and contact details. Exact addresses and phone numbers are kept private and are not shown on public package listings.</p>
 
-<button type="button" class="green" id="saveDriverButton" onclick="saveDriverProfile()">SAVE DRIVER PROFILE</button>  
+  <label for="packageSenderName">Your full name</label>
+  <input id="packageSenderName" autocomplete="name" placeholder="Sender full name">
+  <label for="packageSenderPhone">Your phone number</label>
+  <input id="packageSenderPhone" type="tel" autocomplete="tel" placeholder="e.g. 071 234 5678">
+  <label for="packageRecipientName">Recipient full name</label>
+  <input id="packageRecipientName" placeholder="Person receiving the package">
+  <label for="packageRecipientPhone">Recipient phone number</label>
+  <input id="packageRecipientPhone" type="tel" placeholder="Recipient's phone number">
 
-<div class="verification-panel">  
-  <h4>Required Driver Verification</h4>  
-  <p class="verification-note">Before you can post rides, submit your Professional Driving Permit (PDP) and your official criminal-record check or clearance document. An administrator must review both documents. Uploading a file never approves it automatically. Files are stored in private storage.</p>  
-  <label for="pdpDocumentFile">Professional Driving Permit (PDP) document</label>  
-  <input id="pdpDocumentFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp">  
-  <p class="photo-hint">PDF, JPG, PNG or WebP. Maximum 5 MB.</p>  
-  <label for="criminalDocumentFile">Criminal-record check / clearance document</label>  
-  <input id="criminalDocumentFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp">  
-  <p class="photo-hint">PDF, JPG, PNG or WebP. Maximum 5 MB. Do not upload unrelated personal documents.</p>  
-  <button type="button" class="green" id="submitVerificationButton" onclick="submitDriverVerification()">SUBMIT DOCUMENTS FOR REVIEW</button>  
-  <div id="verificationStatus" class="message verification-status" aria-live="polite">Sign in to view your verification status.</div>  
-</div>  
+  <label for="packageFromTown">Pickup town / city</label>
+  <input id="packageFromTown" placeholder="e.g. Boksburg, Gauteng">
+  <label for="packageToTown">Delivery town / city</label>
+  <input id="packageToTown" placeholder="e.g. Bushbuckridge, Mpumalanga">
+  <label for="packagePickupAddress">Pickup address or safe meeting point</label>
+  <input id="packagePickupAddress" placeholder="Street, suburb or agreed meeting point">
+  <label for="packageDeliveryAddress">Delivery address or safe meeting point</label>
+  <input id="packageDeliveryAddress" placeholder="Street, suburb or agreed meeting point">
+  <label for="packageDate">Preferred pickup date</label>
+  <input id="packageDate" type="date">
 
-<button type="button" class="green" onclick="logoutDriver()">SIGN OUT</button>
+  <label for="packageType">What are you sending?</label>
+  <select id="packageType">
+    <option value="Documents">Documents</option>
+    <option value="Clothing">Clothing</option>
+    <option value="Electronics">Electronics</option>
+    <option value="Household items">Household items</option>
+    <option value="Small parcel">Small parcel</option>
+    <option value="Other">Other (describe below)</option>
+  </select>
+  <label for="packageSize">Package size</label>
+  <select id="packageSize">
+    <option value="document">Envelope / documents</option>
+    <option value="small">Small (handheld)</option>
+    <option value="medium">Medium (shoebox-sized)</option>
+    <option value="large">Large (needs boot space)</option>
+    <option value="bulky">Bulky / household item</option>
+  </select>
+  <label for="packageDescription">Describe the contents</label>
+  <textarea id="packageDescription" rows="3" maxlength="1000" placeholder="Describe the item, approximate weight and dimensions. Do not put names, phone numbers or exact addresses here because this description is visible in public listings. Do not list prohibited or dangerous items."></textarea>
+  <label for="packageFragile">Is the package fragile?</label>
+  <select id="packageFragile">
+    <option value="false">No</option>
+    <option value="true">Yes — handle carefully</option>
+  </select>
+  <label for="packageOffer">Your delivery budget / offer (R, optional)</label>
+  <input id="packageOffer" type="number" min="0" max="100000" step="0.01" placeholder="e.g. 150">
+  <label for="packageInstructions">Extra delivery instructions (optional)</label>
+  <textarea id="packageInstructions" rows="2" maxlength="1000" placeholder="Timing or agreed instructions"></textarea>
+  <button type="button" class="green" onclick="createPackageRequest()">SUBMIT PACKAGE REQUEST</button>
+  <div id="packageSubmitMessage" class="message" aria-live="polite">Sign in before submitting a package request.</div>
 
-  </div>  
-  <div id="driverMessage" class="message" aria-live="polite">Register a new account or sign in to continue.</div>  
-</section>  <section id="profile" class="panel">  
-  <h3>About KC</h3>  
-  <p>KC Comfortable Long Distance Rides helps passengers and drivers connect for long-distance journeys and package transport between towns and provinces.</p>  
-  <p class="muted">Confirm the driver, price, pickup point and travel arrangements before paying or travelling.</p>  
-  <div class="sos-help">  
-    <strong>Journey emergency help</strong>  
-    <p>In an emergency in South Africa, use one of the emergency buttons fixed at the bottom of the screen. SOS opens your phone dialler for 112, Fire Brigade / Ambulance opens 10177, and Police opens 10111. You may need to press Call on your phone.</p>  
-  </div>  
-</section>  
-</main>  
-<footer>KC Comfortable Long Distance Rides</footer>  
-</div>  <div class="sos-dock" role="region" aria-label="Emergency help">  
-  <div class="emergency-grid">  
-    <button type="button" class="emergency-button emergency-sos" onclick="confirmEmergency('SOS', '112')" aria-label="SOS emergency call 112">🆘 SOS<small>Call 112</small></button>  
-    <button type="button" class="emergency-button emergency-fire" onclick="confirmEmergency('Fire Brigade / Ambulance', '10177')" aria-label="Call Fire Brigade or Ambulance on 10177">🔥 Fire Brigade<small>10177</small></button>  
-    <button type="button" class="emergency-button emergency-police" onclick="confirmEmergency('Police', '10111')" aria-label="Call Police on 10111">🚔 Police<small>10111</small></button>  
-  </div>  
-  <p class="emergency-caption">South Africa emergency numbers • Tap a button, then confirm the call on your phone.</p>  
-</div>  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  <script>  
-const SUPABASE_URL = 'https://ndagpnohncjudssgtsvg.supabase.co';  
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_h4zgJO-RfPnnCXG5-QwPlA_geL4XqkI';  
-const DRIVER_PHOTO_BUCKET = 'kc-driver-photos';  
-const DRIVER_VERIFICATION_BUCKET = 'kc-driver-verification';  
-const MAX_PHOTO_BYTES = 5 * 1024 * 1024;  
-const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];  
-const ALLOWED_VERIFICATION_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];  
-  
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {  
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }  
-});  
-  
-// Preserve any existing photo values when no new file is selected.  
-let savedDriverPhotoValue = null;  
-let savedCarPhotoValue = null;  
-let profileLoadInProgress = false;  
-  
-function confirmEmergency(service, number) {  
-  const confirmed = window.confirm(  
-    'EMERGENCY CALL — ' + service +  
-    '\n\nThis will open your phone dialler for ' + number +  
-    '. You may need to press Call. This website cannot silently call ' +  
-    'or automatically send your location.' +  
-    '\n\nOnly continue if this is a real emergency.'  
-  );  
-  if (confirmed) window.location.href = 'tel:' + number;  
-}  
-  
-function showTab(id, button) {  
-  document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active'));  
-  document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));  
-  const target = document.getElementById(id);  
-  if (target) target.classList.add('active');  
-  if (button) button.classList.add('active');  
-  else {  
-    const navButton = Array.from(document.querySelectorAll('nav button')).find(btn => btn.getAttribute('onclick')?.includes("'" + id + "'"));  
-    if (navButton) navButton.classList.add('active');  
-  }  
-}  
-  
-function openDriverAccount() { showTab('driver'); }  
-function friendlyError(error) { return error?.message || String(error || 'An unknown error occurred.'); }  
-  
-// Confirm that an actual logged-in user exists before any protected database write.  
-async function getSignedInUser() {  
-  const { data: sessionData, error: sessionError } = await db.auth.getSession();  
-  if (sessionError) throw sessionError;  
-  if (!sessionData.session?.access_token) return null;  
-  
-  const { data: userData, error: userError } = await db.auth.getUser();  
-  if (userError) throw userError;  
-  return userData.user || null;  
-}  
-  
-function setPhotoPreview(previewId, source) {  
-  const img = document.getElementById(previewId);  
-  if (!img) return;  
-  if (!source) {  
-    img.removeAttribute('src');  
-    img.hidden = true;  
-    return;  
-  }  
-  img.src = source;  
-  img.hidden = false;  
-}  
-  
-function previewSelectedFile(inputId, previewId) {  
-  const input = document.getElementById(inputId);  
-  const file = input?.files?.[0];  
-  if (!file) return;  
-  if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {  
-    input.value = '';  
-    alert('Please choose a JPG, PNG or WebP image.');  
-    return;  
-  }  
-  if (file.size > MAX_PHOTO_BYTES) {  
-    input.value = '';  
-    alert('The photo is larger than 5 MB. Please choose a smaller image.');  
-    return;  
-  }  
-  setPhotoPreview(previewId, URL.createObjectURL(file));  
-}  
-  
-function cleanFileName(fileName) {  
-  return String(fileName || 'photo').toLowerCase().replace(/[^a-z0-9._-]+/g, '-').slice(-80) || 'photo';  
-}  
-  
-// Upload a real image to the existing Supabase Storage bucket inside the owner's folder.  
-async function uploadDriverPhoto(file, kind, userId) {  
-  if (!file) return null;  
-  if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {  
-    throw new Error('Choose a JPG, PNG or WebP image for ' + kind + '.');  
-  }  
-  if (file.size > MAX_PHOTO_BYTES) {  
-    throw new Error('The ' + kind + ' photo must be 5 MB or smaller.');  
-  }  
-  
-  const safeName = cleanFileName(file.name);  
-  const objectPath = userId + '/' + kind + '-' + Date.now() + '-' + safeName;  
-  const { error: uploadError } = await db.storage.from(DRIVER_PHOTO_BUCKET).upload(objectPath, file, {  
-    cacheControl: '3600',  
-    contentType: file.type,  
-    upsert: false  
-  });  
-  
-  if (uploadError) {  
-    throw new Error('Photo upload failed. Check that the ' + DRIVER_PHOTO_BUCKET + ' bucket allows authenticated users to upload into their own user-ID folder. Details: ' + uploadError.message);  
-  }  
-  
-  // Public buckets store a usable public URL; private buckets store the object path.  
-  try {  
-    const { data: bucketData, error: bucketError } = await db.storage.getBucket(DRIVER_PHOTO_BUCKET);  
-    if (!bucketError && bucketData?.public) {  
-      return db.storage.from(DRIVER_PHOTO_BUCKET).getPublicUrl(objectPath).data.publicUrl;  
-    }  
-  } catch (_) {  
-    // If bucket settings cannot be read, safely retain the object path.  
-  }  
-  return objectPath;  
-}  
-  
-// Convert old saved Supabase Storage URLs back into object paths. Signed URLs  
-// expire, so a saved Supabase URL must be refreshed whenever the profile loads.  
-function getDriverPhotoObjectPath(value) {  
-  const raw = String(value || '').trim();  
-  if (!raw) return null;  
-  
-  if (/^https?:\/\//i.test(raw)) {  
-    let parsed;  
-    try { parsed = new URL(raw); } catch (_) { return null; }  
-    if (!parsed.hostname.endsWith('.supabase.co')) return null; // external image URL  
-    const marker = '/storage/v1/object/';  
-    const markerIndex = parsed.pathname.indexOf(marker);  
-    if (markerIndex === -1) return null;  
-    let tail = parsed.pathname.slice(markerIndex + marker.length);  
-    tail = tail.replace(/^(public|sign|authenticated)\//, '');  
-    const prefix = DRIVER_PHOTO_BUCKET + '/';  
-    if (!tail.startsWith(prefix)) return null;  
-    try { return decodeURIComponent(tail.slice(prefix.length)); }  
-    catch (_) { return tail.slice(prefix.length); }  
-  }  
-  
-  let path = raw.replace(/^\/+/, '');  
-  const bucketPrefix = DRIVER_PHOTO_BUCKET + '/';  
-  if (path.startsWith(bucketPrefix)) path = path.slice(bucketPrefix.length);  
-  return path || null;  
-}  
-  
-async function resolvePhotoValue(value) {  
-  if (!value) return null;  
-  const objectPath = getDriverPhotoObjectPath(value);  
-  if (!objectPath) {  
-    // Keep valid non-Supabase image links supported for older profiles.  
-    if (/^https?:\/\//i.test(String(value).trim())) return String(value).trim();  
-    throw new Error('The saved photo path is empty or not in the ' + DRIVER_PHOTO_BUCKET + ' bucket.');  
-  }  
-  
-  // Use a fresh signed URL so this also works when the bucket is private and  
-  // when an older saved URL has expired. This does not make the bucket public.  
-  const { data, error } = await db.storage.from(DRIVER_PHOTO_BUCKET).createSignedUrl(objectPath, 3600);  
-  if (error) throw new Error('Could not create a view link for ' + objectPath + ': ' + error.message + '. Check that Storage SELECT access is allowed for the signed-in user’s own folder.');  
-  if (!data?.signedUrl) throw new Error('Supabase did not return a view link for ' + objectPath + '.');  
-  return data.signedUrl;  
-}  
-  
-/* DRIVER PDP AND CRIMINAL-RECORD VERIFICATION */  
-function displayVerificationStatus(record) {  
-  const box = document.getElementById('verificationStatus');  
-  if (!box) return;  
-  if (!record) {  
-    box.textContent = 'No documents have been submitted yet. Select both required documents and tap SUBMIT DOCUMENTS FOR REVIEW.';  
-    return;  
-  }  
-  const show = value => String(value || 'pending').toUpperCase();  
-  let text = 'PDP status: ' + show(record.pdp_status) + '\nCriminal-record status: ' + show(record.criminal_status);  
-  if (record.updated_at) {  
-    const submitted = new Date(record.updated_at);  
-    if (!Number.isNaN(submitted.getTime())) text += '\nLast submitted or updated: ' + submitted.toLocaleString();  
-  }  
-  if (record.reviewed_at) {  
-    const reviewed = new Date(record.reviewed_at);  
-    if (!Number.isNaN(reviewed.getTime())) text += '\nLast reviewed: ' + reviewed.toLocaleString();  
-  }  
-  if (record.admin_notes) text += '\nAdministrator note: ' + record.admin_notes;  
-  if (record.pdp_status !== 'approved' || record.criminal_status !== 'approved') {  
-    text += '\nRide posting stays blocked until BOTH checks are approved.';  
-  } else {  
-    text += '\nBoth checks are approved. You may post a ride.';  
-  }  
-  box.textContent = text;  
-}  
-  
-async function refreshDriverVerification(userId) {  
-  const box = document.getElementById('verificationStatus');  
-  if (!userId) {  
-    if (box) box.textContent = 'Sign in to view your verification status.';  
-    return null;  
-  }  
-  const { data, error } = await db.from('driver_verifications')  
-    .select('pdp_status,criminal_status,admin_notes,reviewed_at,updated_at')  
-    .eq('driver_id', userId).maybeSingle();  
-  if (error) {  
-    if (box) box.textContent = 'Could not load verification status. Confirm that the PDP/criminal verification SQL setup has been completed. Details: ' + friendlyError(error);  
-    return null;  
-  }  
-  displayVerificationStatus(data);  
-  return data;  
-}  
-  
-async function uploadVerificationDocument(file, kind, userId) {  
-  if (!file) throw new Error('Select both required documents before submitting.');  
-  if (!ALLOWED_VERIFICATION_TYPES.includes(file.type)) {  
-    throw new Error('The ' + kind + ' document must be a PDF, JPG or PNG file.');  
-  }  
-  if (file.size > MAX_PHOTO_BYTES) {  
-    throw new Error('The ' + kind + ' document must be 5 MB or smaller.');  
-  }  
-  const uniquePart = Date.now() + '-' + Math.random().toString(36).slice(2, 10);  
-  const path = userId + '/' + kind + '/' + uniquePart + '-' + cleanFileName(file.name);  
-  const { error } = await db.storage.from(DRIVER_VERIFICATION_BUCKET).upload(path, file, {  
-    cacheControl: '3600', contentType: file.type, upsert: false  
-  });  
-  if (error) {  
-    throw new Error('Could not upload the ' + kind + ' document. Confirm the private ' + DRIVER_VERIFICATION_BUCKET + ' bucket and its upload policy are set up. Details: ' + error.message);  
-  }  
-  return path;  
-}  
-  
-async function submitDriverVerification() {  
-  const button = document.getElementById('submitVerificationButton');  
-  const box = document.getElementById('verificationStatus');  
-  const pdpFile = document.getElementById('pdpDocumentFile').files?.[0] || null;  
-  const criminalFile = document.getElementById('criminalDocumentFile').files?.[0] || null;  
-  if (!pdpFile || !criminalFile) {  
-    box.textContent = 'Please select BOTH your PDP document and criminal-record check / clearance document.';  
-    return;  
-  }  
-  for (const [kind, file] of [['PDP', pdpFile], ['criminal-record', criminalFile]]) {  
-    if (!ALLOWED_VERIFICATION_TYPES.includes(file.type)) {  
-      box.textContent = 'The ' + kind + ' document must be a PDF, JPG or PNG file.';  
-      return;  
-    }  
-    if (file.size > MAX_PHOTO_BYTES) {  
-      box.textContent = 'The ' + kind + ' document is larger than 5 MB. Please choose a smaller file.';  
-      return;  
-    }  
-  }  
-  
-  button.disabled = true;  
-  box.textContent = 'Checking your sign-in session...';  
-  try {  
-    const user = await getSignedInUser();  
-    if (!user) throw new Error('Your login session is missing. Please sign in again.');  
-  
-    const { data: profile, error: profileError } = await db.from('profiles')  
-      .select('role').eq('id', user.id).maybeSingle();  
-    if (profileError) throw new Error('Could not check your driver profile: ' + profileError.message);  
-    if (!profile || profile.role !== 'driver') {  
-      throw new Error('Please save your Driver Account profile first, then submit the documents.');  
-    }  
-  
-    box.textContent = 'Uploading your PDP document securely...';  
-    const pdpPath = await uploadVerificationDocument(pdpFile, 'pdp', user.id);  
-    box.textContent = 'PDP uploaded. Uploading your criminal-record document securely...';  
-    const criminalPath = await uploadVerificationDocument(criminalFile, 'criminal', user.id);  
-  
-    box.textContent = 'Registering your documents for administrator review...';  
-    const { error: submitError } = await db.rpc('submit_driver_verification', {  
-      p_pdp_path: pdpPath,  
-      p_criminal_path: criminalPath  
-    });  
-    if (submitError) {  
-      throw new Error('The files uploaded, but the submission could not be registered. Do not post rides yet. Details: ' + submitError.message);  
-    }  
-  
-    document.getElementById('pdpDocumentFile').value = '';  
-    document.getElementById('criminalDocumentFile').value = '';  
-    const refreshedVerification = await refreshDriverVerification(user.id);  
-    if (refreshedVerification) {  
-      box.textContent += '\n\nSubmission received. Both checks are PENDING until an administrator reviews them. You cannot post rides until both statuses are approved.';  
-    } else {  
-      box.textContent = 'Your documents were submitted, but the app could not reload your status. Refresh Driver Account and confirm both statuses. Ride posting remains blocked unless both show APPROVED.';  
-    }  
-  } catch (error) {  
-    box.textContent = 'Could not submit verification documents: ' + friendlyError(error);  
-  } finally {  
-    button.disabled = false;  
-  }  
-}  
-  
-/* FIND RIDES */  
-async function searchRides() {  
-  const from = document.getElementById('searchPickup').value.trim();  
-  const to = document.getElementById('searchDestination').value.trim();  
-  const date = document.getElementById('searchDate').value;  
-  const results = document.getElementById('results');  
-  if (!from || !to) { results.textContent = 'Please enter both pickup and destination.'; return; }  
-  results.textContent = 'Searching for rides...';  
-  
-  try {  
-    let query = db.from('rides').select('id,pickup_location,destination,travel_date,travel_time,available_seats,price,notes')  
-      .ilike('pickup_location', from).ilike('destination', to)  
-      .gt('available_seats', 0).order('travel_date', { ascending: true });  
-    if (date) query = query.eq('travel_date', date);  
-    const { data, error } = await query;  
-    if (error) throw error;  
-    results.replaceChildren();  
-    if (!data || data.length === 0) {  
-      results.textContent = 'No rides found for this route yet. Check the spelling or try another date.';  
-      return;  
-    }  
-    data.forEach(ride => {  
-      const card = document.createElement('div'); card.className = 'ride';  
-      const title = document.createElement('strong');  
-      title.textContent = ride.pickup_location + ' → ' + ride.destination;  
-      card.appendChild(title);  
-      const details = document.createElement('p');  
-      details.textContent = 'Date: ' + (ride.travel_date || 'Not specified') +  
-        ' | Time: ' + (ride.travel_time || 'Not specified') +  
-        ' | Seats: ' + ride.available_seats + ' | Price: R' + ride.price;  
-      card.appendChild(details);  
-      if (ride.notes) { const note = document.createElement('p'); note.textContent = ride.notes; card.appendChild(note); }  
-      results.appendChild(card);  
-    });  
-  } catch (error) { results.textContent = 'Search error: ' + friendlyError(error); }  
-}  
-  
-/* POST A RIDE */  
-async function publishRide() {  
-  const message = document.getElementById('publishMessage');  
-  const pickup = document.getElementById('pickup').value.trim();  
-  const destination = document.getElementById('destination').value.trim();  
-  const date = document.getElementById('travelDate').value;  
-  const time = document.getElementById('travelTime').value;  
-  const seats = Number(document.getElementById('seats').value);  
-  const priceInput = document.getElementById('price').value;  
-  const price = Number(priceInput);  
-  const notes = document.getElementById('notes').value.trim();  
-  
-  if (!pickup || !destination || !date || !time || !seats || priceInput === '') {  
-    message.textContent = 'Please complete all required fields.'; return;  
-  }  
-  if (seats < 1 || seats > 20 || !Number.isFinite(price) || price < 0) {  
-    message.textContent = 'Please enter valid seats and price.'; return;  
-  }  
-  if (pickup.toLowerCase() === destination.toLowerCase()) {  
-    message.textContent = 'Pickup and destination cannot be the same.'; return;  
-  }  
-  
-  message.textContent = 'Checking your driver account...';  
-  try {  
-    const user = await getSignedInUser();  
-    if (!user) {  
-      message.textContent = 'You are not signed in. Sign in under Driver Account, then return here to post your ride.';  
-      openDriverAccount(); return;  
-    }  
-    message.textContent = 'Checking your driver profile...';  
-    const { data: mainProfile, error: mainProfileError } = await db.from('profiles')  
-      .select('id,role').eq('id', user.id).maybeSingle();  
-    if (mainProfileError) throw new Error('Could not check your main profile: ' + mainProfileError.message);  
-    if (!mainProfile) {  
-      message.textContent = 'Your main profile is missing. Open Driver Account, complete your details, and tap SAVE DRIVER PROFILE first.';  
-      openDriverAccount(); return;  
-    }  
-    if (mainProfile.role !== 'driver') {  
-      message.textContent = 'Your account is not set as a driver. Open Driver Account and save your driver profile.';  
-      openDriverAccount(); return;  
-    }  
-  
-    message.textContent = 'Checking PDP and criminal-record approval...';  
-    const { data: verification, error: verificationError } = await db.from('driver_verifications')  
-      .select('pdp_status,criminal_status').eq('driver_id', user.id).maybeSingle();  
-    if (verificationError) {  
-      message.textContent = 'Could not verify your documents. Please contact the app administrator and confirm the verification setup has been completed. Details: ' + verificationError.message;  
-      return;  
-    }  
-    if (!verification || verification.pdp_status !== 'approved' || verification.criminal_status !== 'approved') {  
-      message.textContent = 'Ride posting is blocked. Both your PDP and criminal-record check must be submitted and approved by the administrator. Open Driver Account to upload or check your document status.';  
-      showTab('driver');  
-      return;  
-    }  
-  
-    message.textContent = 'Posting your ride...';  
-    const { error } = await db.from('rides').insert([{  
-      driver_id: user.id, pickup_location: pickup, destination,  
-      travel_date: date, travel_time: time, available_seats: seats,  
-      price, notes: notes || null  
-    }]);  
-    if (error) throw error;  
-    message.textContent = 'Ride posted successfully!';  
-    document.getElementById('pickup').value = '';  
-    document.getElementById('destination').value = '';  
-    document.getElementById('travelDate').value = '';  
-    document.getElementById('travelTime').value = '';  
-    document.getElementById('seats').value = '3';  
-    document.getElementById('price').value = '';  
-    document.getElementById('notes').value = '';  
-  } catch (error) { message.textContent = 'Could not post ride: ' + friendlyError(error); }  
-}  
-  
-/* REGISTER DRIVER */  
-async function registerDriver() {  
-  const email = document.getElementById('driverEmail').value.trim();  
-  const password = document.getElementById('driverPassword').value;  
-  const message = document.getElementById('driverMessage');  
-  if (!email || password.length < 8) {  
-    message.textContent = 'Enter a valid email and a password of at least 8 characters.'; return;  
-  }  
-  message.textContent = 'Creating your account...';  
-  try {  
-    const { data, error } = await db.auth.signUp({  
-      email, password,  
-      options: { emailRedirectTo: window.location.origin }  
-    });  
-    if (error) throw error;  
-    if (data.session && data.user) {  
-      await loadDriverProfile();  
-      message.textContent = 'Account created. Complete your driver details and save your profile.';  
-    } else {  
-      message.textContent = 'Your registration request was submitted. Confirm your email first, then return here and sign in before saving your profile. Check your spam folder if the email does not arrive.';  
-    }  
-  } catch (error) { message.textContent = 'Registration error: ' + friendlyError(error); }  
-}  
-  
-/* SIGN IN DRIVER */  
-async function loginDriver() {  
-  const email = document.getElementById('driverEmail').value.trim();  
-  const password = document.getElementById('driverPassword').value;  
-  const message = document.getElementById('driverMessage');  
-  if (!email || !password) { message.textContent = 'Enter your email and password.'; return; }  
-  message.textContent = 'Signing in...';  
-  try {  
-    const { data, error } = await db.auth.signInWithPassword({ email, password });  
-    if (error) throw error;  
-    if (!data.session || !data.user) throw new Error('No active session was returned. Please try signing in again.');  
-    await loadDriverProfile();  
-    message.textContent = 'You are signed in. Check your details and tap SAVE DRIVER PROFILE if needed.';  
-  } catch (error) { message.textContent = 'Sign-in error: ' + friendlyError(error); }  
-}  
-  
-/* LOAD DRIVER PROFILE */  
-async function loadDriverProfile() {  
-  if (profileLoadInProgress) return;  
-  profileLoadInProgress = true;  
-  const message = document.getElementById('driverMessage');  
-  try {  
-    const user = await getSignedInUser();  
-    if (!user) {  
-      document.getElementById('driverAuth').style.display = 'block';  
-      document.getElementById('driverProfileForm').style.display = 'none';  
-      message.textContent = 'Please register or sign in to manage your profile.';  
-      return;  
-    }  
-    document.getElementById('driverAuth').style.display = 'none';  
-    document.getElementById('driverProfileForm').style.display = 'block';  
-    document.getElementById('driverSignedIn').textContent = 'Signed in as ' + (user.email || 'your account');  
-  
-    const { data: mainProfile, error: mainError } = await db.from('profiles')  
-      .select('full_name,phone,role,profile_picture_url').eq('id', user.id).maybeSingle();  
-    if (mainError) throw new Error('Could not read your main profile: ' + mainError.message);  
-  
-    const { data: vehicleProfile, error: vehicleError } = await db.from('driver_profiles')  
-      .select('full_name,phone,car_model,registration_number,car_photo_url')  
-      .eq('id', user.id).maybeSingle();  
-    if (vehicleError) throw new Error('Could not read your driver vehicle details: ' + vehicleError.message);  
-  
-    const profile = vehicleProfile || {};  
-    document.getElementById('driverFullName').value = profile.full_name || mainProfile?.full_name || '';  
-    document.getElementById('driverPhone').value = profile.phone || mainProfile?.phone || '';  
-    document.getElementById('carModel').value = profile.car_model || '';  
-    document.getElementById('registrationNumber').value = profile.registration_number || '';  
-    savedDriverPhotoValue = mainProfile?.profile_picture_url || null;  
-    savedCarPhotoValue = profile.car_photo_url || null;  
-    document.getElementById('driverPhotoFile').value = '';  
-    document.getElementById('carPhotoFile').value = '';  
-  
-    const photoIssues = [];  
-    try { setPhotoPreview('driverPhotoPreview', await resolvePhotoValue(savedDriverPhotoValue)); }  
-    catch (photoError) { setPhotoPreview('driverPhotoPreview', null); if (savedDriverPhotoValue) photoIssues.push('Driver photo: ' + friendlyError(photoError)); }  
-    try { setPhotoPreview('carPhotoPreview', await resolvePhotoValue(savedCarPhotoValue)); }  
-    catch (photoError) { setPhotoPreview('carPhotoPreview', null); if (savedCarPhotoValue) photoIssues.push('Car photo: ' + friendlyError(photoError)); }  
-  
-    if (photoIssues.length) {  
-      message.textContent = 'Your profile details loaded, but the photo display needs attention. ' + photoIssues.join(' | ');  
-    } else {  
-      message.textContent = (vehicleProfile || mainProfile)  
-        ? 'Your saved details and photos have been loaded. Review them and tap SAVE DRIVER PROFILE if needed.'  
-        : 'Complete your details and tap SAVE DRIVER PROFILE.';  
-    }  
-    await refreshDriverVerification(user.id);  
-  } catch (error) {  
-    message.textContent = 'Could not load profile: ' + friendlyError(error);  
-  } finally { profileLoadInProgress = false; }  
-}  
-  
-/* SAVE BOTH PROFILES, USING THE SIGNED-IN USER'S REAL AUTH ID */  
-async function saveDriverProfile() {  
-  const message = document.getElementById('driverMessage');  
-  const saveButton = document.getElementById('saveDriverButton');  
-  const fullName = document.getElementById('driverFullName').value.trim();  
-  const phone = document.getElementById('driverPhone').value.trim();  
-  const carModel = document.getElementById('carModel').value.trim();  
-  const registrationNumber = document.getElementById('registrationNumber').value.trim();  
-  const driverPhotoFile = document.getElementById('driverPhotoFile').files?.[0] || null;  
-  const carPhotoFile = document.getElementById('carPhotoFile').files?.[0] || null;  
-  
-  if (!fullName) { message.textContent = 'Please enter your full name.'; return; }  
-  for (const [name, file] of [['driver profile', driverPhotoFile], ['car', carPhotoFile]]) {  
-    if (file && !ALLOWED_PHOTO_TYPES.includes(file.type)) {  
-      message.textContent = 'The ' + name + ' photo must be JPG, PNG or WebP.'; return;  
-    }  
-    if (file && file.size > MAX_PHOTO_BYTES) {  
-      message.textContent = 'The ' + name + ' photo must be 5 MB or smaller.'; return;  
-    }  
-  }  
-  
-  saveButton.disabled = true;  
-  message.textContent = 'Checking your sign-in session...';  
-  try {  
-    const user = await getSignedInUser();  
-    if (!user) throw new Error('Your login session is missing. Please sign in again before saving.');  
-  
-    let driverPhotoValue = savedDriverPhotoValue;  
-    let carPhotoValue = savedCarPhotoValue;  
-    if (driverPhotoFile) {  
-      message.textContent = 'Uploading your driver photo...';  
-      driverPhotoValue = await uploadDriverPhoto(driverPhotoFile, 'driver-profile', user.id);  
-    }  
-    if (carPhotoFile) {  
-      message.textContent = 'Uploading your car photo...';  
-      carPhotoValue = await uploadDriverPhoto(carPhotoFile, 'car', user.id);  
-    }  
-  
-    // The profiles row must use the logged-in user's UUID; keep driver role for ride posting.  
-    message.textContent = 'Saving your main profile...';  
-    const { error: mainProfileError } = await db.from('profiles').upsert({  
-      id: user.id,  
-      full_name: fullName,  
-      phone: phone || null,  
-      role: 'driver',  
-      profile_picture_url: driverPhotoValue || null  
-    }, { onConflict: 'id' });  
-    if (mainProfileError) {  
-      throw new Error('Could not save your main profile (profiles table): ' + mainProfileError.message + '. Confirm that profiles RLS allows authenticated users to insert/update only their own id.');  
-    }  
-  
-    message.textContent = 'Saving your vehicle details...';  
-    const { error: driverProfileError } = await db.from('driver_profiles').upsert({  
-      id: user.id,  
-      full_name: fullName,  
-      phone: phone || null,  
-      car_model: carModel || null,  
-      registration_number: registrationNumber || null,  
-      car_photo_url: carPhotoValue || null  
-    }, { onConflict: 'id' });  
-    if (driverProfileError) {  
-      throw new Error('Main profile saved, but vehicle details could not be saved (driver_profiles table): ' + driverProfileError.message + '. The id must equal your signed-in user id, and INSERT/UPDATE RLS policies must allow auth.uid() = id.');  
-    }  
-  
-    savedDriverPhotoValue = driverPhotoValue;  
-    savedCarPhotoValue = carPhotoValue;  
-    document.getElementById('driverPhotoFile').value = '';  
-    document.getElementById('carPhotoFile').value = '';  
-    const photoIssues = [];  
-    try { setPhotoPreview('driverPhotoPreview', await resolvePhotoValue(savedDriverPhotoValue)); }  
-    catch (photoError) { setPhotoPreview('driverPhotoPreview', null); if (savedDriverPhotoValue) photoIssues.push('Driver photo: ' + friendlyError(photoError)); }  
-    try { setPhotoPreview('carPhotoPreview', await resolvePhotoValue(savedCarPhotoValue)); }  
-    catch (photoError) { setPhotoPreview('carPhotoPreview', null); if (savedCarPhotoValue) photoIssues.push('Car photo: ' + friendlyError(photoError)); }  
-    message.textContent = photoIssues.length  
-      ? 'Your profile details were saved, but the photos could not be displayed yet. ' + photoIssues.join(' | ')  
-      : 'Driver profile saved successfully! Your details and photos have been saved. Next, submit your PDP and criminal-record documents for administrator approval before posting rides.';  
-  } catch (error) {  
-    message.textContent = 'Could not save profile: ' + friendlyError(error);  
-  } finally { saveButton.disabled = false; }  
-}  
-  
-/* SIGN OUT */  
-async function logoutDriver() {  
-  const message = document.getElementById('driverMessage');  
-  try {  
-    const { error } = await db.auth.signOut();  
-    if (error) throw error;  
-    ['driverFullName','driverPhone','carModel','registrationNumber','driverPhotoFile','carPhotoFile','pdpDocumentFile','criminalDocumentFile','driverEmail','driverPassword'].forEach(id => {  
-      const input = document.getElementById(id); if (input) input.value = '';  
-    });  
-    setPhotoPreview('driverPhotoPreview', null);  
-    setPhotoPreview('carPhotoPreview', null);  
-    document.getElementById('verificationStatus').textContent = 'Sign in to view your verification status.';  
-    savedDriverPhotoValue = null; savedCarPhotoValue = null;  
-    document.getElementById('driverAuth').style.display = 'block';  
-    document.getElementById('driverProfileForm').style.display = 'none';  
-    message.textContent = 'You have signed out.';  
-  } catch (error) { message.textContent = 'Sign-out error: ' + friendlyError(error); }  
-}  
-  
-  
-/* PACKAGE TRANSPORT: PRIVATE CONTACTS, PUBLIC ROUTE LISTINGS */  
-function setPackageMessage(id, message) {  
-  const element = document.getElementById(id);  
-  if (element) element.textContent = message;  
-}  
-  
-async function updatePackageAuthStatus() {  
-  try {  
-    const user = await getSignedInUser();  
-    setPackageMessage('packageAuthStatus', user  
-      ? 'Signed in as ' + (user.email || 'your account') + '. You can request a package. Drivers need both verification checks approved before accepting a delivery. Signing out here signs you out of the entire app.'  
-      : 'Not signed in. Create a free account or sign in to request a package. Drivers must be signed in and approved to accept deliveries.');  
-  } catch (error) {  
-    setPackageMessage('packageAuthStatus', 'Could not check account session: ' + friendlyError(error));  
-  }  
-}  
-  
-async function registerPackageAccount() {  
-  const email = document.getElementById('packageAccountEmail').value.trim();  
-  const password = document.getElementById('packageAccountPassword').value;  
-  if (!email || password.length < 8) {  
-    setPackageMessage('packageSubmitMessage', 'Enter a valid email and a password of at least 8 characters.');  
-    return;  
-  }  
-  setPackageMessage('packageSubmitMessage', 'Creating your package account...');  
-  try {  
-    const { data, error } = await db.auth.signUp({  
-      email, password,  
-      options: { emailRedirectTo: window.location.origin }  
-    });  
-    if (error) throw error;  
-    if (data.session && data.user) {  
-      setPackageMessage('packageSubmitMessage', 'Account created and signed in. You can submit a package request now.');  
-      await updatePackageAuthStatus();  
-      await refreshPackageLists();  
-    } else {  
-      setPackageMessage('packageSubmitMessage', 'Registration submitted. Check your email and spam folder, confirm your email, then return here and sign in. If no email arrives, check your Supabase Auth email settings.');  
-    }  
-  } catch (error) {  
-    setPackageMessage('packageSubmitMessage', 'Could not create package account: ' + friendlyError(error));  
-  }  
-}  
-  
-async function loginPackageAccount() {  
-  const email = document.getElementById('packageAccountEmail').value.trim();  
-  const password = document.getElementById('packageAccountPassword').value;  
-  if (!email || !password) {  
-    setPackageMessage('packageSubmitMessage', 'Enter your email and password first.');  
-    return;  
-  }  
-  setPackageMessage('packageSubmitMessage', 'Signing in...');  
-  try {  
-    const { data, error } = await db.auth.signInWithPassword({ email, password });  
-    if (error) throw error;  
-    if (!data.session || !data.user) throw new Error('Supabase did not return an active login session. Please sign in again.');  
-    setPackageMessage('packageSubmitMessage', 'You are signed in. You can submit a package request.');  
-    await updatePackageAuthStatus();  
-    await refreshPackageLists();  
-  } catch (error) {  
-    setPackageMessage('packageSubmitMessage', 'Sign-in error: ' + friendlyError(error));  
-  }  
-}  
-  
-async function logoutPackageAccount() {  
-  try {  
-    const { error } = await db.auth.signOut();  
-    if (error) throw error;  
-    setPackageMessage('packageSubmitMessage', 'You have signed out of the whole KC app.');  
-    await updatePackageAuthStatus();  
-    await refreshPackageLists();  
-  } catch (error) {  
-    setPackageMessage('packageSubmitMessage', 'Sign-out error: ' + friendlyError(error));  
-  }  
-}  
-  
-function formatPackageStatus(status) {  
-  const labels = {  
-    open: 'Waiting for a driver', accepted: 'Driver accepted',  
-    picked_up: 'Package picked up', delivered: 'Delivered', cancelled: 'Cancelled'  
-  };  
-  return labels[status] || String(status || 'Unknown');  
-}  
-  
-function formatPackageSize(size) {  
-  const labels = { document: 'Envelope / documents', small: 'Small', medium: 'Medium', large: 'Large', bulky: 'Bulky / household item' };  
-  return labels[size] || String(size || 'Not specified');  
-}  
-  
-function makePackageParagraph(text) {  
-  const p = document.createElement('p');  
-  p.textContent = text;  
-  return p;  
-}  
-  
-function makePackageButton(label, callback, secondary = false) {  
-  const button = document.createElement('button');  
-  button.type = 'button';  
-  button.className = secondary ? 'package-action secondary' : 'package-action';  
-  button.textContent = label;  
-  button.addEventListener('click', callback);  
-  return button;  
-}  
-  
-async function createPackageRequest() {  
-  const values = {  
-    senderName: document.getElementById('packageSenderName').value.trim(),  
-    senderPhone: document.getElementById('packageSenderPhone').value.trim(),  
-    recipientName: document.getElementById('packageRecipientName').value.trim(),  
-    recipientPhone: document.getElementById('packageRecipientPhone').value.trim(),  
-    from: document.getElementById('packageFromTown').value.trim(),  
-    to: document.getElementById('packageToTown').value.trim(),  
-    pickupAddress: document.getElementById('packagePickupAddress').value.trim(),  
-    deliveryAddress: document.getElementById('packageDeliveryAddress').value.trim(),  
-    date: document.getElementById('packageDate').value,  
-    type: document.getElementById('packageType').value,  
-    size: document.getElementById('packageSize').value,  
-    description: document.getElementById('packageDescription').value.trim(),  
-    fragile: document.getElementById('packageFragile').value === 'true',  
-    offerText: document.getElementById('packageOffer').value,  
-    instructions: document.getElementById('packageInstructions').value.trim()  
-  };  
-  const required = [values.senderName, values.senderPhone, values.recipientName, values.recipientPhone,  
-    values.from, values.to, values.pickupAddress, values.deliveryAddress, values.date, values.type,  
-    values.size, values.description];  
-  if (required.some(value => !value)) {  
-    setPackageMessage('packageSubmitMessage', 'Please complete all required fields, including both phone numbers and both addresses.');  
-    return;  
-  }  
-  if (values.from.toLowerCase() === values.to.toLowerCase()) {  
-    setPackageMessage('packageSubmitMessage', 'Pickup and delivery towns cannot be the same.');  
-    return;  
-  }  
-  if (values.senderPhone.length < 7 || values.senderPhone.length > 25 || values.recipientPhone.length < 7 || values.recipientPhone.length > 25) {  
-    setPackageMessage('packageSubmitMessage', 'Please enter valid sender and recipient phone numbers.');  
-    return;  
-  }  
-  let offer = null;  
-  if (values.offerText !== '') {  
-    offer = Number(values.offerText);  
-    if (!Number.isFinite(offer) || offer < 0 || offer > 100000) {  
-      setPackageMessage('packageSubmitMessage', 'Enter a valid delivery budget from R0 to R100,000, or leave it empty.');  
-      return;  
-    }  
-  }  
-  
-  setPackageMessage('packageSubmitMessage', 'Checking account and securely submitting the request...');  
-  try {  
-    const user = await getSignedInUser();  
-    if (!user) {  
-      setPackageMessage('packageSubmitMessage', 'Please create an account or sign in above before submitting this package request.');  
-      document.getElementById('packageAccountEmail').focus();  
-      return;  
-    }  
-    const { data: packageId, error } = await db.rpc('create_package_delivery', {  
-      p_pickup_location: values.from,  
-      p_destination: values.to,  
-      p_pickup_date: values.date,  
-      p_package_type: values.type,  
-      p_package_size: values.size,  
-      p_description: values.description,  
-      p_is_fragile: values.fragile,  
-      p_sender_offer: offer,  
-      p_sender_name: values.senderName,  
-      p_sender_phone: values.senderPhone,  
-      p_recipient_name: values.recipientName,  
-      p_recipient_phone: values.recipientPhone,  
-      p_pickup_address: values.pickupAddress,  
-      p_delivery_address: values.deliveryAddress,  
-      p_instructions: values.instructions || null  
-    });  
-    if (error) throw error;  
-    setPackageMessage('packageSubmitMessage', 'Package request submitted successfully. Reference: ' + packageId + '. It is now visible in Available Package Requests. A driver has not accepted it yet, and no payment has been taken.');  
-    ['packageRecipientName','packageRecipientPhone','packageFromTown','packageToTown','packagePickupAddress','packageDeliveryAddress','packageDescription','packageOffer','packageInstructions'].forEach(id => {  
-      const input = document.getElementById(id);  
-      if (input) input.value = '';  
-    });  
-    document.getElementById('packageFragile').value = 'false';  
-    await refreshPackageLists();  
-  } catch (error) {  
-    setPackageMessage('packageSubmitMessage', 'Could not submit package request: ' + friendlyError(error) + '. Confirm that KC_package_transport_setup.sql has been run in Supabase SQL Editor.');  
-  }  
-}  
-  
-async function refreshOpenPackages() {  
-  const box = document.getElementById('openPackages');  
-  if (!box) return;  
-  box.textContent = 'Loading available package requests...';  
-  try {  
-    const { data, error } = await db.from('package_deliveries')  
-      .select('id,pickup_location,destination,pickup_date,package_type,package_size,description,is_fragile,sender_offer,status,created_at')  
-      .eq('status', 'open').order('pickup_date', { ascending: true }).limit(50);  
-    if (error) throw error;  
-    box.replaceChildren();  
-    if (!data || data.length === 0) {  
-      box.textContent = 'There are no open package requests yet. New requests will appear here.';  
-      return;  
-    }  
-    data.forEach(item => {  
-      const card = document.createElement('div');  
-      card.className = 'package-card';  
-      const heading = document.createElement('h4');  
-      heading.textContent = item.pickup_location + ' → ' + item.destination;  
-      card.appendChild(heading);  
-      card.appendChild(makePackageParagraph('Pickup date: ' + (item.pickup_date || 'Not specified')));  
-      card.appendChild(makePackageParagraph('Item: ' + item.package_type + ' • Size: ' + formatPackageSize(item.package_size)));  
-      card.appendChild(makePackageParagraph('Description: ' + item.description));  
-      card.appendChild(makePackageParagraph('Fragile: ' + (item.is_fragile ? 'Yes — handle carefully' : 'No')));  
-      card.appendChild(makePackageParagraph('Sender delivery offer: ' + (item.sender_offer === null ? 'Not specified' : 'R' + Number(item.sender_offer).toFixed(2))));  
-      card.appendChild(makePackageParagraph('Status: ' + formatPackageStatus(item.status)));  
-      card.appendChild(makePackageButton('ACCEPT PACKAGE DELIVERY', () => acceptPackageDelivery(item.id)));  
-      box.appendChild(card);  
-    });  
-  } catch (error) {  
-    box.textContent = 'Could not load package requests: ' + friendlyError(error) + '. Check that the package SQL setup has been run.';  
-  }  
-}  
-  
-async function acceptPackageDelivery(packageId) {  
-  setPackageMessage('packageSubmitMessage', 'Checking driver account and document approvals...');  
-  try {  
-    const user = await getSignedInUser();  
-    if (!user) {  
-      setPackageMessage('packageSubmitMessage', 'Sign in above first. Only a driver with approved PDP and criminal-record checks can accept a package.');  
-      document.getElementById('packageAccountEmail').focus();  
-      return;  
-    }  
-    const { data, error } = await db.rpc('assign_package_delivery', { p_package_id: packageId });  
-    if (error) throw error;  
-    setPackageMessage('packageSubmitMessage', 'Package delivery accepted. Open My Package Requests / Deliveries to see the private contact details and address.');  
-    await refreshPackageLists();  
-  } catch (error) {  
-    setPackageMessage('packageSubmitMessage', 'Could not accept package: ' + friendlyError(error) + '. You must be signed in as a driver and both PDP and criminal-record statuses must be APPROVED.');  
-  }  
-}  
-  
-async function updatePackageDeliveryStatus(packageId, newStatus) {  
-  try {  
-    const { data, error } = await db.rpc('update_package_delivery_status', {  
-      p_package_id: packageId,  
-      p_new_status: newStatus  
-    });  
-    if (error) throw error;  
-    setPackageMessage('packageSubmitMessage', 'Package status updated to: ' + formatPackageStatus(newStatus) + '.');  
-    await refreshPackageLists();  
-  } catch (error) {  
-    setPackageMessage('packageSubmitMessage', 'Could not update package status: ' + friendlyError(error));  
-  }  
-}  
-  
-async function refreshMyPackages() {  
-  const box = document.getElementById('myPackages');  
-  if (!box) return;  
-  box.textContent = 'Loading your package requests and deliveries...';  
-  try {  
-    const user = await getSignedInUser();  
-    if (!user) {  
-      box.textContent = 'Sign in above to see your own requests and deliveries assigned to you.';  
-      return;  
-    }  
-    const { data, error } = await db.from('package_deliveries')  
-      .select('id,sender_id,driver_id,pickup_location,destination,pickup_date,package_type,package_size,description,is_fragile,sender_offer,status,created_at')  
-      .or('sender_id.eq.' + user.id + ',driver_id.eq.' + user.id)  
-      .order('created_at', { ascending: false }).limit(50);  
-    if (error) throw error;  
-    box.replaceChildren();  
-    if (!data || data.length === 0) {  
-      box.textContent = 'You do not have any package requests or accepted deliveries yet.';  
-      return;  
-    }  
-    const ids = data.map(item => item.id);  
-    const { data: contacts, error: contactError } = await db.from('package_delivery_contacts')  
-      .select('package_id,sender_name,sender_phone,recipient_name,recipient_phone,pickup_address,delivery_address,instructions')  
-      .in('package_id', ids);  
-    if (contactError) throw contactError;  
-    const contactById = new Map((contacts || []).map(item => [item.package_id, item]));  
-    data.forEach(item => {  
-      const card = document.createElement('div');  
-      card.className = 'package-card';  
-      const heading = document.createElement('h4');  
-      heading.textContent = item.pickup_location + ' → ' + item.destination;  
-      card.appendChild(heading);  
-      card.appendChild(makePackageParagraph('Pickup date: ' + (item.pickup_date || 'Not specified')));  
-      card.appendChild(makePackageParagraph('Item: ' + item.package_type + ' • Size: ' + formatPackageSize(item.package_size)));  
-      card.appendChild(makePackageParagraph('Status: ' + formatPackageStatus(item.status)));  
-      card.appendChild(makePackageParagraph('Reference: ' + item.id));  
-      const contact = contactById.get(item.id);  
-      if (contact) {  
-        const privateBox = document.createElement('div');  
-        privateBox.className = 'package-private';  
-        privateBox.appendChild(makePackageParagraph('Sender: ' + contact.sender_name + ' • ' + contact.sender_phone));  
-        privateBox.appendChild(makePackageParagraph('Recipient: ' + contact.recipient_name + ' • ' + contact.recipient_phone));  
-        privateBox.appendChild(makePackageParagraph('Pickup address: ' + contact.pickup_address));  
-        privateBox.appendChild(makePackageParagraph('Delivery address: ' + contact.delivery_address));  
-        if (contact.instructions) privateBox.appendChild(makePackageParagraph('Instructions: ' + contact.instructions));  
-        card.appendChild(privateBox);  
-      }  
-      if (item.sender_id === user.id && item.status === 'open') {  
-        card.appendChild(makePackageButton('CANCEL REQUEST', () => updatePackageDeliveryStatus(item.id, 'cancelled'), true));  
-      } else if (item.driver_id === user.id && item.status === 'accepted') {  
-        card.appendChild(makePackageButton('MARK PACKAGE AS PICKED UP', () => updatePackageDeliveryStatus(item.id, 'picked_up')));  
-      } else if (item.driver_id === user.id && item.status === 'picked_up') {  
-        card.appendChild(makePackageButton('MARK AS DELIVERED', () => updatePackageDeliveryStatus(item.id, 'delivered')));  
-      }  
-      box.appendChild(card);  
-    });  
-  } catch (error) {  
-    box.textContent = 'Could not load your packages: ' + friendlyError(error) + '. Confirm the package SQL setup is complete.';  
-  }  
-}  
-  
-async function refreshPackageLists() {  
-  await updatePackageAuthStatus();  
-  await Promise.all([refreshOpenPackages(), refreshMyPackages()]);  
-}  
-  
-  
-/* KEEP THE DRIVER SCREEN IN SYNC WITH LOGIN STATE */  
-db.auth.onAuthStateChange((event, session) => {  
-  if (event === 'SIGNED_IN' && session) {  
-    // Avoid running Supabase database work inside the auth callback itself.  
-    setTimeout(() => { loadDriverProfile(); refreshPackageLists(); }, 0);  
-  }  
-  if (event === 'SIGNED_OUT') {  
-    setTimeout(() => { refreshPackageLists(); }, 0);  
-    document.getElementById('driverAuth').style.display = 'block';  
-    document.getElementById('driverProfileForm').style.display = 'none';  
-    document.getElementById('driverMessage').textContent = 'You have signed out. Sign in to manage your driver profile.';  
-  }  
-});  
-  
-window.addEventListener('DOMContentLoaded', async () => {  
-  document.getElementById('driverPhotoFile').addEventListener('change', () => previewSelectedFile('driverPhotoFile', 'driverPhotoPreview'));  
-  document.getElementById('carPhotoFile').addEventListener('change', () => previewSelectedFile('carPhotoFile', 'carPhotoPreview'));  
-  const packageDate = document.getElementById('packageDate');  
-  if (packageDate) {  
-    const now = new Date();  
-    const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);  
-    packageDate.min = localDate;  
-    packageDate.value = localDate;  
-  }  
-  refreshPackageLists();  
-  const message = document.getElementById('driverMessage');  
-  try {  
-    const user = await getSignedInUser();  
-    if (user) await loadDriverProfile();  
-    else {  
-      document.getElementById('driverAuth').style.display = 'block';  
-      document.getElementById('driverProfileForm').style.display = 'none';  
-      message.textContent = 'Register a new account or sign in to continue.';  
-    }  
-  } catch (error) { message.textContent = 'Could not check your login session: ' + friendlyError(error); }  
-});  
-</script>  </body>  
-</html>  
+  <h4 class="package-subtitle">Available package requests</h4>
+  <p class="muted">Drivers may accept a delivery only when their PDP and criminal-record checks are both approved by the administrator.</p>
+  <button type="button" class="green" onclick="refreshOpenPackages()">REFRESH AVAILABLE PACKAGES</button>
+  <div id="openPackages" aria-live="polite" class="message">Loading available package requests...</div>
+
+  <h4 class="package-subtitle">My package requests / deliveries</h4>
+  <button type="button" class="green" onclick="refreshMyPackages()">REFRESH MY PACKAGES</button>
+  <div id="myPackages" aria-live="polite" class="message">Sign in to see your package requests and accepted deliveries.</div>
+  <p class="muted">KC does not collect payment in the app yet. Confirm the driver's identity, agreed price and delivery arrangements before paying. Do not send prohibited or dangerous items.</p>
+</section>
+
+
+<section id="messages" class="panel">
+  <h3>Passenger &amp; Driver Messages</h3>
+  <p class="muted">
+    Communicate privately with the driver or passenger connected to your ride.
+    You must sign in and have a valid ride booking or passenger on your ride.
+  </p>
+
+  <button type="button" class="green" onclick="loadRideChats()">
+    REFRESH CONVERSATIONS
+  </button>
+
+  <label for="rideChatSelect">Choose a conversation</label>
+  <select id="rideChatSelect" onchange="openRideChat(this.value)">
+    <option value="">Sign in to load conversations</option>
+  </select>
+
+  <div id="rideChatMessages" class="message" aria-live="polite">
+    Your messages will appear here.
+  </div>
+
+  <form id="rideChatForm">
+    <label for="rideChatInput">Your message</label>
+    <textarea id="rideChatInput" rows="3" maxlength="2000"
+      placeholder="Write your message..." required></textarea>
+    <button type="submit" class="green">SEND MESSAGE</button>
+  </form>
+
+  <p id="rideChatStatus" class="message" role="status" aria-live="polite">
+    Sign in to start messaging.
+  </p>
+</section>
+
+<section id="offer" class="panel">
+  <h3>Offer a Ride</h3>
+  <p class="muted">Enter your trip details. Sign in to your driver account before posting a ride.</p>
+  <label for="pickup">Leaving from</label>
+  <input id="pickup" placeholder="Pickup town or city">
+  <label for="destination">Going to</label>
+  <input id="destination" placeholder="Destination town or city">
+  <label for="travelDate">Travel date</label>
+  <input id="travelDate" type="date">
+  <label for="travelTime">Departure time</label>
+  <input id="travelTime" type="time">
+  <label for="seats">Available seats</label>
+  <input id="seats" type="number" min="1" max="20" value="3">
+  <label for="price">Price per passenger (R)</label>
+  <input id="price" type="number" min="0" step="0.01" placeholder="e.g. 350">
+  <label for="notes">Extra details (optional)</label>
+  <textarea id="notes" rows="3" placeholder="Vehicle or meeting point details"></textarea>
+  <button type="button" class="green" onclick="publishRide()">POST MY RIDE</button>
+  <div id="publishMessage" class="message" aria-live="polite"></div>
+</section>
+
+<section id="driver" class="panel">
+  <h3>Driver Account</h3>
+  <p class="muted">Register or sign in to manage your driver profile and vehicle details.</p>
+  <div id="driverAuth">
+    <h4>Register a New Account</h4>
+    <label for="driverEmail">Email address</label>
+    <input id="driverEmail" type="email" autocomplete="email" placeholder="you@example.com">
+    <label for="driverPassword">Password</label>
+    <input id="driverPassword" type="password" autocomplete="new-password" placeholder="At least 8 characters">
+    <button type="button" class="green" onclick="registerDriver()">REGISTER</button>
+    <button type="button" class="green" onclick="loginDriver()">SIGN IN</button>
+  </div>
+
+  <div id="driverProfileForm" style="display:none">
+    <p id="driverSignedIn" class="message"></p>
+    <h4>Your Driver Details</h4>
+    <label for="driverFullName">Full name</label>
+    <input id="driverFullName" type="text" autocomplete="name" placeholder="Your full name">
+    <label for="driverPhone">Phone number</label>
+    <input id="driverPhone" type="tel" autocomplete="tel" placeholder="Your phone number">
+
+    <label for="driverPhotoFile">Driver profile photo (optional)</label>
+    <input id="driverPhotoFile" type="file" accept="image/jpeg,image/png,image/webp">
+    <p class="photo-hint">Choose a photo from your phone or take one with your camera. JPG, PNG or WebP; maximum 5 MB.</p>
+    <img id="driverPhotoPreview" class="photo-preview" alt="Driver profile photo preview" hidden>
+
+    <label for="carModel">Car model</label>
+    <input id="carModel" type="text" placeholder="e.g. Toyota Corolla">
+    <label for="registrationNumber">Vehicle registration number</label>
+    <input id="registrationNumber" type="text" placeholder="Vehicle registration">
+
+    <label for="carPhotoFile">Car photo (optional)</label>
+    <input id="carPhotoFile" type="file" accept="image/jpeg,image/png,image/webp">
+    <p class="photo-hint">Choose a clear photo of the vehicle from your phone or take a new one. Maximum 5 MB.</p>
+    <img id="carPhotoPreview" class="photo-preview" alt="Car photo preview" hidden>
+
+    <button type="button" class="green" id="saveDriverButton" onclick="saveDriverProfile()">SAVE DRIVER PROFILE</button>
+
+    <div class="verification-panel">
+      <h4>Required Driver Verification</h4>
+      <p class="verification-note">Before you can post rides, submit your Professional Driving Permit (PDP) and your official criminal-record check or clearance document. An administrator must review both documents. Uploading a file never approves it automatically. Files are stored in private storage.</p>
+      <label for="pdpDocumentFile">Professional Driving Permit (PDP) document</label>
+      <input id="pdpDocumentFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp">
+      <p class="photo-hint">PDF, JPG, PNG or WebP. Maximum 5 MB.</p>
+      <label for="criminalDocumentFile">Criminal-record check / clearance document</label>
+      <input id="criminalDocumentFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp">
+      <p class="photo-hint">PDF, JPG, PNG or WebP. Maximum 5 MB. Do not upload unrelated personal documents.</p>
+      <button type="button" class="green" id="submitVerificationButton" onclick="submitDriverVerification()">SUBMIT DOCUMENTS FOR REVIEW</button>
+      <div id="verificationStatus" class="message verification-status" aria-live="polite">Sign in to view your verification status.</div>
+    </div>
+
+    <button type="button" class="green" onclick="logoutDriver()">SIGN OUT</button>
+  </div>
+  <div id="driverMessage" class="message" aria-live="polite">Register a new account or sign in to continue.</div>
+</section>
+
+<section id="profile" class="panel">
+  <h3>About KC</h3>
+  <p>KC Comfortable Long Distance Rides helps passengers and drivers connect for long-distance journeys and package transport between towns and provinces.</p>
+  <p class="muted">Confirm the driver, price, pickup point and travel arrangements before paying or travelling.</p>
+  <div class="sos-help">
+    <strong>Journey emergency help</strong>
+    <p>In an emergency in South Africa, use one of the emergency buttons fixed at the bottom of the screen. SOS opens your phone dialler for 112, Fire Brigade / Ambulance opens 10177, and Police opens 10111. You may need to press Call on your phone.</p>
+  </div>
+</section>
+</main>
+<footer>KC Comfortable Long Distance Rides</footer>
+</div>
+
+<div class="sos-dock" role="region" aria-label="Emergency help">
+  <div class="emergency-grid">
+    <button type="button" class="emergency-button emergency-sos" onclick="confirmEmergency('SOS', '112')" aria-label="SOS emergency call 112">🆘 SOS<small>Call 112</small></button>
+    <button type="button" class="emergency-button emergency-fire" onclick="confirmEmergency('Fire Brigade / Ambulance', '10177')" aria-label="Call Fire Brigade or Ambulance on 10177">🔥 Fire Brigade<small>10177</small></button>
+    <button type="button" class="emergency-button emergency-police" onclick="confirmEmergency('Police', '10111')" aria-label="Call Police on 10111">🚔 Police<small>10111</small></button>
+  </div>
+  <p class="emergency-caption">South Africa emergency numbers • Tap a button, then confirm the call on your phone.</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://ndagpnohncjudssgtsvg.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_h4zgJO-RfPnnCXG5-QwPlA_geL4XqkI';
+const DRIVER_PHOTO_BUCKET = 'kc-driver-photos';
+const DRIVER_VERIFICATION_BUCKET = 'kc-driver-verification';
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const ALLOWED_VERIFICATION_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+});
+
+// Preserve any existing photo values when no new file is selected.
+let savedDriverPhotoValue = null;
+let savedCarPhotoValue = null;
+let profileLoadInProgress = false;
+
+function confirmEmergency(service, number) {
+  const confirmed = window.confirm(
+    'EMERGENCY CALL — ' + service +
+    '\n\nThis will open your phone dialler for ' + number +
+    '. You may need to press Call. This website cannot silently call ' +
+    'or automatically send your location.' +
+    '\n\nOnly continue if this is a real emergency.'
+  );
+  if (confirmed) window.location.href = 'tel:' + number;
+}
+
+function showTab(id, button) {
+  document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+  const target = document.getElementById(id);
+  if (target) target.classList.add('active');
+  if (button) button.classList.add('active');
+  else {
+    const navButton = Array.from(document.querySelectorAll('nav button')).find(btn => btn.getAttribute('onclick')?.includes("'" + id + "'"));
+    if (navButton) navButton.classList.add('active');
+  }
+}
+
+function openDriverAccount() { showTab('driver'); }
+function friendlyError(error) { return error?.message || String(error || 'An unknown error occurred.'); }
+
+// Confirm that an actual logged-in user exists before any protected database write.
+async function getSignedInUser() {
+  const { data: sessionData, error: sessionError } = await db.auth.getSession();
+  if (sessionError) throw sessionError;
+  if (!sessionData.session?.access_token) return null;
+
+  const { data: userData, error: userError } = await db.auth.getUser();
+  if (userError) throw userError;
+  return userData.user || null;
+}
+
+function setPhotoPreview(previewId, source) {
+  const img = document.getElementById(previewId);
+  if (!img) return;
+  if (!source) {
+    img.removeAttribute('src');
+    img.hidden = true;
+    return;
+  }
+  img.src = source;
+  img.hidden = false;
+}
+
+function previewSelectedFile(inputId, previewId) {
+  const input = document.getElementById(inputId);
+  const file = input?.files?.[0];
+  if (!file) return;
+  if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
+    input.value = '';
+    alert('Please choose a JPG, PNG or WebP image.');
+    return;
+  }
+  if (file.size > MAX_PHOTO_BYTES) {
+    input.value = '';
+    alert('The photo is larger than 5 MB. Please choose a smaller image.');
+    return;
+  }
+  setPhotoPreview(previewId, URL.createObjectURL(file));
+}
+
+function cleanFileName(fileName) {
+  return String(fileName || 'photo').toLowerCase().replace(/[^a-z0-9._-]+/g, '-').slice(-80) || 'photo';
+}
+
+// Upload a real image to the existing Supabase Storage bucket inside the owner's folder.
+async function uploadDriverPhoto(file, kind, userId) {
+  if (!file) return null;
+  if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
+    throw new Error('Choose a JPG, PNG or WebP image for ' + kind + '.');
+  }
+  if (file.size > MAX_PHOTO_BYTES) {
+    throw new Error('The ' + kind + ' photo must be 5 MB or smaller.');
+  }
+
+  const safeName = cleanFileName(file.name);
+  const objectPath = userId + '/' + kind + '-' + Date.now() + '-' + safeName;
+  const { error: uploadError } = await db.storage.from(DRIVER_PHOTO_BUCKET).upload(objectPath, file, {
+    cacheControl: '3600',
+    contentType: file.type,
+    upsert: false
+  });
+
+  if (uploadError) {
+    throw new Error('Photo upload failed. Check that the ' + DRIVER_PHOTO_BUCKET + ' bucket allows authenticated users to upload into their own user-ID folder. Details: ' + uploadError.message);
+  }
+
+  // Public buckets store a usable public URL; private buckets store the object path.
+  try {
+    const { data: bucketData, error: bucketError } = await db.storage.getBucket(DRIVER_PHOTO_BUCKET);
+    if (!bucketError && bucketData?.public) {
+      return db.storage.from(DRIVER_PHOTO_BUCKET).getPublicUrl(objectPath).data.publicUrl;
+    }
+  } catch (_) {
+    // If bucket settings cannot be read, safely retain the object path.
+  }
+  return objectPath;
+}
+
+// Convert old saved Supabase Storage URLs back into object paths. Signed URLs
+// expire, so a saved Supabase URL must be refreshed whenever the profile loads.
+function getDriverPhotoObjectPath(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+
+  if (/^https?:\/\//i.test(raw)) {
+    let parsed;
+    try { parsed = new URL(raw); } catch (_) { return null; }
+    if (!parsed.hostname.endsWith('.supabase.co')) return null; // external image URL
+    const marker = '/storage/v1/object/';
+    const markerIndex = parsed.pathname.indexOf(marker);
+    if (markerIndex === -1) return null;
+    let tail = parsed.pathname.slice(markerIndex + marker.length);
+    tail = tail.replace(/^(public|sign|authenticated)\//, '');
+    const prefix = DRIVER_PHOTO_BUCKET + '/';
+    if (!tail.startsWith(prefix)) return null;
+    try { return decodeURIComponent(tail.slice(prefix.length)); }
+    catch (_) { return tail.slice(prefix.length); }
+  }
+
+  let path = raw.replace(/^\/+/, '');
+  const bucketPrefix = DRIVER_PHOTO_BUCKET + '/';
+  if (path.startsWith(bucketPrefix)) path = path.slice(bucketPrefix.length);
+  return path || null;
+}
+
+async function resolvePhotoValue(value) {
+  if (!value) return null;
+  const objectPath = getDriverPhotoObjectPath(value);
+  if (!objectPath) {
+    // Keep valid non-Supabase image links supported for older profiles.
+    if (/^https?:\/\//i.test(String(value).trim())) return String(value).trim();
+    throw new Error('The saved photo path is empty or not in the ' + DRIVER_PHOTO_BUCKET + ' bucket.');
+  }
+
+  // Use a fresh signed URL so this also works when the bucket is private and
+  // when an older saved URL has expired. This does not make the bucket public.
+  const { data, error } = await db.storage.from(DRIVER_PHOTO_BUCKET).createSignedUrl(objectPath, 3600);
+  if (error) throw new Error('Could not create a view link for ' + objectPath + ': ' + error.message + '. Check that Storage SELECT access is allowed for the signed-in user’s own folder.');
+  if (!data?.signedUrl) throw new Error('Supabase did not return a view link for ' + objectPath + '.');
+  return data.signedUrl;
+}
+
+/* DRIVER PDP AND CRIMINAL-RECORD VERIFICATION */
+function displayVerificationStatus(record) {
+  const box = document.getElementById('verificationStatus');
+  if (!box) return;
+  if (!record) {
+    box.textContent = 'No documents have been submitted yet. Select both required documents and tap SUBMIT DOCUMENTS FOR REVIEW.';
+    return;
+  }
+  const show = value => String(value || 'pending').toUpperCase();
+  let text = 'PDP status: ' + show(record.pdp_status) + '\nCriminal-record status: ' + show(record.criminal_status);
+  if (record.updated_at) {
+    const submitted = new Date(record.updated_at);
+    if (!Number.isNaN(submitted.getTime())) text += '\nLast submitted or updated: ' + submitted.toLocaleString();
+  }
+  if (record.reviewed_at) {
+    const reviewed = new Date(record.reviewed_at);
+    if (!Number.isNaN(reviewed.getTime())) text += '\nLast reviewed: ' + reviewed.toLocaleString();
+  }
+  if (record.admin_notes) text += '\nAdministrator note: ' + record.admin_notes;
+  if (record.pdp_status !== 'approved' || record.criminal_status !== 'approved') {
+    text += '\nRide posting stays blocked until BOTH checks are approved.';
+  } else {
+    text += '\nBoth checks are approved. You may post a ride.';
+  }
+  box.textContent = text;
+}
+
+async function refreshDriverVerification(userId) {
+  const box = document.getElementById('verificationStatus');
+  if (!userId) {
+    if (box) box.textContent = 'Sign in to view your verification status.';
+    return null;
+  }
+  const { data, error } = await db.from('driver_verifications')
+    .select('pdp_status,criminal_status,admin_notes,reviewed_at,updated_at')
+    .eq('driver_id', userId).maybeSingle();
+  if (error) {
+    if (box) box.textContent = 'Could not load verification status. Confirm that the PDP/criminal verification SQL setup has been completed. Details: ' + friendlyError(error);
+    return null;
+  }
+  displayVerificationStatus(data);
+  return data;
+}
+
+async function uploadVerificationDocument(file, kind, userId) {
+  if (!file) throw new Error('Select both required documents before submitting.');
+  if (!ALLOWED_VERIFICATION_TYPES.includes(file.type)) {
+    throw new Error('The ' + kind + ' document must be a PDF, JPG or PNG file.');
+  }
+  if (file.size > MAX_PHOTO_BYTES) {
+    throw new Error('The ' + kind + ' document must be 5 MB or smaller.');
+  }
+  const uniquePart = Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+  const path = userId + '/' + kind + '/' + uniquePart + '-' + cleanFileName(file.name);
+  const { error } = await db.storage.from(DRIVER_VERIFICATION_BUCKET).upload(path, file, {
+    cacheControl: '3600', contentType: file.type, upsert: false
+  });
+  if (error) {
+    throw new Error('Could not upload the ' + kind + ' document. Confirm the private ' + DRIVER_VERIFICATION_BUCKET + ' bucket and its upload policy are set up. Details: ' + error.message);
+  }
+  return path;
+}
+
+async function submitDriverVerification() {
+  const button = document.getElementById('submitVerificationButton');
+  const box = document.getElementById('verificationStatus');
+  const pdpFile = document.getElementById('pdpDocumentFile').files?.[0] || null;
+  const criminalFile = document.getElementById('criminalDocumentFile').files?.[0] || null;
+  if (!pdpFile || !criminalFile) {
+    box.textContent = 'Please select BOTH your PDP document and criminal-record check / clearance document.';
+    return;
+  }
+  for (const [kind, file] of [['PDP', pdpFile], ['criminal-record', criminalFile]]) {
+    if (!ALLOWED_VERIFICATION_TYPES.includes(file.type)) {
+      box.textContent = 'The ' + kind + ' document must be a PDF, JPG or PNG file.';
+      return;
+    }
+    if (file.size > MAX_PHOTO_BYTES) {
+      box.textContent = 'The ' + kind + ' document is larger than 5 MB. Please choose a smaller file.';
+      return;
+    }
+  }
+
+  button.disabled = true;
+  box.textContent = 'Checking your sign-in session...';
+  try {
+    const user = await getSignedInUser();
+    if (!user) throw new Error('Your login session is missing. Please sign in again.');
+
+    const { data: profile, error: profileError } = await db.from('profiles')
+      .select('role').eq('id', user.id).maybeSingle();
+    if (profileError) throw new Error('Could not check your driver profile: ' + profileError.message);
+    if (!profile || profile.role !== 'driver') {
+      throw new Error('Please save your Driver Account profile first, then submit the documents.');
+    }
+
+    box.textContent = 'Uploading your PDP document securely...';
+    const pdpPath = await uploadVerificationDocument(pdpFile, 'pdp', user.id);
+    box.textContent = 'PDP uploaded. Uploading your criminal-record document securely...';
+    const criminalPath = await uploadVerificationDocument(criminalFile, 'criminal', user.id);
+
+    box.textContent = 'Registering your documents for administrator review...';
+    const { error: submitError } = await db.rpc('submit_driver_verification', {
+      p_pdp_path: pdpPath,
+      p_criminal_path: criminalPath
+    });
+    if (submitError) {
+      throw new Error('The files uploaded, but the submission could not be registered. Do not post rides yet. Details: ' + submitError.message);
+    }
+
+    document.getElementById('pdpDocumentFile').value = '';
+    document.getElementById('criminalDocumentFile').value = '';
+    const refreshedVerification = await refreshDriverVerification(user.id);
+    if (refreshedVerification) {
+      box.textContent += '\n\nSubmission received. Both checks are PENDING until an administrator reviews them. You cannot post rides until both statuses are approved.';
+    } else {
+      box.textContent = 'Your documents were submitted, but the app could not reload your status. Refresh Driver Account and confirm both statuses. Ride posting remains blocked unless both show APPROVED.';
+    }
+  } catch (error) {
+    box.textContent = 'Could not submit verification documents: ' + friendlyError(error);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+/* FIND RIDES */
+async function searchRides() {
+  const from = document.getElementById('searchPickup').value.trim();
+  const to = document.getElementById('searchDestination').value.trim();
+  const date = document.getElementById('searchDate').value;
+  const results = document.getElementById('results');
+  if (!from || !to) { results.textContent = 'Please enter both pickup and destination.'; return; }
+  results.textContent = 'Searching for rides...';
+
+  try {
+    let query = db.from('rides').select('id,pickup_location,destination,travel_date,travel_time,available_seats,price,notes')
+      .ilike('pickup_location', from).ilike('destination', to)
+      .gt('available_seats', 0).order('travel_date', { ascending: true });
+    if (date) query = query.eq('travel_date', date);
+    const { data, error } = await query;
+    if (error) throw error;
+    results.replaceChildren();
+    if (!data || data.length === 0) {
+      results.textContent = 'No rides found for this route yet. Check the spelling or try another date.';
+      return;
+    }
+    data.forEach(ride => {
+      const card = document.createElement('div'); card.className = 'ride';
+      const title = document.createElement('strong');
+      title.textContent = ride.pickup_location + ' → ' + ride.destination;
+      card.appendChild(title);
+      const details = document.createElement('p');
+      details.textContent = 'Date: ' + (ride.travel_date || 'Not specified') +
+        ' | Time: ' + (ride.travel_time || 'Not specified') +
+        ' | Seats: ' + ride.available_seats + ' | Price: R' + ride.price;
+      card.appendChild(details);
+      if (ride.notes) { const note = document.createElement('p'); note.textContent = ride.notes; card.appendChild(note); }
+      results.appendChild(card);
+    });
+  } catch (error) { results.textContent = 'Search error: ' + friendlyError(error); }
+}
+
+/* POST A RIDE */
+async function publishRide() {
+  const message = document.getElementById('publishMessage');
+  const pickup = document.getElementById('pickup').value.trim();
+  const destination = document.getElementById('destination').value.trim();
+  const date = document.getElementById('travelDate').value;
+  const time = document.getElementById('travelTime').value;
+  const seats = Number(document.getElementById('seats').value);
+  const priceInput = document.getElementById('price').value;
+  const price = Number(priceInput);
+  const notes = document.getElementById('notes').value.trim();
+
+  if (!pickup || !destination || !date || !time || !seats || priceInput === '') {
+    message.textContent = 'Please complete all required fields.'; return;
+  }
+  if (seats < 1 || seats > 20 || !Number.isFinite(price) || price < 0) {
+    message.textContent = 'Please enter valid seats and price.'; return;
+  }
+  if (pickup.toLowerCase() === destination.toLowerCase()) {
+    message.textContent = 'Pickup and destination cannot be the same.'; return;
+  }
+
+  message.textContent = 'Checking your driver account...';
+  try {
+    const user = await getSignedInUser();
+    if (!user) {
+      message.textContent = 'You are not signed in. Sign in under Driver Account, then return here to post your ride.';
+      openDriverAccount(); return;
+    }
+    message.textContent = 'Checking your driver profile...';
+    const { data: mainProfile, error: mainProfileError } = await db.from('profiles')
+      .select('id,role').eq('id', user.id).maybeSingle();
+    if (mainProfileError) throw new Error('Could not check your main profile: ' + mainProfileError.message);
+    if (!mainProfile) {
+      message.textContent = 'Your main profile is missing. Open Driver Account, complete your details, and tap SAVE DRIVER PROFILE first.';
+      openDriverAccount(); return;
+    }
+    if (mainProfile.role !== 'driver') {
+      message.textContent = 'Your account is not set as a driver. Open Driver Account and save your driver profile.';
+      openDriverAccount(); return;
+    }
+
+    message.textContent = 'Checking PDP and criminal-record approval...';
+    const { data: verification, error: verificationError } = await db.from('driver_verifications')
+      .select('pdp_status,criminal_status').eq('driver_id', user.id).maybeSingle();
+    if (verificationError) {
+      message.textContent = 'Could not verify your documents. Please contact the app administrator and confirm the verification setup has been completed. Details: ' + verificationError.message;
+      return;
+    }
+    if (!verification || verification.pdp_status !== 'approved' || verification.criminal_status !== 'approved') {
+      message.textContent = 'Ride posting is blocked. Both your PDP and criminal-record check must be submitted and approved by the administrator. Open Driver Account to upload or check your document status.';
+      showTab('driver');
+      return;
+    }
+
+    message.textContent = 'Posting your ride...';
+    const { error } = await db.from('rides').insert([{
+      driver_id: user.id, pickup_location: pickup, destination,
+      travel_date: date, travel_time: time, available_seats: seats,
+      price, notes: notes || null
+    }]);
+    if (error) throw error;
+    message.textContent = 'Ride posted successfully!';
+    document.getElementById('pickup').value = '';
+    document.getElementById('destination').value = '';
+    document.getElementById('travelDate').value = '';
+    document.getElementById('travelTime').value = '';
+    document.getElementById('seats').value = '3';
+    document.getElementById('price').value = '';
+    document.getElementById('notes').value = '';
+  } catch (error) { message.textContent = 'Could not post ride: ' + friendlyError(error); }
+}
+
+/* REGISTER DRIVER */
+async function registerDriver() {
+  const email = document.getElementById('driverEmail').value.trim();
+  const password = document.getElementById('driverPassword').value;
+  const message = document.getElementById('driverMessage');
+  if (!email || password.length < 8) {
+    message.textContent = 'Enter a valid email and a password of at least 8 characters.'; return;
+  }
+  message.textContent = 'Creating your account...';
+  try {
+    const { data, error } = await db.auth.signUp({
+      email, password,
+      options: { emailRedirectTo: window.location.origin }
+    });
+    if (error) throw error;
+    if (data.session && data.user) {
+      await loadDriverProfile();
+      message.textContent = 'Account created. Complete your driver details and save your profile.';
+    } else {
+      message.textContent = 'Your registration request was submitted. Confirm your email first, then return here and sign in before saving your profile. Check your spam folder if the email does not arrive.';
+    }
+  } catch (error) { message.textContent = 'Registration error: ' + friendlyError(error); }
+}
+
+/* SIGN IN DRIVER */
+async function loginDriver() {
+  const email = document.getElementById('driverEmail').value.trim();
+  const password = document.getElementById('driverPassword').value;
+  const message = document.getElementById('driverMessage');
+  if (!email || !password) { message.textContent = 'Enter your email and password.'; return; }
+  message.textContent = 'Signing in...';
+  try {
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    if (!data.session || !data.user) throw new Error('No active session was returned. Please try signing in again.');
+    await loadDriverProfile();
+    message.textContent = 'You are signed in. Check your details and tap SAVE DRIVER PROFILE if needed.';
+  } catch (error) { message.textContent = 'Sign-in error: ' + friendlyError(error); }
+}
+
+/* LOAD DRIVER PROFILE */
+async function loadDriverProfile() {
+  if (profileLoadInProgress) return;
+  profileLoadInProgress = true;
+  const message = document.getElementById('driverMessage');
+  try {
+    const user = await getSignedInUser();
+    if (!user) {
+      document.getElementById('driverAuth').style.display = 'block';
+      document.getElementById('driverProfileForm').style.display = 'none';
+      message.textContent = 'Please register or sign in to manage your profile.';
+      return;
+    }
+    document.getElementById('driverAuth').style.display = 'none';
+    document.getElementById('driverProfileForm').style.display = 'block';
+    document.getElementById('driverSignedIn').textContent = 'Signed in as ' + (user.email || 'your account');
+
+    const { data: mainProfile, error: mainError } = await db.from('profiles')
+      .select('full_name,phone,role,profile_picture_url').eq('id', user.id).maybeSingle();
+    if (mainError) throw new Error('Could not read your main profile: ' + mainError.message);
+
+    const { data: vehicleProfile, error: vehicleError } = await db.from('driver_profiles')
+      .select('full_name,phone,car_model,registration_number,car_photo_url')
+      .eq('id', user.id).maybeSingle();
+    if (vehicleError) throw new Error('Could not read your driver vehicle details: ' + vehicleError.message);
+
+    const profile = vehicleProfile || {};
+    document.getElementById('driverFullName').value = profile.full_name || mainProfile?.full_name || '';
+    document.getElementById('driverPhone').value = profile.phone || mainProfile?.phone || '';
+    document.getElementById('carModel').value = profile.car_model || '';
+    document.getElementById('registrationNumber').value = profile.registration_number || '';
+    savedDriverPhotoValue = mainProfile?.profile_picture_url || null;
+    savedCarPhotoValue = profile.car_photo_url || null;
+    document.getElementById('driverPhotoFile').value = '';
+    document.getElementById('carPhotoFile').value = '';
+
+    const photoIssues = [];
+    try { setPhotoPreview('driverPhotoPreview', await resolvePhotoValue(savedDriverPhotoValue)); }
+    catch (photoError) { setPhotoPreview('driverPhotoPreview', null); if (savedDriverPhotoValue) photoIssues.push('Driver photo: ' + friendlyError(photoError)); }
+    try { setPhotoPreview('carPhotoPreview', await resolvePhotoValue(savedCarPhotoValue)); }
+    catch (photoError) { setPhotoPreview('carPhotoPreview', null); if (savedCarPhotoValue) photoIssues.push('Car photo: ' + friendlyError(photoError)); }
+
+    if (photoIssues.length) {
+      message.textContent = 'Your profile details loaded, but the photo display needs attention. ' + photoIssues.join(' | ');
+    } else {
+      message.textContent = (vehicleProfile || mainProfile)
+        ? 'Your saved details and photos have been loaded. Review them and tap SAVE DRIVER PROFILE if needed.'
+        : 'Complete your details and tap SAVE DRIVER PROFILE.';
+    }
+    await refreshDriverVerification(user.id);
+  } catch (error) {
+    message.textContent = 'Could not load profile: ' + friendlyError(error);
+  } finally { profileLoadInProgress = false; }
+}
+
+/* SAVE BOTH PROFILES, USING THE SIGNED-IN USER'S REAL AUTH ID */
+async function saveDriverProfile() {
+  const message = document.getElementById('driverMessage');
+  const saveButton = document.getElementById('saveDriverButton');
+  const fullName = document.getElementById('driverFullName').value.trim();
+  const phone = document.getElementById('driverPhone').value.trim();
+  const carModel = document.getElementById('carModel').value.trim();
+  const registrationNumber = document.getElementById('registrationNumber').value.trim();
+  const driverPhotoFile = document.getElementById('driverPhotoFile').files?.[0] || null;
+  const carPhotoFile = document.getElementById('carPhotoFile').files?.[0] || null;
+
+  if (!fullName) { message.textContent = 'Please enter your full name.'; return; }
+  for (const [name, file] of [['driver profile', driverPhotoFile], ['car', carPhotoFile]]) {
+    if (file && !ALLOWED_PHOTO_TYPES.includes(file.type)) {
+      message.textContent = 'The ' + name + ' photo must be JPG, PNG or WebP.'; return;
+    }
+    if (file && file.size > MAX_PHOTO_BYTES) {
+      message.textContent = 'The ' + name + ' photo must be 5 MB or smaller.'; return;
+    }
+  }
+
+  saveButton.disabled = true;
+  message.textContent = 'Checking your sign-in session...';
+  try {
+    const user = await getSignedInUser();
+    if (!user) throw new Error('Your login session is missing. Please sign in again before saving.');
+
+    let driverPhotoValue = savedDriverPhotoValue;
+    let carPhotoValue = savedCarPhotoValue;
+    if (driverPhotoFile) {
+      message.textContent = 'Uploading your driver photo...';
+      driverPhotoValue = await uploadDriverPhoto(driverPhotoFile, 'driver-profile', user.id);
+    }
+    if (carPhotoFile) {
+      message.textContent = 'Uploading your car photo...';
+      carPhotoValue = await uploadDriverPhoto(carPhotoFile, 'car', user.id);
+    }
+
+    // The profiles row must use the logged-in user's UUID; keep driver role for ride posting.
+    message.textContent = 'Saving your main profile...';
+    const { error: mainProfileError } = await db.from('profiles').upsert({
+      id: user.id,
+      full_name: fullName,
+      phone: phone || null,
+      role: 'driver',
+      profile_picture_url: driverPhotoValue || null
+    }, { onConflict: 'id' });
+    if (mainProfileError) {
+      throw new Error('Could not save your main profile (profiles table): ' + mainProfileError.message + '. Confirm that profiles RLS allows authenticated users to insert/update only their own id.');
+    }
+
+    message.textContent = 'Saving your vehicle details...';
+    const { error: driverProfileError } = await db.from('driver_profiles').upsert({
+      id: user.id,
+      full_name: fullName,
+      phone: phone || null,
+      car_model: carModel || null,
+      registration_number: registrationNumber || null,
+      car_photo_url: carPhotoValue || null
+    }, { onConflict: 'id' });
+    if (driverProfileError) {
+      throw new Error('Main profile saved, but vehicle details could not be saved (driver_profiles table): ' + driverProfileError.message + '. The id must equal your signed-in user id, and INSERT/UPDATE RLS policies must allow auth.uid() = id.');
+    }
+
+    savedDriverPhotoValue = driverPhotoValue;
+    savedCarPhotoValue = carPhotoValue;
+    document.getElementById('driverPhotoFile').value = '';
+    document.getElementById('carPhotoFile').value = '';
+    const photoIssues = [];
+    try { setPhotoPreview('driverPhotoPreview', await resolvePhotoValue(savedDriverPhotoValue)); }
+    catch (photoError) { setPhotoPreview('driverPhotoPreview', null); if (savedDriverPhotoValue) photoIssues.push('Driver photo: ' + friendlyError(photoError)); }
+    try { setPhotoPreview('carPhotoPreview', await resolvePhotoValue(savedCarPhotoValue)); }
+    catch (photoError) { setPhotoPreview('carPhotoPreview', null); if (savedCarPhotoValue) photoIssues.push('Car photo: ' + friendlyError(photoError)); }
+    message.textContent = photoIssues.length
+      ? 'Your profile details were saved, but the photos could not be displayed yet. ' + photoIssues.join(' | ')
+      : 'Driver profile saved successfully! Your details and photos have been saved. Next, submit your PDP and criminal-record documents for administrator approval before posting rides.';
+  } catch (error) {
+    message.textContent = 'Could not save profile: ' + friendlyError(error);
+  } finally { saveButton.disabled = false; }
+}
+
+/* SIGN OUT */
+async function logoutDriver() {
+  const message = document.getElementById('driverMessage');
+  try {
+    const { error } = await db.auth.signOut();
+    if (error) throw error;
+    ['driverFullName','driverPhone','carModel','registrationNumber','driverPhotoFile','carPhotoFile','pdpDocumentFile','criminalDocumentFile','driverEmail','driverPassword'].forEach(id => {
+      const input = document.getElementById(id); if (input) input.value = '';
+    });
+    setPhotoPreview('driverPhotoPreview', null);
+    setPhotoPreview('carPhotoPreview', null);
+    document.getElementById('verificationStatus').textContent = 'Sign in to view your verification status.';
+    savedDriverPhotoValue = null; savedCarPhotoValue = null;
+    document.getElementById('driverAuth').style.display = 'block';
+    document.getElementById('driverProfileForm').style.display = 'none';
+    message.textContent = 'You have signed out.';
+  } catch (error) { message.textContent = 'Sign-out error: ' + friendlyError(error); }
+}
+
+
+/* PACKAGE TRANSPORT: PRIVATE CONTACTS, PUBLIC ROUTE LISTINGS */
+function setPackageMessage(id, message) {
+  const element = document.getElementById(id);
+  if (element) element.textContent = message;
+}
+
+async function updatePackageAuthStatus() {
+  try {
+    const user = await getSignedInUser();
+    setPackageMessage('packageAuthStatus', user
+      ? 'Signed in as ' + (user.email || 'your account') + '. You can request a package. Drivers need both verification checks approved before accepting a delivery. Signing out here signs you out of the entire app.'
+      : 'Not signed in. Create a free account or sign in to request a package. Drivers must be signed in and approved to accept deliveries.');
+  } catch (error) {
+    setPackageMessage('packageAuthStatus', 'Could not check account session: ' + friendlyError(error));
+  }
+}
+
+async function registerPackageAccount() {
+  const email = document.getElementById('packageAccountEmail').value.trim();
+  const password = document.getElementById('packageAccountPassword').value;
+  if (!email || password.length < 8) {
+    setPackageMessage('packageSubmitMessage', 'Enter a valid email and a password of at least 8 characters.');
+    return;
+  }
+  setPackageMessage('packageSubmitMessage', 'Creating your package account...');
+  try {
+    const { data, error } = await db.auth.signUp({
+      email, password,
+      options: { emailRedirectTo: window.location.origin }
+    });
+    if (error) throw error;
+    if (data.session && data.user) {
+      setPackageMessage('packageSubmitMessage', 'Account created and signed in. You can submit a package request now.');
+      await updatePackageAuthStatus();
+      await refreshPackageLists();
+    } else {
+      setPackageMessage('packageSubmitMessage', 'Registration submitted. Check your email and spam folder, confirm your email, then return here and sign in. If no email arrives, check your Supabase Auth email settings.');
+    }
+  } catch (error) {
+    setPackageMessage('packageSubmitMessage', 'Could not create package account: ' + friendlyError(error));
+  }
+}
+
+async function loginPackageAccount() {
+  const email = document.getElementById('packageAccountEmail').value.trim();
+  const password = document.getElementById('packageAccountPassword').value;
+  if (!email || !password) {
+    setPackageMessage('packageSubmitMessage', 'Enter your email and password first.');
+    return;
+  }
+  setPackageMessage('packageSubmitMessage', 'Signing in...');
+  try {
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    if (!data.session || !data.user) throw new Error('Supabase did not return an active login session. Please sign in again.');
+    setPackageMessage('packageSubmitMessage', 'You are signed in. You can submit a package request.');
+    await updatePackageAuthStatus();
+    await refreshPackageLists();
+  } catch (error) {
+    setPackageMessage('packageSubmitMessage', 'Sign-in error: ' + friendlyError(error));
+  }
+}
+
+async function logoutPackageAccount() {
+  try {
+    const { error } = await db.auth.signOut();
+    if (error) throw error;
+    setPackageMessage('packageSubmitMessage', 'You have signed out of the whole KC app.');
+    await updatePackageAuthStatus();
+    await refreshPackageLists();
+  } catch (error) {
+    setPackageMessage('packageSubmitMessage', 'Sign-out error: ' + friendlyError(error));
+  }
+}
+
+function formatPackageStatus(status) {
+  const labels = {
+    open: 'Waiting for a driver', accepted: 'Driver accepted',
+    picked_up: 'Package picked up', delivered: 'Delivered', cancelled: 'Cancelled'
+  };
+  return labels[status] || String(status || 'Unknown');
+}
+
+function formatPackageSize(size) {
+  const labels = { document: 'Envelope / documents', small: 'Small', medium: 'Medium', large: 'Large', bulky: 'Bulky / household item' };
+  return labels[size] || String(size || 'Not specified');
+}
+
+function makePackageParagraph(text) {
+  const p = document.createElement('p');
+  p.textContent = text;
+  return p;
+}
+
+function makePackageButton(label, callback, secondary = false) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = secondary ? 'package-action secondary' : 'package-action';
+  button.textContent = label;
+  button.addEventListener('click', callback);
+  return button;
+}
+
+async function createPackageRequest() {
+  const values = {
+    senderName: document.getElementById('packageSenderName').value.trim(),
+    senderPhone: document.getElementById('packageSenderPhone').value.trim(),
+    recipientName: document.getElementById('packageRecipientName').value.trim(),
+    recipientPhone: document.getElementById('packageRecipientPhone').value.trim(),
+    from: document.getElementById('packageFromTown').value.trim(),
+    to: document.getElementById('packageToTown').value.trim(),
+    pickupAddress: document.getElementById('packagePickupAddress').value.trim(),
+    deliveryAddress: document.getElementById('packageDeliveryAddress').value.trim(),
+    date: document.getElementById('packageDate').value,
+    type: document.getElementById('packageType').value,
+    size: document.getElementById('packageSize').value,
+    description: document.getElementById('packageDescription').value.trim(),
+    fragile: document.getElementById('packageFragile').value === 'true',
+    offerText: document.getElementById('packageOffer').value,
+    instructions: document.getElementById('packageInstructions').value.trim()
+  };
+  const required = [values.senderName, values.senderPhone, values.recipientName, values.recipientPhone,
+    values.from, values.to, values.pickupAddress, values.deliveryAddress, values.date, values.type,
+    values.size, values.description];
+  if (required.some(value => !value)) {
+    setPackageMessage('packageSubmitMessage', 'Please complete all required fields, including both phone numbers and both addresses.');
+    return;
+  }
+  if (values.from.toLowerCase() === values.to.toLowerCase()) {
+    setPackageMessage('packageSubmitMessage', 'Pickup and delivery towns cannot be the same.');
+    return;
+  }
+  if (values.senderPhone.length < 7 || values.senderPhone.length > 25 || values.recipientPhone.length < 7 || values.recipientPhone.length > 25) {
+    setPackageMessage('packageSubmitMessage', 'Please enter valid sender and recipient phone numbers.');
+    return;
+  }
+  let offer = null;
+  if (values.offerText !== '') {
+    offer = Number(values.offerText);
+    if (!Number.isFinite(offer) || offer < 0 || offer > 100000) {
+      setPackageMessage('packageSubmitMessage', 'Enter a valid delivery budget from R0 to R100,000, or leave it empty.');
+      return;
+    }
+  }
+
+  setPackageMessage('packageSubmitMessage', 'Checking account and securely submitting the request...');
+  try {
+    const user = await getSignedInUser();
+    if (!user) {
+      setPackageMessage('packageSubmitMessage', 'Please create an account or sign in above before submitting this package request.');
+      document.getElementById('packageAccountEmail').focus();
+      return;
+    }
+    const { data: packageId, error } = await db.rpc('create_package_delivery', {
+      p_pickup_location: values.from,
+      p_destination: values.to,
+      p_pickup_date: values.date,
+      p_package_type: values.type,
+      p_package_size: values.size,
+      p_description: values.description,
+      p_is_fragile: values.fragile,
+      p_sender_offer: offer,
+      p_sender_name: values.senderName,
+      p_sender_phone: values.senderPhone,
+      p_recipient_name: values.recipientName,
+      p_recipient_phone: values.recipientPhone,
+      p_pickup_address: values.pickupAddress,
+      p_delivery_address: values.deliveryAddress,
+      p_instructions: values.instructions || null
+    });
+    if (error) throw error;
+    setPackageMessage('packageSubmitMessage', 'Package request submitted successfully. Reference: ' + packageId + '. It is now visible in Available Package Requests. A driver has not accepted it yet, and no payment has been taken.');
+    ['packageRecipientName','packageRecipientPhone','packageFromTown','packageToTown','packagePickupAddress','packageDeliveryAddress','packageDescription','packageOffer','packageInstructions'].forEach(id => {
+      const input = document.getElementById(id);
+      if (input) input.value = '';
+    });
+    document.getElementById('packageFragile').value = 'false';
+    await refreshPackageLists();
+  } catch (error) {
+    setPackageMessage('packageSubmitMessage', 'Could not submit package request: ' + friendlyError(error) + '. Confirm that KC_package_transport_setup.sql has been run in Supabase SQL Editor.');
+  }
+}
+
+async function refreshOpenPackages() {
+  const box = document.getElementById('openPackages');
+  if (!box) return;
+  box.textContent = 'Loading available package requests...';
+  try {
+    const { data, error } = await db.from('package_deliveries')
+      .select('id,pickup_location,destination,pickup_date,package_type,package_size,description,is_fragile,sender_offer,status,created_at')
+      .eq('status', 'open').order('pickup_date', { ascending: true }).limit(50);
+    if (error) throw error;
+    box.replaceChildren();
+    if (!data || data.length === 0) {
+      box.textContent = 'There are no open package requests yet. New requests will appear here.';
+      return;
+    }
+    data.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'package-card';
+      const heading = document.createElement('h4');
+      heading.textContent = item.pickup_location + ' → ' + item.destination;
+      card.appendChild(heading);
+      card.appendChild(makePackageParagraph('Pickup date: ' + (item.pickup_date || 'Not specified')));
+      card.appendChild(makePackageParagraph('Item: ' + item.package_type + ' • Size: ' + formatPackageSize(item.package_size)));
+      card.appendChild(makePackageParagraph('Description: ' + item.description));
+      card.appendChild(makePackageParagraph('Fragile: ' + (item.is_fragile ? 'Yes — handle carefully' : 'No')));
+      card.appendChild(makePackageParagraph('Sender delivery offer: ' + (item.sender_offer === null ? 'Not specified' : 'R' + Number(item.sender_offer).toFixed(2))));
+      card.appendChild(makePackageParagraph('Status: ' + formatPackageStatus(item.status)));
+      card.appendChild(makePackageButton('ACCEPT PACKAGE DELIVERY', () => acceptPackageDelivery(item.id)));
+      box.appendChild(card);
+    });
+  } catch (error) {
+    box.textContent = 'Could not load package requests: ' + friendlyError(error) + '. Check that the package SQL setup has been run.';
+  }
+}
+
+async function acceptPackageDelivery(packageId) {
+  setPackageMessage('packageSubmitMessage', 'Checking driver account and document approvals...');
+  try {
+    const user = await getSignedInUser();
+    if (!user) {
+      setPackageMessage('packageSubmitMessage', 'Sign in above first. Only a driver with approved PDP and criminal-record checks can accept a package.');
+      document.getElementById('packageAccountEmail').focus();
+      return;
+    }
+    const { data, error } = await db.rpc('assign_package_delivery', { p_package_id: packageId });
+    if (error) throw error;
+    setPackageMessage('packageSubmitMessage', 'Package delivery accepted. Open My Package Requests / Deliveries to see the private contact details and address.');
+    await refreshPackageLists();
+  } catch (error) {
+    setPackageMessage('packageSubmitMessage', 'Could not accept package: ' + friendlyError(error) + '. You must be signed in as a driver and both PDP and criminal-record statuses must be APPROVED.');
+  }
+}
+
+async function updatePackageDeliveryStatus(packageId, newStatus) {
+  try {
+    const { data, error } = await db.rpc('update_package_delivery_status', {
+      p_package_id: packageId,
+      p_new_status: newStatus
+    });
+    if (error) throw error;
+    setPackageMessage('packageSubmitMessage', 'Package status updated to: ' + formatPackageStatus(newStatus) + '.');
+    await refreshPackageLists();
+  } catch (error) {
+    setPackageMessage('packageSubmitMessage', 'Could not update package status: ' + friendlyError(error));
+  }
+}
+
+async function refreshMyPackages() {
+  const box = document.getElementById('myPackages');
+  if (!box) return;
+  box.textContent = 'Loading your package requests and deliveries...';
+  try {
+    const user = await getSignedInUser();
+    if (!user) {
+      box.textContent = 'Sign in above to see your own requests and deliveries assigned to you.';
+      return;
+    }
+    const { data, error } = await db.from('package_deliveries')
+      .select('id,sender_id,driver_id,pickup_location,destination,pickup_date,package_type,package_size,description,is_fragile,sender_offer,status,created_at')
+      .or('sender_id.eq.' + user.id + ',driver_id.eq.' + user.id)
+      .order('created_at', { ascending: false }).limit(50);
+    if (error) throw error;
+    box.replaceChildren();
+    if (!data || data.length === 0) {
+      box.textContent = 'You do not have any package requests or accepted deliveries yet.';
+      return;
+    }
+    const ids = data.map(item => item.id);
+    const { data: contacts, error: contactError } = await db.from('package_delivery_contacts')
+      .select('package_id,sender_name,sender_phone,recipient_name,recipient_phone,pickup_address,delivery_address,instructions')
+      .in('package_id', ids);
+    if (contactError) throw contactError;
+    const contactById = new Map((contacts || []).map(item => [item.package_id, item]));
+    data.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'package-card';
+      const heading = document.createElement('h4');
+      heading.textContent = item.pickup_location + ' → ' + item.destination;
+      card.appendChild(heading);
+      card.appendChild(makePackageParagraph('Pickup date: ' + (item.pickup_date || 'Not specified')));
+      card.appendChild(makePackageParagraph('Item: ' + item.package_type + ' • Size: ' + formatPackageSize(item.package_size)));
+      card.appendChild(makePackageParagraph('Status: ' + formatPackageStatus(item.status)));
+      card.appendChild(makePackageParagraph('Reference: ' + item.id));
+      const contact = contactById.get(item.id);
+      if (contact) {
+        const privateBox = document.createElement('div');
+        privateBox.className = 'package-private';
+        privateBox.appendChild(makePackageParagraph('Sender: ' + contact.sender_name + ' • ' + contact.sender_phone));
+        privateBox.appendChild(makePackageParagraph('Recipient: ' + contact.recipient_name + ' • ' + contact.recipient_phone));
+        privateBox.appendChild(makePackageParagraph('Pickup address: ' + contact.pickup_address));
+        privateBox.appendChild(makePackageParagraph('Delivery address: ' + contact.delivery_address));
+        if (contact.instructions) privateBox.appendChild(makePackageParagraph('Instructions: ' + contact.instructions));
+        card.appendChild(privateBox);
+      }
+      if (item.sender_id === user.id && item.status === 'open') {
+        card.appendChild(makePackageButton('CANCEL REQUEST', () => updatePackageDeliveryStatus(item.id, 'cancelled'), true));
+      } else if (item.driver_id === user.id && item.status === 'accepted') {
+        card.appendChild(makePackageButton('MARK PACKAGE AS PICKED UP', () => updatePackageDeliveryStatus(item.id, 'picked_up')));
+      } else if (item.driver_id === user.id && item.status === 'picked_up') {
+        card.appendChild(makePackageButton('MARK AS DELIVERED', () => updatePackageDeliveryStatus(item.id, 'delivered')));
+      }
+      box.appendChild(card);
+    });
+  } catch (error) {
+    box.textContent = 'Could not load your packages: ' + friendlyError(error) + '. Confirm the package SQL setup is complete.';
+  }
+}
+
+async function refreshPackageLists() {
+  await updatePackageAuthStatus();
+  await Promise.all([refreshOpenPackages(), refreshMyPackages()]);
+}
+
+
+/* KC PASSENGER AND DRIVER MESSAGING */
+
+let activeRideChat = null;
+let rideChatList = [];
+
+function chatStatus(message) {
+  document.getElementById('rideChatStatus').textContent = message;
+}
+
+async function loadRideChats() {
+  const select = document.getElementById('rideChatSelect');
+  const box = document.getElementById('rideChatMessages');
+
+  select.replaceChildren();
+  box.textContent = 'Loading conversations...';
+  activeRideChat = null;
+  rideChatList = [];
+
+  try {
+    const user = await getSignedInUser();
+
+    if (!user) {
+      select.add(new Option('Sign in first', ''));
+      box.textContent = 'Sign in to send and receive messages.';
+      chatStatus('You must sign in first.');
+      return;
+    }
+
+    const ridesById = new Map();
+
+    // Rides offered by the signed-in driver.
+    const { data: driverRides, error: driverError } =
+      await db.from('rides')
+        .select('id,driver_id,pickup_location,destination')
+        .eq('driver_id', user.id);
+
+    if (driverError) throw driverError;
+
+    (driverRides || []).forEach(ride => {
+      ridesById.set(ride.id, ride);
+    });
+
+    // Rides booked by the signed-in passenger.
+    const { data: myBookings, error: bookingError } =
+      await db.from('bookings')
+        .select('ride_id,passenger_id,status')
+        .eq('passenger_id', user.id)
+        .neq('status', 'cancelled');
+
+    if (bookingError) throw bookingError;
+
+    const bookedRideIds = [
+      ...new Set((myBookings || [])
+        .map(booking => booking.ride_id)
+        .filter(Boolean))
+    ];
+
+    if (bookedRideIds.length) {
+      const { data: passengerRides, error: ridesError } =
+        await db.from('rides')
+          .select('id,driver_id,pickup_location,destination')
+          .in('id', bookedRideIds);
+
+      if (ridesError) throw ridesError;
+
+      (passengerRides || []).forEach(ride => {
+        ridesById.set(ride.id, ride);
+      });
+    }
+
+    const rideIds = [...ridesById.keys()];
+    const conversations = [];
+
+    if (rideIds.length) {
+      const { data: bookings, error: allBookingsError } =
+        await db.from('bookings')
+          .select('ride_id,passenger_id,status')
+          .in('ride_id', rideIds)
+          .neq('status', 'cancelled');
+
+      if (allBookingsError) throw allBookingsError;
+
+      const seen = new Set();
+
+      (bookings || []).forEach(booking => {
+        const ride = ridesById.get(booking.ride_id);
+
+        if (!ride || !ride.driver_id || !booking.passenger_id) return;
+
+        let otherUserId = null;
+
+        if (ride.driver_id === user.id) {
+          otherUserId = booking.passenger_id;
+        } else if (booking.passenger_id === user.id) {
+          otherUserId = ride.driver_id;
+        }
+
+        if (!otherUserId || otherUserId === user.id) return;
+
+        const key = ride.id + ':' + otherUserId;
+        if (seen.has(key)) return;
+        seen.add(key);
+
+        conversations.push({
+          key,
+          rideId: ride.id,
+          otherUserId,
+          route: (ride.pickup_location || 'Pickup') +
+            ' → ' + (ride.destination || 'Destination')
+        });
+      });
+    }
+
+    if (!conversations.length) {
+      select.add(new Option('No eligible conversations', ''));
+      box.textContent =
+        'No eligible conversations were found. A passenger needs a non-cancelled booking on a ride offered by a driver.';
+      chatStatus('');
+      return;
+    }
+
+    const otherIds = [
+      ...new Set(conversations.map(item => item.otherUserId))
+    ];
+
+    const { data: profiles, error: profileError } =
+      await db.from('profiles')
+        .select('id,full_name')
+        .in('id', otherIds);
+
+    if (profileError) throw profileError;
+
+    const names = new Map(
+      (profiles || []).map(profile => [
+        profile.id,
+        profile.full_name || 'Passenger / Driver'
+      ])
+    );
+
+    rideChatList = conversations;
+    select.add(new Option('Choose a conversation', ''));
+
+    conversations.forEach((item, index) => {
+      const name = names.get(item.otherUserId) || 'Passenger / Driver';
+
+      select.add(new Option(
+        item.route + ' — ' + name,
+        String(index)
+      ));
+    });
+
+    box.textContent = 'Choose a conversation to read your messages.';
+    chatStatus('Conversations loaded.');
+
+  } catch (error) {
+    box.textContent = 'Could not load conversations: ' + friendlyError(error);
+    chatStatus('Check your sign-in and database permissions.');
+  }
+}
+
+async function openRideChat(value) {
+  const box = document.getElementById('rideChatMessages');
+  document.getElementById('rideChatInput').value = '';
+  activeRideChat = null;
+
+  if (value === '') {
+    box.textContent = 'Choose a conversation first.';
+    return;
+  }
+
+  const selected = rideChatList[Number(value)];
+  if (!selected) return;
+
+  activeRideChat = selected;
+  await refreshRideChatMessages();
+}
+
+async function refreshRideChatMessages() {
+  const box = document.getElementById('rideChatMessages');
+
+  if (!activeRideChat) return;
+
+  box.textContent = 'Loading messages...';
+
+  try {
+    const user = await getSignedInUser();
+
+    if (!user) {
+      box.textContent = 'Your session has ended. Please sign in again.';
+      activeRideChat = null;
+      return;
+    }
+
+    const { data, error } = await db.from('ride_messages')
+      .select('id,sender_id,receiver_id,message,created_at,ride_id')
+      .eq('ride_id', activeRideChat.rideId)
+      .or(
+        'and(sender_id.eq.' + user.id +
+        ',receiver_id.eq.' + activeRideChat.otherUserId +
+        '),and(sender_id.eq.' + activeRideChat.otherUserId +
+        ',receiver_id.eq.' + user.id + ')'
+      )
+      .order('created_at', { ascending: true })
+      .limit(100);
+
+    if (error) throw error;
+
+    box.replaceChildren();
+
+    if (!data || data.length === 0) {
+      box.textContent = 'No messages yet. Send the first message below.';
+      return;
+    }
+
+    data.forEach(item => {
+      const bubble = document.createElement('div');
+      bubble.style.padding = '10px';
+      bubble.style.margin = '8px 0';
+      bubble.style.borderRadius = '8px';
+      bubble.style.background =
+        item.sender_id === user.id ? '#d9f5e5' : '#eeeeee';
+
+      const heading = document.createElement('strong');
+      heading.textContent =
+        item.sender_id === user.id ? 'You' : 'Other person';
+
+      const content = document.createElement('p');
+      content.textContent = item.message;
+
+      const date = document.createElement('small');
+      date.textContent = item.created_at
+        ? new Date(item.created_at).toLocaleString()
+        : '';
+
+      bubble.append(heading, content, date);
+      box.appendChild(bubble);
+    });
+
+    box.scrollTop = box.scrollHeight;
+
+  } catch (error) {
+    box.textContent = 'Could not load messages: ' + friendlyError(error);
+  }
+}
+
+document.getElementById('rideChatForm')
+  .addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const input = document.getElementById('rideChatInput');
+    const message = input.value.trim();
+
+    if (!message || !activeRideChat) {
+      chatStatus('Choose a conversation and enter a message.');
+      return;
+    }
+
+    try {
+      const user = await getSignedInUser();
+
+      if (!user) {
+        chatStatus('Please sign in again before sending messages.');
+        return;
+      }
+
+      chatStatus('Sending message...');
+
+      const { error } = await db.from('ride_messages').insert({
+        ride_id: activeRideChat.rideId,
+        sender_id: user.id,
+        receiver_id: activeRideChat.otherUserId,
+        message
+      });
+
+      if (error) throw error;
+
+      input.value = '';
+      chatStatus('Message sent successfully.');
+      await refreshRideChatMessages();
+
+    } catch (error) {
+      chatStatus(
+        'Message not sent: ' + friendlyError(error) +
+        '. Check that the ride_messages table and its security policies are configured correctly.'
+      );
+    }
+  });
+
+/* END KC PASSENGER AND DRIVER MESSAGING */
+
+
+/* KEEP THE DRIVER SCREEN IN SYNC WITH LOGIN STATE */
+db.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    // Avoid running Supabase database work inside the auth callback itself.
+    setTimeout(() => { loadDriverProfile(); refreshPackageLists(); }, 0);
+  }
+  if (event === 'SIGNED_OUT') {
+    setTimeout(() => { refreshPackageLists(); }, 0);
+    document.getElementById('driverAuth').style.display = 'block';
+    document.getElementById('driverProfileForm').style.display = 'none';
+    document.getElementById('driverMessage').textContent = 'You have signed out. Sign in to manage your driver profile.';
+  }
+});
+
+window.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('driverPhotoFile').addEventListener('change', () => previewSelectedFile('driverPhotoFile', 'driverPhotoPreview'));
+  document.getElementById('carPhotoFile').addEventListener('change', () => previewSelectedFile('carPhotoFile', 'carPhotoPreview'));
+  const packageDate = document.getElementById('packageDate');
+  if (packageDate) {
+    const now = new Date();
+    const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    packageDate.min = localDate;
+    packageDate.value = localDate;
+  }
+  refreshPackageLists();
+  const message = document.getElementById('driverMessage');
+  try {
+    const user = await getSignedInUser();
+    if (user) await loadDriverProfile();
+    else {
+      document.getElementById('driverAuth').style.display = 'block';
+      document.getElementById('driverProfileForm').style.display = 'none';
+      message.textContent = 'Register a new account or sign in to continue.';
+    }
+  } catch (error) { message.textContent = 'Could not check your login session: ' + friendlyError(error); }
+});
+</script>
+</body>
+</html>
