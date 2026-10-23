@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#080b10">
 <title>KC | Premium Long Distance Rides & Verified Drivers</title>
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 <style>
 * { box-sizing: border-box; }
 body { font-family: Arial, sans-serif; margin: 0; background: #f1f5f2; color: #17251d; }
@@ -243,6 +244,19 @@ button:focus-visible { outline: 3px solid var(--kc-gold-light); outline-offset: 
 #rideChatMessages > div p { color: #e3e9ef; }
 #rideChatMessages > div small { color: #8e9cab; }
 #rideChatMessages a { color: var(--kc-gold-light); }
+
+/* KC Journey Guardian / Parcel Guardian additions */
+#kcGuardianMap { height: 300px; min-height: 240px; margin-top: 12px; border: 1px solid #394655; border-radius: 13px; overflow: hidden; background: #111923; }
+.guardian-card { margin-top: 12px; padding: 14px; border: 1px solid #303b49; border-radius: 13px; background: #101720; overflow-wrap: anywhere; }
+.guardian-card h4 { margin: 0 0 8px; }
+.guardian-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.guardian-actions .package-action { margin-top: 0; }
+.guardian-status { padding: 10px 12px; border: 1px solid #394655; border-radius: 10px; background: #0a1017; color: #dce4ec; line-height: 1.5; overflow-wrap: anywhere; }
+.guardian-event { padding: 9px 0; border-bottom: 1px solid #293441; line-height: 1.5; }
+.guardian-event:last-child { border-bottom: 0; }
+.guardian-small { color: #91a0af; font-size: 11px; line-height: 1.5; }
+@media(max-width:360px){.guardian-actions{grid-template-columns:1fr}#kcGuardianMap{height:250px}}
+
 </style>
 </head>
 <body>
@@ -256,6 +270,7 @@ button:focus-visible { outline: 3px solid var(--kc-gold-light); outline-offset: 
   <button type="button" class="active" onclick="showTab('find', this)">Find Ride</button>
   <button type="button" onclick="showTab('packages', this)">Packages</button>
   <button type="button" onclick="showTab('messages', this)">Messages</button>
+  <button type="button" onclick="showTab('guardian', this)">Journey Guardian</button>
   <button type="button" onclick="showTab('offer', this)">Offer Ride</button>
   <button type="button" onclick="showTab('driver', this)">Driver Account</button>
   <button type="button" onclick="showTab('profile', this)">About KC</button>
@@ -390,6 +405,47 @@ button:focus-visible { outline: 3px solid var(--kc-gold-light); outline-offset: 
   </p>
 </section>
 
+
+<section id="guardian" class="panel">
+  <h3>Journey Guardian</h3>
+  <p class="muted">Share a live journey map with trusted family during an active trip. Location sharing starts only after the driver taps Start and grants browser location permission. Sharing stops when the journey ends or the link expires.</p>
+  <div class="guardian-card">
+    <h4>Start or manage a journey</h4>
+    <label for="guardianRideSelect">Your verified driver's ride</label>
+    <select id="guardianRideSelect"><option value="">Sign in to load your rides</option></select>
+    <button type="button" class="green" onclick="kcStartJourney()">START JOURNEY & REQUEST LOCATION</button>
+    <p class="guardian-small">Keep this page open while sharing. Android browsers may pause location updates when the screen is locked, the browser is backgrounded, or battery saving is active.</p>
+    <div id="guardianStatus" class="guardian-status" role="status" aria-live="polite">Sign in to manage your journey. No location is being collected.</div>
+    <div id="guardianShareArea" hidden>
+      <label for="guardianShareLink">Private family tracking link</label>
+      <input id="guardianShareLink" readonly aria-label="Private family tracking link">
+      <div class="guardian-actions">
+        <button type="button" class="package-action" onclick="kcCopyJourneyLink()">COPY FAMILY LINK</button>
+        <button type="button" class="package-action secondary" onclick="kcSetJourneyStatus('picked_up')">MARK PASSENGER PICKED UP</button>
+        <button type="button" class="package-action secondary" onclick="kcSetJourneyStatus('arrived')">MARK ARRIVED</button>
+      </div>
+      <button type="button" class="package-action secondary" onclick="kcSetJourneyStatus('ended')">END JOURNEY & STOP SHARING</button>
+    </div>
+  </div>
+  <div class="guardian-card">
+    <h4>Live journey map</h4>
+    <p id="guardianMapCaption" class="muted">The map appears when an active journey has a location update.</p>
+    <div id="kcGuardianMap" role="img" aria-label="Journey location map"></div>
+    <p id="guardianLastLocation" class="guardian-small">No location has been shared in this session.</p>
+  </div>
+  <div class="guardian-card">
+    <h4>In-app notifications</h4>
+    <p class="muted">Journey and package status updates appear here when you sign in. These are in-app alerts, not SMS, WhatsApp or phone push notifications.</p>
+    <button type="button" class="package-action secondary" onclick="kcLoadNotifications()">REFRESH NOTIFICATIONS</button>
+    <div id="kcNotifications" aria-live="polite" class="message">Sign in to view your notifications.</div>
+  </div>
+  <div class="guardian-card">
+    <h4>Shared journey view</h4>
+    <p class="muted">If a family member opens a valid private tracking link, the map and last update appear here. Treat the link like a password and only send it to people you trust.</p>
+    <div id="guardianSharedStatus" class="guardian-status">No shared journey link detected.</div>
+  </div>
+</section>
+
 <section id="offer" class="panel">
   <h3>Offer a Ride</h3>
   <p class="muted">Enter your trip details. Sign in to your driver account before posting a ride.</p>
@@ -491,6 +547,7 @@ button:focus-visible { outline: 3px solid var(--kc-gold-light); outline-offset: 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
 const SUPABASE_URL = 'https://ndagpnohncjudssgtsvg.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_h4zgJO-RfPnnCXG5-QwPlA_geL4XqkI';
@@ -530,6 +587,7 @@ function showTab(id, button) {
     const navButton = Array.from(document.querySelectorAll('nav button')).find(btn => btn.getAttribute('onclick')?.includes("'" + id + "'"));
     if (navButton) navButton.classList.add('active');
   }
+  if (id === 'guardian') { kcLoadDriverRides(); kcLoadNotifications(); }
 }
 
 function openDriverAccount() { showTab('driver'); }
@@ -1329,8 +1387,8 @@ async function refreshOpenPackages() {
   box.textContent = 'Loading available package requests...';
   try {
     const { data, error } = await db.from('package_deliveries')
-      .select('id,pickup_location,destination,pickup_date,package_type,package_size,description,is_fragile,sender_offer,status,created_at')
-      .eq('status', 'open').order('pickup_date', { ascending: true }).limit(50);
+      .select('id,pickup_location,destination,preferred_date,package_type,package_size,description,is_fragile,sender_offer,status,created_at')
+      .eq('status', 'open').order('preferred_date', { ascending: true }).limit(50);
     if (error) throw error;
     box.replaceChildren();
     if (!data || data.length === 0) {
@@ -1343,7 +1401,7 @@ async function refreshOpenPackages() {
       const heading = document.createElement('h4');
       heading.textContent = item.pickup_location + ' → ' + item.destination;
       card.appendChild(heading);
-      card.appendChild(makePackageParagraph('Pickup date: ' + (item.pickup_date || 'Not specified')));
+      card.appendChild(makePackageParagraph('Pickup date: ' + (item.preferred_date || 'Not specified')));
       card.appendChild(makePackageParagraph('Item: ' + item.package_type + ' • Size: ' + formatPackageSize(item.package_size)));
       card.appendChild(makePackageParagraph('Description: ' + item.description));
       card.appendChild(makePackageParagraph('Fragile: ' + (item.is_fragile ? 'Yes — handle carefully' : 'No')));
@@ -1400,7 +1458,7 @@ async function refreshMyPackages() {
       return;
     }
     const { data, error } = await db.from('package_deliveries')
-      .select('id,sender_id,driver_id,pickup_location,destination,pickup_date,package_type,package_size,description,is_fragile,sender_offer,status,created_at')
+      .select('id,sender_id,driver_id,pickup_location,destination,preferred_date,package_type,package_size,description,is_fragile,sender_offer,status,created_at')
       .or('sender_id.eq.' + user.id + ',driver_id.eq.' + user.id)
       .order('created_at', { ascending: false }).limit(50);
     if (error) throw error;
@@ -1424,7 +1482,7 @@ async function refreshMyPackages() {
       const heading = document.createElement('h4');
       heading.textContent = item.pickup_location + ' → ' + item.destination;
       card.appendChild(heading);
-      card.appendChild(makePackageParagraph('Pickup date: ' + (item.pickup_date || 'Not specified')));
+      card.appendChild(makePackageParagraph('Pickup date: ' + (item.preferred_date || 'Not specified')));
       card.appendChild(makePackageParagraph('Item: ' + item.package_type + ' • Size: ' + formatPackageSize(item.package_size)));
       card.appendChild(makePackageParagraph('Status: ' + formatPackageStatus(item.status)));
       card.appendChild(makePackageParagraph('Reference: ' + item.id));
@@ -1447,6 +1505,7 @@ async function refreshMyPackages() {
         card.appendChild(makePackageButton('MARK AS DELIVERED', () => updatePackageDeliveryStatus(item.id, 'delivered')));
       }
       box.appendChild(card);
+      kcLoadPackageTimeline(item.id, card);
     });
   } catch (error) {
     box.textContent = 'Could not load your packages: ' + friendlyError(error) + '. Confirm the package SQL setup is complete.';
@@ -1775,6 +1834,17 @@ window.addEventListener('DOMContentLoaded', async () => {
     packageDate.value = localDate;
   }
   refreshPackageLists();
+  await kcLoadDriverRides();
+  await kcRestoreJourney();
+  await kcLoadNotifications();
+  const sharedToken = new URLSearchParams(window.location.search).get('kc_track');
+  if (sharedToken) await kcLoadSharedJourney(sharedToken);
+  if (kcGuardianRefreshTimer) clearInterval(kcGuardianRefreshTimer);
+  kcGuardianRefreshTimer = setInterval(() => {
+    const token = new URLSearchParams(window.location.search).get('kc_track');
+    if (token && document.visibilityState === 'visible') kcLoadSharedJourney(token);
+    if (document.visibilityState === 'visible') kcLoadNotifications();
+  }, 30000);
   const message = document.getElementById('driverMessage');
   try {
     const user = await getSignedInUser();
@@ -1786,6 +1856,241 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
   } catch (error) { message.textContent = 'Could not check your login session: ' + friendlyError(error); }
 });
+
+
+/* KC JOURNEY GUARDIAN + PARCEL GUARDIAN: additive feature layer */
+let kcActiveJourney = null;
+let kcGeoWatchId = null;
+let kcGuardianMap = null;
+let kcGuardianMarker = null;
+let kcLastLocationWrite = 0;
+let kcGuardianRefreshTimer = null;
+
+function kcGuardianMessage(message) {
+  const box = document.getElementById('guardianStatus');
+  if (box) box.textContent = message;
+}
+function kcEscapeText(value) { return String(value ?? ''); }
+function kcFormatDate(value) {
+  if (!value) return 'Time unavailable';
+  try { return new Date(value).toLocaleString(); } catch (_) { return String(value); }
+}
+function kcStopLocationWatch() {
+  if (kcGeoWatchId !== null && navigator.geolocation) navigator.geolocation.clearWatch(kcGeoWatchId);
+  kcGeoWatchId = null;
+}
+function kcEnsureMap(lat, lng) {
+  const mapBox = document.getElementById('kcGuardianMap');
+  if (!mapBox || !window.L) return;
+  if (!kcGuardianMap) {
+    kcGuardianMap = L.map(mapBox, { zoomControl: true }).setView([lat, lng], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(kcGuardianMap);
+    kcGuardianMarker = L.marker([lat, lng]).addTo(kcGuardianMap);
+  } else {
+    kcGuardianMap.setView([lat, lng], Math.max(kcGuardianMap.getZoom(), 14));
+    if (kcGuardianMarker) kcGuardianMarker.setLatLng([lat, lng]);
+  }
+  setTimeout(() => kcGuardianMap && kcGuardianMap.invalidateSize(), 100);
+}
+async function kcLoadDriverRides() {
+  const select = document.getElementById('guardianRideSelect');
+  if (!select) return;
+  select.replaceChildren(new Option('Loading your rides…', ''));
+  try {
+    const user = await getSignedInUser();
+    if (!user) { select.replaceChildren(new Option('Sign in first', '')); return; }
+    const { data, error } = await db.from('rides')
+      .select('id,pickup_location,destination,travel_date,travel_time,driver_id')
+      .eq('driver_id', user.id).order('travel_date', { ascending: true }).limit(50);
+    if (error) throw error;
+    select.replaceChildren(new Option('Choose one of your rides', ''));
+    (data || []).forEach(ride => select.add(new Option(
+      `${ride.pickup_location} → ${ride.destination} (${ride.travel_date || 'date not set'})`, ride.id
+    )));
+    if (!data || !data.length) select.replaceChildren(new Option('No rides offered by this account yet', ''));
+  } catch (error) {
+    select.replaceChildren(new Option('Could not load rides', ''));
+    kcGuardianMessage('Could not load rides: ' + friendlyError(error) + '. Run the separate KC Guardian SQL setup first.');
+  }
+}
+async function kcStartJourney() {
+  const rideId = document.getElementById('guardianRideSelect')?.value;
+  if (!rideId) { kcGuardianMessage('Choose one of your rides first.'); return; }
+  if (!navigator.geolocation) { kcGuardianMessage('This browser does not support location sharing.'); return; }
+  if (!window.isSecureContext) { kcGuardianMessage('Location sharing requires a secure HTTPS page. Open the published KC website over HTTPS.'); return; }
+  kcGuardianMessage('Requesting your permission to access this device location…');
+  // Explicit user gesture + browser permission request before creating a journey.
+  navigator.geolocation.getCurrentPosition(async position => {
+    try {
+      const user = await getSignedInUser();
+      if (!user) throw new Error('Sign in again before starting a journey.');
+      kcGuardianMessage('Starting secure journey sharing…');
+      if (!kcActiveJourney) {
+        const { data, error } = await db.rpc('kc_start_journey', { p_ride_id: rideId });
+        if (error) throw error;
+        const row = Array.isArray(data) ? data[0] : data;
+        if (!row?.session_id || !row?.share_token) throw new Error('The database did not return the journey link details.');
+        kcActiveJourney = { id: row.session_id, share_token: row.share_token, status: 'active' };
+      }
+      document.getElementById('guardianShareLink').value = `${location.origin}${location.pathname}?kc_track=${encodeURIComponent(row.share_token)}#guardian`;
+      document.getElementById('guardianShareArea').hidden = false;
+      await kcWriteLocation(position, true);
+      kcGuardianMessage('Journey sharing is active. Your location is being shared with people who have the private link until the journey ends or the link expires.');
+      kcWatchLocation();
+      await kcLoadNotifications();
+    } catch (error) {
+      kcGuardianMessage('Could not start journey: ' + friendlyError(error) + '. Check the Guardian SQL setup and that you own this ride with approved driver checks.');
+    }
+  }, error => {
+    kcGuardianMessage('Location permission was not granted or location is unavailable: ' + error.message + '. No journey was started. You can allow location in your browser settings and try again.');
+  }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+}
+async function kcWriteLocation(position, force) {
+  if (!kcActiveJourney || !position?.coords) return;
+  const now = Date.now();
+  if (!force && now - kcLastLocationWrite < 8000) return;
+  kcLastLocationWrite = now;
+  const lat = position.coords.latitude, lng = position.coords.longitude;
+  try {
+    const { error } = await db.from('kc_journey_locations').upsert({
+      session_id: kcActiveJourney.id, latitude: lat, longitude: lng,
+      accuracy_m: Number.isFinite(position.coords.accuracy) ? position.coords.accuracy : null,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'session_id' });
+    if (error) throw error;
+    kcEnsureMap(lat, lng);
+    document.getElementById('guardianLastLocation').textContent = 'Last location sent: ' + new Date().toLocaleString() + (position.coords.accuracy ? ' • accuracy about ' + Math.round(position.coords.accuracy) + ' m' : '');
+    document.getElementById('guardianMapCaption').textContent = 'Map shows the most recent location update. It may become stale if the browser pauses in the background.';
+  } catch (error) {
+    kcGuardianMessage('Location was obtained but could not be saved: ' + friendlyError(error));
+  }
+}
+function kcWatchLocation() {
+  kcStopLocationWatch();
+  if (!kcActiveJourney || !navigator.geolocation) return;
+  kcGeoWatchId = navigator.geolocation.watchPosition(position => kcWriteLocation(position, false), error => {
+    kcGuardianMessage('Location updates paused: ' + error.message + '. Keep KC open and check phone/browser location permissions.');
+  }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 });
+}
+async function kcSetJourneyStatus(status) {
+  if (!kcActiveJourney) { kcGuardianMessage('There is no active journey on this page.'); return; }
+  if (status === 'ended' && !confirm('End this journey and stop sharing your live location?')) return;
+  try {
+    const { error } = await db.rpc('kc_update_journey_status', { p_session_id: kcActiveJourney.id, p_status: status });
+    if (error) throw error;
+    kcActiveJourney.status = status;
+    if (status === 'ended' || status === 'arrived') {
+      kcStopLocationWatch();
+      kcGuardianMessage(status === 'arrived' ? 'Marked arrived. Live location sharing has stopped.' : 'Journey ended. Live location sharing has stopped.');
+      document.getElementById('guardianShareArea').hidden = true;
+    } else {
+      kcGuardianMessage('Journey status updated: ' + status + '.');
+    }
+    await kcLoadNotifications();
+  } catch (error) { kcGuardianMessage('Could not update journey status: ' + friendlyError(error)); }
+}
+async function kcCopyJourneyLink() {
+  const field = document.getElementById('guardianShareLink');
+  if (!field?.value) return;
+  try {
+    await navigator.clipboard.writeText(field.value);
+    kcGuardianMessage('Private family link copied. Send it only to trusted people.');
+  } catch (_) {
+    field.focus(); field.select();
+    kcGuardianMessage('Your browser blocked automatic copying. The link is selected; use Copy from your phone menu.');
+  }
+}
+async function kcLoadSharedJourney(token) {
+  const box = document.getElementById('guardianSharedStatus');
+  if (!box || !token) return;
+  showTab('guardian');
+  box.textContent = 'Checking private journey link…';
+  try {
+    const { data, error } = await db.rpc('kc_get_shared_journey', { p_share_token: token });
+    if (error) throw error;
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) { box.textContent = 'This tracking link is invalid, expired, or the journey has ended.'; return; }
+    box.textContent = `${row.pickup_location} → ${row.destination}\nStatus: ${row.status}\nLast update: ${kcFormatDate(row.updated_at)}\nOnly the latest location is shown; this may not be live if the driver’s phone is offline.`;
+    if (row.latitude != null && row.longitude != null) {
+      kcEnsureMap(Number(row.latitude), Number(row.longitude));
+      document.getElementById('guardianLastLocation').textContent = 'Last shared location: ' + kcFormatDate(row.updated_at);
+      document.getElementById('guardianMapCaption').textContent = 'Family shared view • last updated ' + kcFormatDate(row.updated_at);
+    }
+    document.getElementById('guardianShareArea').hidden = true;
+  } catch (error) { box.textContent = 'Could not open shared journey: ' + friendlyError(error) + '. The Guardian SQL setup may not have been run.'; }
+}
+async function kcLoadNotifications() {
+  const box = document.getElementById('kcNotifications');
+  if (!box) return;
+  try {
+    const user = await getSignedInUser();
+    if (!user) { box.textContent = 'Sign in to view your in-app notifications.'; return; }
+    const { data, error } = await db.from('kc_in_app_notifications')
+      .select('id,title,body,created_at,read_at,related_type,related_id')
+      .eq('user_id', user.id).order('created_at', { ascending: false }).limit(30);
+    if (error) throw error;
+    box.replaceChildren();
+    if (!data?.length) { box.textContent = 'You have no notifications yet.'; return; }
+    data.forEach(item => {
+      const row = document.createElement('div'); row.className = 'guardian-event';
+      const title = document.createElement('strong'); title.textContent = item.title || 'KC update';
+      const body = document.createElement('div'); body.textContent = item.body || '';
+      const date = document.createElement('div'); date.className = 'guardian-small'; date.textContent = kcFormatDate(item.created_at) + (item.read_at ? ' • Read' : ' • New');
+      row.append(title, body, date);
+      if (!item.read_at) {
+        const button = makePackageButton('MARK AS READ', async () => {
+          const { error: updateError } = await db.from('kc_in_app_notifications').update({ read_at: new Date().toISOString() }).eq('id', item.id);
+          if (updateError) { date.textContent = 'Could not mark as read: ' + friendlyError(updateError); return; }
+          await kcLoadNotifications();
+        }, true);
+        row.appendChild(button);
+      }
+      box.appendChild(row);
+    });
+  } catch (error) { box.textContent = 'Could not load in-app notifications: ' + friendlyError(error) + '. Run the Guardian SQL setup first.'; }
+}
+async function kcLoadPackageTimeline(deliveryId, target) {
+  try {
+    const { data, error } = await db.from('kc_package_tracking_events')
+      .select('status,event_note,created_at').eq('delivery_id', deliveryId).order('created_at', { ascending: true });
+    if (error) throw error;
+    const wrap = document.createElement('div'); wrap.className = 'guardian-card';
+    const heading = document.createElement('h4'); heading.textContent = 'Parcel Guardian timeline'; wrap.appendChild(heading);
+    if (!data?.length) { wrap.appendChild(makePackageParagraph('Tracking timeline will appear when the driver accepts or updates this delivery.')); }
+    else data.forEach(event => {
+      const line = document.createElement('div'); line.className = 'guardian-event';
+      line.textContent = formatPackageStatus(event.status) + ' • ' + kcFormatDate(event.created_at) + (event.event_note ? ' — ' + event.event_note : '');
+      wrap.appendChild(line);
+    });
+    target.appendChild(wrap);
+  } catch (error) {
+    const note = makePackageParagraph('Parcel timeline is not available yet: ' + friendlyError(error));
+    note.className = 'guardian-small'; target.appendChild(note);
+  }
+}
+
+// Re-open any active journey owned by the signed-in driver after refresh; never restart GPS automatically.
+async function kcRestoreJourney() {
+  try {
+    const user = await getSignedInUser();
+    if (!user) return;
+    const { data, error } = await db.from('kc_journey_sessions')
+      .select('id,ride_id,status,share_token,pickup_location,destination,share_expires_at,started_at')
+      .eq('driver_id', user.id).in('status', ['active','picked_up']).order('started_at', { ascending: false }).limit(1);
+    if (error) throw error;
+    if (data?.length) {
+      const item = data[0]; kcActiveJourney = { id: item.id, share_token: item.share_token, status: item.status };
+      document.getElementById('guardianRideSelect').value = item.ride_id;
+      document.getElementById('guardianShareLink').value = `${location.origin}${location.pathname}?kc_track=${encodeURIComponent(item.share_token)}#guardian`;
+      document.getElementById('guardianShareArea').hidden = false;
+      kcGuardianMessage('An active journey was found. For privacy, location tracking did not restart automatically after page reload. Tap Start Journey again only if you want to resume sharing.');
+    }
+  } catch (error) { kcGuardianMessage('Journey Guardian is not ready yet: ' + friendlyError(error) + '. Apply the separate SQL setup.'); }
+}
+
+
 </script>
 </body>
 </html>
