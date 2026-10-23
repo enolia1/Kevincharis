@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0b6040">
-<title>KC Comfortable Long Distance Rides</title>
+<meta name="theme-color" content="#080b10">
+<title>KC | Premium Long Distance Rides & Verified Drivers</title>
 
 <style>
 * { box-sizing: border-box; }
@@ -60,13 +60,196 @@ footer { padding: 18px; text-align: center; color: #607267; font-size: 12px; }
   .emergency-button small { font-size: 11px; }
   .sos-dock { padding-left: 8px; padding-right: 8px; }
 }
+
+/* KC DARK PREMIUM REDESIGN — visual system only; existing data hooks are preserved. */
+:root {
+  color-scheme: dark;
+  --kc-bg: #07090d;
+  --kc-surface: #0d1118;
+  --kc-surface-2: #121925;
+  --kc-surface-3: #18212d;
+  --kc-line: #263241;
+  --kc-gold: #d8b56b;
+  --kc-gold-light: #f0d99b;
+  --kc-green: #2aa17a;
+  --kc-green-dark: #17634f;
+  --kc-text: #f3f5f7;
+  --kc-muted: #a0adbb;
+  --kc-danger: #ff747d;
+  --kc-blue: #82b7ff;
+}
+html { scroll-behavior: smooth; background: var(--kc-bg); }
+body {
+  margin: 0;
+  background:
+    radial-gradient(ellipse at 12% -10%, rgba(216,181,107,.12), transparent 32rem),
+    radial-gradient(ellipse at 100% 30%, rgba(42,161,122,.07), transparent 34rem),
+    var(--kc-bg);
+  color: var(--kc-text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding: 0;
+}
+.app {
+  width: 100%; max-width: 560px; min-height: 100vh; margin: 0 auto;
+  padding-bottom: 145px; background: linear-gradient(180deg, #0b1017 0%, #080b10 100%);
+  color: var(--kc-text); box-shadow: 0 0 80px rgba(0,0,0,.45);
+}
+.app > header {
+  position: relative; isolation: isolate; overflow: hidden;
+  padding: 29px 22px 27px;
+  border-bottom: 1px solid rgba(216,181,107,.42);
+  background: radial-gradient(circle at 92% 0%, rgba(216,181,107,.19), transparent 11rem),
+              linear-gradient(135deg, #171a20 0%, #101a20 55%, #10251f 100%);
+}
+.app > header::before {
+  content: "KC  /  PREMIUM JOURNEYS"; display: inline-flex; align-items: center;
+  padding: 7px 10px; margin-bottom: 14px; border: 1px solid rgba(216,181,107,.45);
+  border-radius: 999px; background: rgba(216,181,107,.08); color: var(--kc-gold-light);
+  font-size: 9px; font-weight: 850; letter-spacing: 1.6px;
+}
+.app > header::after {
+  content: "KC"; position: absolute; z-index: -1; right: -2px; bottom: -28px;
+  color: rgba(216,181,107,.055); font-size: 154px; font-weight: 950; letter-spacing: -12px;
+  line-height: 1; pointer-events: none;
+}
+.app > header h2 {
+  max-width: 430px; margin: 0; color: #fff; font-size: clamp(25px, 6.2vw, 32px);
+  line-height: 1.12; letter-spacing: -.9px; font-weight: 850;
+}
+.app > header p { max-width: 380px; margin: 12px 0 0; color: #c4ccd4; font-size: 13px; line-height: 1.65; }
+.app > nav {
+  position: sticky; top: 0; z-index: 20; display: grid; grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 6px; padding: 9px 10px; background: rgba(10,14,20,.96); border-bottom: 1px solid #26303a;
+  box-shadow: 0 8px 24px rgba(0,0,0,.24); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+}
+.app > nav button {
+  min-width: 0; min-height: 42px; padding: 9px 5px; border: 1px solid transparent; border-radius: 10px;
+  background: transparent; color: #98a5b2; font: inherit; font-size: 11px; line-height: 1.25; font-weight: 750;
+  cursor: pointer; transition: background .18s ease, color .18s ease, border-color .18s ease;
+}
+.app > nav button.active { color: #17130b; background: linear-gradient(135deg, #efd99d, #c9a35a); border-color: #e6c77e; box-shadow: 0 4px 15px rgba(216,181,107,.14); }
+.app > main { padding: 15px 12px 24px; }
+.panel { display: none; }
+.panel.active {
+  display: block; padding: 21px 16px; border: 1px solid #252f3b; border-radius: 18px;
+  background: linear-gradient(155deg, rgba(19,26,36,.98), rgba(12,16,23,.99));
+  box-shadow: 0 10px 28px rgba(0,0,0,.22); animation: kcPremiumFade .2s ease-out;
+}
+.panel h3 { margin: 0 0 9px; color: var(--kc-gold-light); font-size: 22px; line-height: 1.25; letter-spacing: -.45px; font-weight: 820; }
+.panel h4 { color: #f0d9a0; line-height: 1.4; }
+.panel p { overflow-wrap: anywhere; }
+.muted { color: var(--kc-muted); font-size: 13px; line-height: 1.65; }
+label { display: block; margin: 15px 0 7px; color: #d1d8df; font-size: 12px; line-height: 1.4; font-weight: 800; letter-spacing: .18px; }
+input, textarea, select {
+  width: 100%; min-height: 46px; padding: 12px 13px; border: 1px solid #303b49; border-radius: 11px;
+  background: #090e15; color: #f3f5f7; font: inherit; font-size: 15px; transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+input::placeholder, textarea::placeholder { color: #687687; }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--kc-gold); background: #0d131b; box-shadow: 0 0 0 3px rgba(216,181,107,.13); }
+input[type="file"] { min-height: auto; padding: 10px; background: #0a1018; color: #c6ced7; font-size: 12px; border-style: dashed; }
+input[type="file"]::file-selector-button { margin-right: 10px; padding: 9px 11px; border: 1px solid #4d4635; border-radius: 8px; background: #1a1b1b; color: var(--kc-gold-light); font-weight: 750; }
+textarea { min-height: 92px; resize: vertical; }
+.green, .package-action {
+  display: block; width: 100%; min-height: 47px; margin-top: 14px; padding: 13px 14px; border: 1px solid #c9a45f;
+  border-radius: 11px; background: linear-gradient(135deg, #f0d99b, #c7a05a); color: #17130b;
+  font-size: 12px; line-height: 1.3; font-weight: 900; letter-spacing: .55px; cursor: pointer;
+  box-shadow: 0 5px 15px rgba(216,181,107,.09); transition: transform .15s ease, filter .15s ease, opacity .15s ease;
+}
+.green:active, .package-action:active, .emergency-button:active { transform: translateY(1px); filter: brightness(.96); }
+.green:disabled, .package-action:disabled { opacity: .53; cursor: wait; box-shadow: none; }
+.package-action { margin-top: 10px; padding: 12px; font-size: 12px; }
+.package-action.secondary { border-color: #354453; background: #1a2430; color: #d9e1e9; box-shadow: none; }
+.ride, .package-card {
+  margin-top: 13px; padding: 15px; border: 1px solid #283441; border-radius: 14px;
+  background: linear-gradient(160deg, #151e29, #101720); color: var(--kc-text); box-shadow: 0 6px 18px rgba(0,0,0,.15); overflow-wrap: anywhere;
+}
+.ride h4, .package-card h4 { margin: 0 0 9px; color: var(--kc-gold-light); }
+.ride p, .package-card p { color: #bdc7d1; line-height: 1.55; }
+.message {
+  margin-top: 12px; padding: 13px; border: 1px solid #2a3643; border-radius: 12px;
+  background: #101823; color: #d1dae3; font-size: 13px; line-height: 1.65; overflow-wrap: anywhere; white-space: pre-line;
+}
+.verification-panel {
+  margin-top: 18px; padding: 16px; border: 1px solid rgba(216,181,107,.38); border-radius: 16px;
+  background: radial-gradient(ellipse at 100% 0%, rgba(216,181,107,.07), transparent 55%), linear-gradient(145deg,#151c25,#0e141c);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+.verification-panel h4 { margin: 3px 0 10px; color: var(--kc-gold-light); font-size: 16px; letter-spacing: -.1px; }
+.verification-note, .verification-status { color: #b7c2cd; font-size: 12px; line-height: 1.7; }
+.verification-status { white-space: normal; }
+.photo-hint { margin: 7px 0 0; color: #8d9baa; font-size: 11px; line-height: 1.6; }
+.photo-preview { display: block; width: 100%; max-width: 220px; max-height: 200px; object-fit: cover; margin-top: 10px; border: 1px solid #394655; border-radius: 13px; box-shadow: 0 6px 18px rgba(0,0,0,.22); }
+.photo-preview[hidden] { display: none !important; }
+.package-subtitle { margin-top: 24px; padding-top: 15px; border-top: 1px solid #273240; color: #e3c780; }
+.package-private { margin-top: 10px; padding: 11px 12px; border-left: 3px solid var(--kc-gold); border-radius: 0 9px 9px 0; background: #181b1c; color: #d8d0bf; }
+footer { padding: 22px 16px; color: #6f7e8d; font-size: 11px; line-height: 1.6; text-align: center; letter-spacing: .2px; }
+.sos-dock {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 100; width: 100%; max-width: 560px;
+  padding: 9px 12px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #29333f;
+  background: rgba(8,11,16,.97); box-shadow: 0 -8px 26px rgba(0,0,0,.45); text-align: center;
+  -webkit-backdrop-filter: blur(15px); backdrop-filter: blur(15px);
+}
+.emergency-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; }
+.emergency-button { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; min-height: 58px; padding: 7px 4px; border: 1px solid transparent; border-radius: 11px; color: #fff; font-size: 11px; line-height: 1.2; font-weight: 850; cursor: pointer; overflow-wrap: anywhere; }
+.emergency-button small { display: block; margin-top: 4px; font-size: 11px; font-weight: 700; opacity: .95; }
+.emergency-sos { background: linear-gradient(140deg,#bd3039,#831e29); border-color: #d34a53; }
+.emergency-fire { background: linear-gradient(140deg,#b85a23,#773414); border-color: #d17a43; }
+.emergency-police { background: linear-gradient(140deg,#285fb7,#1d3978); border-color: #497ed0; }
+.emergency-caption { margin: 7px 0 0; color: #82909e; font-size: 9px; line-height: 1.4; }
+.sos-help { margin-top: 13px; padding: 13px; border: 1px solid #63383d; border-radius: 12px; background: #201417; color: #efc5c8; line-height: 1.6; }
+.sos-help strong { color: #ff9da4; }
+/* Structured, honest status indicators for each manual driver check. */
+.verification-status .status-intro { margin: 0 0 11px; color: #aebbc7; line-height: 1.6; }
+.verification-status .status-list { display: grid; grid-template-columns: 1fr; gap: 9px; margin: 10px 0; }
+.verification-status .status-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 12px; border: 1px solid #303b48; border-radius: 11px; background: #0a1017; }
+.verification-status .status-label { color: #dbe1e7; font-size: 12px; font-weight: 750; }
+.verification-status .status-pill { display: inline-block; flex: 0 0 auto; padding: 5px 8px; border: 1px solid #465362; border-radius: 999px; background: #18212b; color: #d8e0e8; font-size: 9px; font-weight: 900; letter-spacing: .5px; }
+.verification-status .status-pill.approved { border-color: #277b59; background: rgba(26,126,83,.18); color: #87e0b5; }
+.verification-status .status-pill.pending, .verification-status .status-pill.submitted, .verification-status .status-pill.under-review { border-color: #8b7037; background: rgba(216,181,107,.11); color: #f1d491; }
+.verification-status .status-pill.rejected, .verification-status .status-pill.failed, .verification-status .status-pill.declined { border-color: #8a3e46; background: rgba(164,48,60,.15); color: #ff9ca3; }
+.verification-status .status-meta { margin: 9px 0 0; color: #8998a7; font-size: 11px; line-height: 1.6; }
+.verification-status .status-notice { margin: 12px 0 0; padding: 11px 12px; border: 1px solid #574a2e; border-radius: 10px; background: rgba(216,181,107,.07); color: #e7d4a5; font-size: 12px; line-height: 1.6; }
+.verification-status .status-notice.is-approved { border-color: #27664e; background: rgba(26,126,83,.12); color: #99e5bd; }
+button, input, textarea, select { -webkit-tap-highlight-color: transparent; }
+button:focus-visible { outline: 3px solid var(--kc-gold-light); outline-offset: 3px; }
+@keyframes kcPremiumFade { from { opacity: .78; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+@media (min-width: 561px) {
+  body { padding: 20px 0; }
+  .app { border: 1px solid #1d2832; border-radius: 24px; overflow: clip; min-height: calc(100vh - 40px); }
+  .sos-dock { border-radius: 0 0 24px 24px; }
+}
+@media (max-width: 360px) {
+  .app > header { padding: 23px 16px; }
+  .app > header h2 { font-size: 24px; }
+  .app > nav { gap: 4px; padding: 7px; }
+  .app > nav button { min-height: 41px; padding: 7px 3px; font-size: 10px; }
+  .app > main { padding: 10px 8px 20px; }
+  .panel.active { padding: 17px 12px; border-radius: 15px; }
+  .verification-panel { padding: 13px 11px; }
+  .emergency-grid { gap: 5px; }
+  .emergency-button { padding: 7px 2px; font-size: 10px; }
+  .emergency-button small { font-size: 10px; }
+  .sos-dock { padding-left: 8px; padding-right: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+
+/* The message renderer uses inline background colours in the original script; override them in dark mode. */
+#rideChatMessages > div { background: #151e29 !important; border: 1px solid #2b3948; color: #edf2f7; }
+#rideChatMessages > div strong { color: var(--kc-gold-light); }
+#rideChatMessages > div p { color: #e3e9ef; }
+#rideChatMessages > div small { color: #8e9cab; }
+#rideChatMessages a { color: var(--kc-gold-light); }
 </style>
 </head>
 <body>
 <div class="app">
 <header>
   <h2>KC Comfortable Long Distance Rides</h2>
-  <p>Long-distance rides and package transport across South Africa.</p>
+  <p>Long-distance rides, private package delivery and driver verification across South Africa.</p>
 </header>
 
 <nav aria-label="Main navigation">
@@ -229,7 +412,7 @@ footer { padding: 18px; text-align: center; color: #607267; font-size: 12px; }
 </section>
 
 <section id="driver" class="panel">
-  <h3>Driver Account</h3>
+  <h3>Driver Account & Verification</h3>
   <p class="muted">Register or sign in to manage your driver profile and vehicle details.</p>
   <div id="driverAuth">
     <h4>Register a New Account</h4>
@@ -267,7 +450,8 @@ footer { padding: 18px; text-align: center; color: #607267; font-size: 12px; }
     <button type="button" class="green" id="saveDriverButton" onclick="saveDriverProfile()">SAVE DRIVER PROFILE</button>
 
     <div class="verification-panel">
-      <h4>Required Driver Verification</h4>
+      <h4>Driver Trust & Verification</h4>
+      <p class="verification-note"><strong>Two checks. One review process.</strong> Submit your PDP and criminal-record documents below. Your ride-posting access stays locked until an administrator approves both checks.</p>
       <p class="verification-note">Before you can post rides, submit your Professional Driving Permit (PDP) and your official criminal-record check or clearance document. An administrator must review both documents. Uploading a file never approves it automatically. Files are stored in private storage.</p>
       <label for="pdpDocumentFile">Professional Driving Permit (PDP) document</label>
       <input id="pdpDocumentFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp">
@@ -477,27 +661,75 @@ async function resolvePhotoValue(value) {
 function displayVerificationStatus(record) {
   const box = document.getElementById('verificationStatus');
   if (!box) return;
+
+  // Build the status display with text nodes only. Admin notes are never injected as HTML.
+  box.replaceChildren();
+  const intro = document.createElement('p');
+  intro.className = 'status-intro';
+  intro.textContent = record
+    ? 'Your documents are checked separately. Approval is manual; uploading a document does not approve it.'
+    : 'No verification submission has been found. Select both required documents and submit them for administrator review.';
+  box.appendChild(intro);
+
   if (!record) {
-    box.textContent = 'No documents have been submitted yet. Select both required documents and tap SUBMIT DOCUMENTS FOR REVIEW.';
+    const notice = document.createElement('div');
+    notice.className = 'status-notice';
+    notice.textContent = 'Next step: choose your PDP and criminal-record check / clearance file, then tap SUBMIT DOCUMENTS FOR REVIEW.';
+    box.appendChild(notice);
     return;
   }
-  const show = value => String(value || 'pending').toUpperCase();
-  let text = 'PDP status: ' + show(record.pdp_status) + '\nCriminal-record status: ' + show(record.criminal_status);
+
+  const list = document.createElement('div');
+  list.className = 'status-list';
+  const addStatus = (label, rawStatus) => {
+    const normalized = String(rawStatus || 'pending').trim().toLowerCase();
+    const row = document.createElement('div');
+    row.className = 'status-row';
+    const name = document.createElement('span');
+    name.className = 'status-label';
+    name.textContent = label;
+    const pill = document.createElement('span');
+    const knownStatuses = ['approved','pending','submitted','under-review','rejected','failed','declined'];
+    let statusClass = normalized.replace(/\s+/g, '-');
+    if (normalized === 'under review' || normalized === 'in review' || normalized === 'in_review') statusClass = 'under-review';
+    pill.className = 'status-pill ' + (knownStatuses.includes(statusClass) ? statusClass : 'unknown');
+    pill.textContent = String(rawStatus || 'PENDING').replace(/[-_]+/g, ' ').toUpperCase();
+    row.append(name, pill);
+    list.appendChild(row);
+  };
+  addStatus('Professional Driving Permit (PDP)', record.pdp_status);
+  addStatus('Criminal-record check', record.criminal_status);
+  box.appendChild(list);
+
+  const meta = [];
   if (record.updated_at) {
-    const submitted = new Date(record.updated_at);
-    if (!Number.isNaN(submitted.getTime())) text += '\nLast submitted or updated: ' + submitted.toLocaleString();
+    const date = new Date(record.updated_at);
+    if (!Number.isNaN(date.getTime())) meta.push('Last submitted or updated: ' + date.toLocaleString());
   }
   if (record.reviewed_at) {
-    const reviewed = new Date(record.reviewed_at);
-    if (!Number.isNaN(reviewed.getTime())) text += '\nLast reviewed: ' + reviewed.toLocaleString();
+    const date = new Date(record.reviewed_at);
+    if (!Number.isNaN(date.getTime())) meta.push('Last reviewed: ' + date.toLocaleString());
   }
-  if (record.admin_notes) text += '\nAdministrator note: ' + record.admin_notes;
-  if (record.pdp_status !== 'approved' || record.criminal_status !== 'approved') {
-    text += '\nRide posting stays blocked until BOTH checks are approved.';
-  } else {
-    text += '\nBoth checks are approved. You may post a ride.';
+  if (meta.length) {
+    const line = document.createElement('p');
+    line.className = 'status-meta';
+    line.textContent = meta.join(' • ');
+    box.appendChild(line);
   }
-  box.textContent = text;
+  if (record.admin_notes) {
+    const note = document.createElement('p');
+    note.className = 'status-meta';
+    note.textContent = 'Administrator note: ' + record.admin_notes;
+    box.appendChild(note);
+  }
+
+  const allApproved = record.pdp_status === 'approved' && record.criminal_status === 'approved';
+  const notice = document.createElement('div');
+  notice.className = 'status-notice' + (allApproved ? ' is-approved' : '');
+  notice.textContent = allApproved
+    ? 'Both checks are approved. You may post a ride, subject to the app’s other checks.'
+    : 'Ride posting remains blocked until BOTH checks are approved by an administrator.';
+  box.appendChild(notice);
 }
 
 async function refreshDriverVerification(userId) {
@@ -520,7 +752,7 @@ async function refreshDriverVerification(userId) {
 async function uploadVerificationDocument(file, kind, userId) {
   if (!file) throw new Error('Select both required documents before submitting.');
   if (!ALLOWED_VERIFICATION_TYPES.includes(file.type)) {
-    throw new Error('The ' + kind + ' document must be a PDF, JPG or PNG file.');
+    throw new Error('The ' + kind + ' document must be a PDF, JPG, PNG or WebP file.');
   }
   if (file.size > MAX_PHOTO_BYTES) {
     throw new Error('The ' + kind + ' document must be 5 MB or smaller.');
@@ -547,7 +779,7 @@ async function submitDriverVerification() {
   }
   for (const [kind, file] of [['PDP', pdpFile], ['criminal-record', criminalFile]]) {
     if (!ALLOWED_VERIFICATION_TYPES.includes(file.type)) {
-      box.textContent = 'The ' + kind + ' document must be a PDF, JPG or PNG file.';
+      box.textContent = 'The ' + kind + ' document must be a PDF, JPG, PNG or WebP file.';
       return;
     }
     if (file.size > MAX_PHOTO_BYTES) {
@@ -587,7 +819,11 @@ async function submitDriverVerification() {
     document.getElementById('criminalDocumentFile').value = '';
     const refreshedVerification = await refreshDriverVerification(user.id);
     if (refreshedVerification) {
-      box.textContent += '\n\nSubmission received. Both checks are PENDING until an administrator reviews them. You cannot post rides until both statuses are approved.';
+      displayVerificationStatus(refreshedVerification);
+      const successNote = document.createElement('div');
+      successNote.className = 'status-meta';
+      successNote.textContent = 'Submission received. Your documents are awaiting administrator review; upload does not automatically approve either check.';
+      box.appendChild(successNote);
     } else {
       box.textContent = 'Your documents were submitted, but the app could not reload your status. Refresh Driver Account and confirm both statuses. Ride posting remains blocked unless both show APPROVED.';
     }
@@ -1156,133 +1392,64 @@ async function updatePackageDeliveryStatus(packageId, newStatus) {
 async function refreshMyPackages() {
   const box = document.getElementById('myPackages');
   if (!box) return;
-
   box.textContent = 'Loading your package requests and deliveries...';
-
   try {
     const user = await getSignedInUser();
-
     if (!user) {
-      box.textContent =
-        'Sign in above to see your own requests and deliveries assigned to you.';
+      box.textContent = 'Sign in above to see your own requests and deliveries assigned to you.';
       return;
     }
-
-    // Load only packages belonging to the signed-in sender or driver.
-    const { data, error } = await db
-      .from('package_deliveries')
-      .select(
-        'id,sender_id,driver_id,pickup_location,destination,pickup_date,package_type,package_size,description,is_fragile,sender_offer,status,created_at'
-      )
+    const { data, error } = await db.from('package_deliveries')
+      .select('id,sender_id,driver_id,pickup_location,destination,pickup_date,package_type,package_size,description,is_fragile,sender_offer,status,created_at')
       .or('sender_id.eq.' + user.id + ',driver_id.eq.' + user.id)
-      .order('created_at', { ascending: false })
-      .limit(50);
-
+      .order('created_at', { ascending: false }).limit(50);
     if (error) throw error;
-
     box.replaceChildren();
-
     if (!data || data.length === 0) {
-      box.textContent =
-        'You do not have any package requests or accepted deliveries yet.';
+      box.textContent = 'You do not have any package requests or accepted deliveries yet.';
       return;
     }
-
-    // Load private contacts for these packages. The live table uses delivery_id.
+    // The current contact table links to its delivery with delivery_id.
+    // Keep this query aligned with that column to avoid the missing package_id error.
     const ids = data.map(item => item.id);
-
     const { data: contacts, error: contactError } = await db
       .from('package_delivery_contacts')
-      .select(
-        'delivery_id,sender_name,sender_phone,recipient_name,recipient_phone,pickup_address,delivery_address,instructions'
-      )
+      .select('delivery_id,sender_name,sender_phone,recipient_name,recipient_phone,pickup_address,delivery_address,instructions')
       .in('delivery_id', ids);
-
     if (contactError) throw contactError;
-
-    const contactById = new Map(
-      (contacts || []).map(item => [item.delivery_id, item])
-    );
-
+    const contactById = new Map((contacts || []).map(item => [item.delivery_id, item]));
     data.forEach(item => {
       const card = document.createElement('div');
       card.className = 'package-card';
-
       const heading = document.createElement('h4');
       heading.textContent = item.pickup_location + ' → ' + item.destination;
       card.appendChild(heading);
-
-      card.appendChild(
-        makePackageParagraph(
-          'Pickup date: ' + (item.pickup_date || 'Not specified')
-        )
-      );
-      card.appendChild(
-        makePackageParagraph(
-          'Item: ' + item.package_type + ' • Size: ' + formatPackageSize(item.package_size)
-        )
-      );
-      card.appendChild(
-        makePackageParagraph('Status: ' + formatPackageStatus(item.status))
-      );
+      card.appendChild(makePackageParagraph('Pickup date: ' + (item.pickup_date || 'Not specified')));
+      card.appendChild(makePackageParagraph('Item: ' + item.package_type + ' • Size: ' + formatPackageSize(item.package_size)));
+      card.appendChild(makePackageParagraph('Status: ' + formatPackageStatus(item.status)));
       card.appendChild(makePackageParagraph('Reference: ' + item.id));
-
       const contact = contactById.get(item.id);
       if (contact) {
         const privateBox = document.createElement('div');
         privateBox.className = 'package-private';
-        privateBox.appendChild(
-          makePackageParagraph('Sender: ' + contact.sender_name + ' • ' + contact.sender_phone)
-        );
-        privateBox.appendChild(
-          makePackageParagraph('Recipient: ' + contact.recipient_name + ' • ' + contact.recipient_phone)
-        );
-        privateBox.appendChild(
-          makePackageParagraph('Pickup address: ' + contact.pickup_address)
-        );
-        privateBox.appendChild(
-          makePackageParagraph('Delivery address: ' + contact.delivery_address)
-        );
-        if (contact.instructions) {
-          privateBox.appendChild(
-            makePackageParagraph('Instructions: ' + contact.instructions)
-          );
-        }
+        privateBox.appendChild(makePackageParagraph('Sender: ' + contact.sender_name + ' • ' + contact.sender_phone));
+        privateBox.appendChild(makePackageParagraph('Recipient: ' + contact.recipient_name + ' • ' + contact.recipient_phone));
+        privateBox.appendChild(makePackageParagraph('Pickup address: ' + contact.pickup_address));
+        privateBox.appendChild(makePackageParagraph('Delivery address: ' + contact.delivery_address));
+        if (contact.instructions) privateBox.appendChild(makePackageParagraph('Instructions: ' + contact.instructions));
         card.appendChild(privateBox);
       }
-
-      // Keep the existing sender and driver status actions.
       if (item.sender_id === user.id && item.status === 'open') {
-        card.appendChild(
-          makePackageButton(
-            'CANCEL REQUEST',
-            () => updatePackageDeliveryStatus(item.id, 'cancelled'),
-            true
-          )
-        );
+        card.appendChild(makePackageButton('CANCEL REQUEST', () => updatePackageDeliveryStatus(item.id, 'cancelled'), true));
       } else if (item.driver_id === user.id && item.status === 'accepted') {
-        card.appendChild(
-          makePackageButton(
-            'MARK PACKAGE AS PICKED UP',
-            () => updatePackageDeliveryStatus(item.id, 'picked_up')
-          )
-        );
+        card.appendChild(makePackageButton('MARK PACKAGE AS PICKED UP', () => updatePackageDeliveryStatus(item.id, 'picked_up')));
       } else if (item.driver_id === user.id && item.status === 'picked_up') {
-        card.appendChild(
-          makePackageButton(
-            'MARK AS DELIVERED',
-            () => updatePackageDeliveryStatus(item.id, 'delivered')
-          )
-        );
+        card.appendChild(makePackageButton('MARK AS DELIVERED', () => updatePackageDeliveryStatus(item.id, 'delivered')));
       }
-
       box.appendChild(card);
     });
   } catch (error) {
-    box.textContent =
-      'Could not load your packages: ' +
-      friendlyError(error) +
-      '. Check the package database column names and permissions.';
+    box.textContent = 'Could not load your packages: ' + friendlyError(error) + '. Confirm the package SQL setup is complete.';
   }
 }
 
