@@ -1351,7 +1351,22 @@ async function refreshMyPackages() {
       return;
     }
     const ids = data.map(item => item.id);
-    const { data: contacts, error: contactError } = await db.from('package_delivery_contacts')
+    
+    const ids = data.map(item => item.id);
+
+    const { data: contacts, error: contactError } = await db
+      .from('package_delivery_contacts')
+      .select(
+        'delivery_id,sender_name,sender_phone,recipient_name,recipient_phone,pickup_address,delivery_address,instructions'
+      )
+      .in('delivery_id', ids);
+
+    if (contactError) throw contactError;
+
+    const contactById = new Map(
+      (contacts || []).map(item => [item.delivery_id, item])
+    );
+ = await db.from('package_delivery_contacts')
       .select('package_id,sender_name,sender_phone,recipient_name,recipient_phone,pickup_address,delivery_address,instructions')
       .in('package_id', ids);
     if (contactError) throw contactError;
