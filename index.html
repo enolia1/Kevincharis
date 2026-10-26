@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -304,7 +305,7 @@ button:focus-visible { outline: 3px solid var(--kc-gold-light); outline-offset: 
 
 <section id="requests" class="panel">
   <h3>Passenger Journey Requests</h3>
-  <p class="muted">Passengers can post the journey they need. Drivers with approved PDP and criminal-record checks can accept a fixed price or send their own price offer. This feature does not take payment. Accepting a request or offer creates a private ride record and confirmed booking in KC.</p>
+  <p class="muted">Passengers can post the journey they need. Drivers with approved PDP and criminal-record checks can accept a fixed price or send their own price offer. This feature does not take payment or automatically create a standard ride booking.</p>
 
   <div class="verification-panel">
     <h4>Passenger account</h4>
@@ -573,11 +574,11 @@ button:focus-visible { outline: 3px solid var(--kc-gold-light); outline-offset: 
       <p class="verification-note"><strong>Two checks. One review process.</strong> Submit your PDP and criminal-record documents below. Your ride-posting access stays locked until an administrator approves both checks.</p>
       <p class="verification-note">Before you can post rides, submit your Professional Driving Permit (PDP) and your official criminal-record check or clearance document. An administrator must review both documents. Uploading a file never approves it automatically. Files are stored in private storage.</p>
       <label for="pdpDocumentFile">Professional Driving Permit (PDP) document</label>
-      <input id="pdpDocumentFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp">
-      <p class="photo-hint">PDF, JPG, PNG or WebP. Maximum 5 MB.</p>
+      <input id="pdpDocumentFile" type="file" accept="application/pdf,image/jpeg,image/png">
+      <p class="photo-hint">PDF, JPG or PNG. Maximum 5 MB.</p>
       <label for="criminalDocumentFile">Criminal-record check / clearance document</label>
-      <input id="criminalDocumentFile" type="file" accept="application/pdf,image/jpeg,image/png,image/webp">
-      <p class="photo-hint">PDF, JPG, PNG or WebP. Maximum 5 MB. Do not upload unrelated personal documents.</p>
+      <input id="criminalDocumentFile" type="file" accept="application/pdf,image/jpeg,image/png">
+      <p class="photo-hint">PDF, JPG or PNG. Maximum 5 MB. Do not upload unrelated personal documents.</p>
       <button type="button" class="green" id="submitVerificationButton" onclick="submitDriverVerification()">SUBMIT DOCUMENTS FOR REVIEW</button>
       <div id="verificationStatus" class="message verification-status" aria-live="polite">Sign in to view your verification status.</div>
     </div>
@@ -874,7 +875,7 @@ async function refreshDriverVerification(userId) {
 async function uploadVerificationDocument(file, kind, userId) {
   if (!file) throw new Error('Select both required documents before submitting.');
   if (!ALLOWED_VERIFICATION_TYPES.includes(file.type)) {
-    throw new Error('The ' + kind + ' document must be a PDF, JPG, PNG or WebP file.');
+    throw new Error('The ' + kind + ' document must be a PDF, JPG or PNG file.');
   }
   if (file.size > MAX_PHOTO_BYTES) {
     throw new Error('The ' + kind + ' document must be 5 MB or smaller.');
@@ -901,7 +902,7 @@ async function submitDriverVerification() {
   }
   for (const [kind, file] of [['PDP', pdpFile], ['criminal-record', criminalFile]]) {
     if (!ALLOWED_VERIFICATION_TYPES.includes(file.type)) {
-      box.textContent = 'The ' + kind + ' document must be a PDF, JPG, PNG or WebP file.';
+      box.textContent = 'The ' + kind + ' document must be a PDF, JPG or PNG file.';
       return;
     }
     if (file.size > MAX_PHOTO_BYTES) {
@@ -1880,6 +1881,13 @@ db.auth.onAuthStateChange((event, session) => {
     setTimeout(() => { loadDriverProfile(); refreshPackageLists(); kcLoadJourneyRequests(); }, 0);
   }
   if (event === 'SIGNED_OUT') {
+    kcStopLocationWatch();
+    kcActiveJourney = null;
+    kcLastLocationWrite = 0;
+    const guardianShareArea = document.getElementById('guardianShareArea');
+    if (guardianShareArea) guardianShareArea.hidden = true;
+    const guardianShareLink = document.getElementById('guardianShareLink');
+    if (guardianShareLink) guardianShareLink.value = '';
     setTimeout(() => { refreshPackageLists(); kcLoadJourneyRequests(); }, 0);
     document.getElementById('driverAuth').style.display = 'block';
     document.getElementById('driverProfileForm').style.display = 'none';
@@ -2120,7 +2128,7 @@ async function kcAcceptFixedPassengerRequest(request) {
   try {
     const { error } = await db.rpc('kc_accept_fixed_passenger_journey_request', { p_request_id: request.id });
     if (error) throw error;
-    kcRequestMessage('Passenger request accepted. A private ride and confirmed booking were created. Arrange pickup details privately with the passenger. No payment was taken in KC.');
+    kcRequestMessage('You accepted the passenger’s fixed price. The request is now marked accepted. Arrange final details privately with the passenger.');
     await kcLoadJourneyRequests();
   } catch (error) {
     kcRequestMessage('Could not accept this request: ' + friendlyError(error) + '. Only verified drivers can accept a fixed-price request.');
@@ -2135,7 +2143,7 @@ async function kcAcceptPassengerJourneyOffer(requestId, offerId, price, driverNa
       p_offer_id: offerId
     });
     if (error) throw error;
-    kcRequestMessage('Driver offer accepted. A private ride and confirmed booking were created. No payment was taken in KC.');
+    kcRequestMessage('Offer accepted. The request is now marked accepted. No payment was taken.');
     await kcLoadJourneyRequests();
   } catch (error) {
     kcRequestMessage('Could not accept offer: ' + friendlyError(error) + '. The request may already have been accepted or closed.');
@@ -2321,6 +2329,18 @@ async function kcLoadDriverRides() {
 async function kcStartJourney() {
   const rideId = document.getElementById('guardianRideSelect')?.value;
   if (!rideId) { kcGuardianMessage('Choose one of your rides first.'); return; }
+
+  // Discard any finished local session before starting another journey.
+  if (kcActiveJourney && !['active', 'picked_up'].includes(kcActiveJourney.status)) {
+    kcStopLocationWatch();
+    kcActiveJourney = null;
+    kcLastLocationWrite = 0;
+  }
+  // Never use one journey's share token for a different ride.
+  if (kcActiveJourney && kcActiveJourney.ride_id && kcActiveJourney.ride_id !== rideId) {
+    kcGuardianMessage('A different journey is already active. Select its ride to resume sharing, or end that journey before starting another one.');
+    return;
+  }
   if (!navigator.geolocation) { kcGuardianMessage('This browser does not support location sharing.'); return; }
   if (!window.isSecureContext) { kcGuardianMessage('Location sharing requires a secure HTTPS page. Open the published KC website over HTTPS.'); return; }
   kcGuardianMessage('Requesting your permission to access this device location…');
@@ -2336,7 +2356,7 @@ async function kcStartJourney() {
         if (error) throw error;
         const row = Array.isArray(data) ? data[0] : data;
         if (!row?.session_id || !row?.share_token) throw new Error('The database did not return the journey link details.');
-        kcActiveJourney = { id: row.session_id, share_token: row.share_token, status: 'active' };
+        kcActiveJourney = { id: row.session_id, ride_id: rideId, share_token: row.share_token, status: 'active' };
         shareToken = row.share_token;
       }
       if (!shareToken) throw new Error('The active journey is missing its sharing token.');
@@ -2376,23 +2396,45 @@ async function kcWriteLocation(position, force) {
 function kcWatchLocation() {
   kcStopLocationWatch();
   if (!kcActiveJourney || !navigator.geolocation) return;
-  kcGeoWatchId = navigator.geolocation.watchPosition(position => kcWriteLocation(position, false), error => {
+  const watchedSessionId = kcActiveJourney.id;
+  kcGeoWatchId = navigator.geolocation.watchPosition(position => {
+    // Ignore any callback queued by a watcher that belongs to an older session.
+    if (!kcActiveJourney || kcActiveJourney.id !== watchedSessionId) return;
+    kcWriteLocation(position, false);
+  }, error => {
+    if (!kcActiveJourney || kcActiveJourney.id !== watchedSessionId) return;
     kcGuardianMessage('Location updates paused: ' + error.message + '. Keep KC open and check phone/browser location permissions.');
   }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 });
 }
 async function kcSetJourneyStatus(status) {
   if (!kcActiveJourney) { kcGuardianMessage('There is no active journey on this page.'); return; }
+  if (!['picked_up', 'arrived', 'ended'].includes(status)) {
+    kcGuardianMessage('Choose a valid journey status.');
+    return;
+  }
   if (status === 'ended' && !confirm('End this journey and stop sharing your live location?')) return;
+  const journeyToUpdate = kcActiveJourney;
   try {
-    const { error } = await db.rpc('kc_update_journey_status', { p_session_id: kcActiveJourney.id, p_status: status });
+    const { error } = await db.rpc('kc_update_journey_status', { p_session_id: journeyToUpdate.id, p_status: status });
     if (error) throw error;
-    kcActiveJourney.status = status;
-    if (status === 'ended' || status === 'arrived') {
-      kcStopLocationWatch();
-      kcGuardianMessage(status === 'arrived' ? 'Marked arrived. Live location sharing has stopped.' : 'Journey ended. Live location sharing has stopped.');
-      document.getElementById('guardianShareArea').hidden = true;
-    } else {
-      kcGuardianMessage('Journey status updated: ' + status + '.');
+
+    // Do not modify a newer session if a late request returns after it has changed.
+    if (kcActiveJourney && kcActiveJourney.id === journeyToUpdate.id) {
+      if (status === 'ended' || status === 'arrived') {
+        kcStopLocationWatch();
+        kcLastLocationWrite = 0;
+        kcActiveJourney = null;
+        const shareArea = document.getElementById('guardianShareArea');
+        if (shareArea) shareArea.hidden = true;
+        const shareLink = document.getElementById('guardianShareLink');
+        if (shareLink) shareLink.value = '';
+        kcGuardianMessage(status === 'arrived'
+          ? 'Marked arrived. Live location sharing has stopped. You can now start a new journey.'
+          : 'Journey ended. Live location sharing has stopped. You can now start a new journey.');
+      } else {
+        kcActiveJourney.status = status;
+        kcGuardianMessage('Journey status updated: ' + status + '.');
+      }
     }
     await kcLoadNotifications();
   } catch (error) { kcGuardianMessage('Could not update journey status: ' + friendlyError(error)); }
@@ -2487,7 +2529,7 @@ async function kcRestoreJourney() {
       .eq('driver_id', user.id).in('status', ['active','picked_up']).order('started_at', { ascending: false }).limit(1);
     if (error) throw error;
     if (data?.length) {
-      const item = data[0]; kcActiveJourney = { id: item.id, share_token: item.share_token, status: item.status };
+      const item = data[0]; kcActiveJourney = { id: item.id, ride_id: item.ride_id, share_token: item.share_token, status: item.status };
       document.getElementById('guardianRideSelect').value = item.ride_id;
       document.getElementById('guardianShareLink').value = `${location.origin}${location.pathname}?kc_track=${encodeURIComponent(item.share_token)}#guardian`;
       document.getElementById('guardianShareArea').hidden = false;
