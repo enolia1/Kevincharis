@@ -304,7 +304,7 @@ button:focus-visible { outline: 3px solid var(--kc-gold-light); outline-offset: 
 
 <section id="requests" class="panel">
   <h3>Passenger Journey Requests</h3>
-  <p class="muted">Passengers can post the journey they need. Drivers with approved PDP and criminal-record checks can accept a fixed price or send their own price offer. This feature does not take payment or automatically create a standard ride booking.</p>
+  <p class="muted">Passengers can post the journey they need. Drivers with approved PDP and criminal-record checks can accept a fixed price or send their own price offer. This feature does not take payment. Accepting a request or offer creates a private ride record and confirmed booking in KC.</p>
 
   <div class="verification-panel">
     <h4>Passenger account</h4>
@@ -2120,7 +2120,7 @@ async function kcAcceptFixedPassengerRequest(request) {
   try {
     const { error } = await db.rpc('kc_accept_fixed_passenger_journey_request', { p_request_id: request.id });
     if (error) throw error;
-    kcRequestMessage('You accepted the passenger’s fixed price. The request is now marked accepted. Arrange final details privately with the passenger.');
+    kcRequestMessage('Passenger request accepted. A private ride and confirmed booking were created. Arrange pickup details privately with the passenger. No payment was taken in KC.');
     await kcLoadJourneyRequests();
   } catch (error) {
     kcRequestMessage('Could not accept this request: ' + friendlyError(error) + '. Only verified drivers can accept a fixed-price request.');
@@ -2135,7 +2135,7 @@ async function kcAcceptPassengerJourneyOffer(requestId, offerId, price, driverNa
       p_offer_id: offerId
     });
     if (error) throw error;
-    kcRequestMessage('Offer accepted. The request is now marked accepted. No payment was taken.');
+    kcRequestMessage('Driver offer accepted. A private ride and confirmed booking were created. No payment was taken in KC.');
     await kcLoadJourneyRequests();
   } catch (error) {
     kcRequestMessage('Could not accept offer: ' + friendlyError(error) + '. The request may already have been accepted or closed.');
