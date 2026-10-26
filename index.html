@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -245,6 +245,18 @@ button:focus-visible { outline: 3px solid var(--kc-gold-light); outline-offset: 
 #rideChatMessages > div small { color: #8e9cab; }
 #rideChatMessages a { color: var(--kc-gold-light); }
 
+/* KC passenger journey requests: additive marketplace styles */
+.request-grid { display:grid; grid-template-columns:1fr; gap:12px; margin-top:14px; }
+.request-card { margin-top:12px; padding:14px; border:1px solid #303b49; border-radius:13px; background:linear-gradient(155deg,#151e29,#101720); overflow-wrap:anywhere; }
+.request-card h4 { margin:0 0 8px; color:var(--kc-gold-light); }
+.request-card p { margin:7px 0; color:#c2ccd6; line-height:1.55; }
+.request-price { color:var(--kc-gold-light)!important; font-weight:850; }
+.request-offer-form { margin-top:12px; padding:12px; border:1px solid #3b4654; border-radius:11px; background:#0a1017; }
+.request-offer-form label { margin-top:9px; }
+.request-offer-form .package-action { margin-top:10px; }
+.request-section-heading { margin-top:24px; padding-top:15px; border-top:1px solid #273240; color:#e3c780; }
+.request-status { margin-top:12px; }
+
 /* KC Journey Guardian / Parcel Guardian additions */
 #kcGuardianMap { height: 300px; min-height: 240px; margin-top: 12px; border: 1px solid #394655; border-radius: 13px; overflow: hidden; background: #111923; }
 .guardian-card { margin-top: 12px; padding: 14px; border: 1px solid #303b49; border-radius: 13px; background: #101720; overflow-wrap: anywhere; }
@@ -268,6 +280,7 @@ button:focus-visible { outline: 3px solid var(--kc-gold-light); outline-offset: 
 
 <nav aria-label="Main navigation">
   <button type="button" class="active" onclick="showTab('find', this)">Find Ride</button>
+  <button type="button" onclick="showTab('requests', this)">Passenger Requests</button>
   <button type="button" onclick="showTab('packages', this)">Packages</button>
   <button type="button" onclick="showTab('messages', this)">Messages</button>
   <button type="button" onclick="showTab('guardian', this)">Journey Guardian</button>
@@ -290,6 +303,57 @@ button:focus-visible { outline: 3px solid var(--kc-gold-light); outline-offset: 
   <div id="results" class="message" aria-live="polite">Enter your route to search for rides.</div>
 </section>
 
+<section id="requests" class="panel">
+  <h3>Passenger Journey Requests</h3>
+  <p class="muted">Passengers can post the journey they need. Drivers with approved PDP and criminal-record checks can accept a fixed price or send their own price offer. This feature does not take payment or automatically create a standard ride booking.</p>
+
+  <div class="verification-panel">
+    <h4>Passenger account</h4>
+    <p id="kcRequestAuthStatus" class="verification-note" aria-live="polite">Create a passenger account or sign in. The same sign-in session is shared across KC.</p>
+    <label for="requestAccountEmail">Email address</label>
+    <input id="requestAccountEmail" type="email" autocomplete="email" placeholder="you@example.com">
+    <label for="requestAccountPassword">Password</label>
+    <input id="requestAccountPassword" type="password" autocomplete="current-password" placeholder="At least 8 characters">
+    <button type="button" class="green" onclick="kcRegisterPassengerRequestAccount()">CREATE PASSENGER ACCOUNT</button>
+    <button type="button" class="green" onclick="kcLoginPassengerRequestAccount()">SIGN IN</button>
+    <button type="button" class="package-action secondary" onclick="kcLogoutPassengerRequestAccount()">SIGN OUT OF KC</button>
+  </div>
+
+  <div class="verification-panel">
+    <h4>Post your journey request</h4>
+    <label for="requestPickup">Leaving from</label>
+    <input id="requestPickup" maxlength="160" placeholder="e.g. Boksburg, Gauteng">
+    <label for="requestDestination">Going to</label>
+    <input id="requestDestination" maxlength="160" placeholder="e.g. Durban, KwaZulu-Natal">
+    <label for="requestTravelDate">Travel date</label>
+    <input id="requestTravelDate" type="date" required>
+    <label for="requestTravelTime">Preferred departure time (optional)</label>
+    <input id="requestTravelTime" type="time">
+    <label for="requestPassengerCount">Number of passengers</label>
+    <input id="requestPassengerCount" type="number" min="1" max="8" step="1" value="1" required>
+    <label for="requestPricingMode">Pricing option</label>
+    <select id="requestPricingMode" onchange="kcUpdateRequestPriceHelp()">
+      <option value="fixed">I set a fixed price — drivers can accept or offer a different price</option>
+      <option value="offers">I welcome driver offers — budget is optional</option>
+    </select>
+    <label id="requestPriceLabel" for="requestPassengerPrice">Your fixed price (R)</label>
+    <input id="requestPassengerPrice" type="number" min="0" max="100000" step="0.01" placeholder="e.g. 350">
+    <p id="requestPriceHelp" class="photo-hint">Enter the price you are willing to pay. Drivers may accept it or send a counter-offer.</p>
+    <label for="requestNotes">Additional details (optional)</label>
+    <textarea id="requestNotes" rows="3" maxlength="1000" placeholder="Luggage, general meeting point or other travel needs. Do not enter your phone number or exact home address here."></textarea>
+    <button type="button" class="green" id="kcCreateRequestButton" onclick="kcCreatePassengerRequest()">POST JOURNEY REQUEST</button>
+    <div id="kcRequestStatus" class="message request-status" role="status" aria-live="polite">Sign in to post a passenger journey request.</div>
+  </div>
+
+  <h4 class="request-section-heading">Open passenger requests</h4>
+  <p class="muted">Only drivers with approved PDP and criminal-record checks can browse other passengers' open requests and respond. Phone numbers and exact addresses are not shown publicly.</p>
+  <button type="button" class="package-action secondary" onclick="kcLoadJourneyRequests()">REFRESH JOURNEY REQUESTS</button>
+  <div id="kcOpenJourneyRequests" class="message" aria-live="polite">Sign in to view requests available to your account.</div>
+
+  <h4 class="request-section-heading">My journey requests and driver offers</h4>
+  <p class="muted">Review offers received for your requests. Accepting an offer confirms the arrangement in KC, but payment and final travel arrangements are handled directly by the passenger and driver.</p>
+  <div id="kcMyJourneyRequests" class="message" aria-live="polite">Sign in to see your requests and offers.</div>
+</section>
 
 <section id="packages" class="panel">
   <h3>Package Transport</h3>
@@ -588,6 +652,7 @@ function showTab(id, button) {
     if (navButton) navButton.classList.add('active');
   }
   if (id === 'guardian') { kcLoadDriverRides(); kcLoadNotifications(); }
+  if (id === 'requests') kcLoadJourneyRequests();
 }
 
 function openDriverAccount() { showTab('driver'); }
@@ -933,7 +998,7 @@ async function searchRides() {
 async function publishRide() {
   const message = document.getElementById('publishMessage');
   const pickup = document.getElementById('pickup').value.trim();
-  const destination = document.getElementById('destination').value.trim();
+const destination = document.getElementById('destination').value.trim();
   const date = document.getElementById('travelDate').value;
   const time = document.getElementById('travelTime').value;
   const seats = Number(document.getElementById('seats').value);
@@ -1813,10 +1878,10 @@ document.getElementById('rideChatForm')
 db.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN' && session) {
     // Avoid running Supabase database work inside the auth callback itself.
-    setTimeout(() => { loadDriverProfile(); refreshPackageLists(); }, 0);
+    setTimeout(() => { loadDriverProfile(); refreshPackageLists(); kcLoadJourneyRequests(); }, 0);
   }
   if (event === 'SIGNED_OUT') {
-    setTimeout(() => { refreshPackageLists(); }, 0);
+    setTimeout(() => { refreshPackageLists(); kcLoadJourneyRequests(); }, 0);
     document.getElementById('driverAuth').style.display = 'block';
     document.getElementById('driverProfileForm').style.display = 'none';
     document.getElementById('driverMessage').textContent = 'You have signed out. Sign in to manage your driver profile.';
@@ -1826,6 +1891,14 @@ db.auth.onAuthStateChange((event, session) => {
 window.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('driverPhotoFile').addEventListener('change', () => previewSelectedFile('driverPhotoFile', 'driverPhotoPreview'));
   document.getElementById('carPhotoFile').addEventListener('change', () => previewSelectedFile('carPhotoFile', 'carPhotoPreview'));
+  const requestDate = document.getElementById('requestTravelDate');
+  if (requestDate) {
+    const nowForRequest = new Date();
+    const requestLocalDate = new Date(nowForRequest.getTime() - nowForRequest.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    requestDate.min = requestLocalDate;
+    requestDate.value = requestLocalDate;
+  }
+  kcUpdateRequestPriceHelp();
   const packageDate = document.getElementById('packageDate');
   if (packageDate) {
     const now = new Date();
@@ -1834,6 +1907,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     packageDate.value = localDate;
   }
   refreshPackageLists();
+  await kcLoadJourneyRequests();
   await kcLoadDriverRides();
   await kcRestoreJourney();
   await kcLoadNotifications();
@@ -1857,6 +1931,336 @@ window.addEventListener('DOMContentLoaded', async () => {
   } catch (error) { message.textContent = 'Could not check your login session: ' + friendlyError(error); }
 });
 
+
+/* KC PASSENGER JOURNEY REQUEST MARKETPLACE — additive tables/functions only */
+function kcRequestMessage(message) {
+  const box = document.getElementById('kcRequestStatus');
+  if (box) box.textContent = message;
+}
+async function kcRegisterPassengerRequestAccount() {
+  const email = document.getElementById('requestAccountEmail').value.trim();
+  const password = document.getElementById('requestAccountPassword').value;
+  if (!email || password.length < 8) { kcRequestMessage('Enter a valid email address and a password of at least 8 characters.'); return; }
+  kcRequestMessage('Creating your passenger account…');
+  try {
+    const { data, error } = await db.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } });
+    if (error) throw error;
+    if (data.session && data.user) {
+      kcRequestMessage('Passenger account created and signed in. You can post a journey request below.');
+      document.getElementById('requestAccountPassword').value = '';
+      await kcLoadJourneyRequests();
+    } else {
+      kcRequestMessage('Registration submitted. Confirm your email, then return here and sign in. Check your spam folder if the confirmation email does not arrive.');
+    }
+  } catch (error) { kcRequestMessage('Could not create passenger account: ' + friendlyError(error)); }
+}
+async function kcLoginPassengerRequestAccount() {
+  const email = document.getElementById('requestAccountEmail').value.trim();
+  const password = document.getElementById('requestAccountPassword').value;
+  if (!email || !password) { kcRequestMessage('Enter your email and password first.'); return; }
+  kcRequestMessage('Signing in…');
+  try {
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    if (!data.session || !data.user) throw new Error('No active session was returned. Please try signing in again.');
+    document.getElementById('requestAccountPassword').value = '';
+    kcRequestMessage('You are signed in. You can post a journey request or review your existing requests.');
+    await kcLoadJourneyRequests();
+  } catch (error) { kcRequestMessage('Sign-in error: ' + friendlyError(error)); }
+}
+async function kcLogoutPassengerRequestAccount() {
+  try {
+    const { error } = await db.auth.signOut();
+    if (error) throw error;
+    document.getElementById('requestAccountPassword').value = '';
+    kcRequestMessage('You have signed out of the whole KC app.');
+    await kcLoadJourneyRequests();
+  } catch (error) { kcRequestMessage('Sign-out error: ' + friendlyError(error)); }
+}
+function kcUpdateRequestPriceHelp() {
+  const mode = document.getElementById('requestPricingMode')?.value || 'fixed';
+  const label = document.getElementById('requestPriceLabel');
+  const input = document.getElementById('requestPassengerPrice');
+  const help = document.getElementById('requestPriceHelp');
+  if (!label || !input || !help) return;
+  if (mode === 'fixed') {
+    label.textContent = 'Your fixed price (R)';
+    input.required = true;
+    input.placeholder = 'e.g. 350';
+    help.textContent = 'Enter the price you are willing to pay. Drivers may accept it or send a counter-offer.';
+  } else {
+    label.textContent = 'Optional budget (R)';
+    input.required = false;
+    input.placeholder = 'Optional, e.g. 400';
+    help.textContent = 'Leave this blank to invite offers, or enter a budget to help drivers understand your price range. Drivers can propose their own amount.';
+  }
+}
+function kcRequestParagraph(text, className = '') {
+  const p = document.createElement('p');
+  p.textContent = text;
+if (className) p.className = className;
+  return p;
+}
+function kcRequestButton(label, callback, secondary = false) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = secondary ? 'package-action secondary' : 'package-action';
+  button.textContent = label;
+  button.addEventListener('click', callback);
+  return button;
+}
+function kcRequestPricingText(request) {
+  if (request.pricing_mode === 'fixed') return 'Passenger fixed price: R' + Number(request.passenger_price).toFixed(2) + ' (driver may accept or counter-offer)';
+  return request.passenger_price == null
+    ? 'Pricing: driver offers invited; no budget specified'
+    : 'Passenger budget: R' + Number(request.passenger_price).toFixed(2) + ' (drivers may offer a different price)';
+}
+function kcRequestTravelText(request) {
+  const time = request.travel_time ? String(request.travel_time).slice(0, 5) : 'Flexible time';
+  return 'Travel date: ' + request.travel_date + ' • Time: ' + time + ' • Passengers: ' + request.passenger_count;
+}
+async function kcCreatePassengerRequest() {
+  const pickup = document.getElementById('requestPickup').value.trim();
+  const destination = document.getElementById('requestDestination').value.trim();
+  const date = document.getElementById('requestTravelDate').value;
+  const time = document.getElementById('requestTravelTime').value || null;
+  const count = Number(document.getElementById('requestPassengerCount').value);
+  const mode = document.getElementById('requestPricingMode').value;
+  const priceRaw = document.getElementById('requestPassengerPrice').value.trim();
+  const notes = document.getElementById('requestNotes').value.trim();
+
+  if (!pickup || !destination || !date) { kcRequestMessage('Enter the pickup town, destination and travel date.'); return; }
+  if (pickup.toLowerCase() === destination.toLowerCase()) { kcRequestMessage('Pickup and destination cannot be the same.'); return; }
+  if (!Number.isInteger(count) || count < 1 || count > 8) { kcRequestMessage('Enter a passenger count from 1 to 8.'); return; }
+  if (date < new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10)) { kcRequestMessage('Please choose today or a future travel date.'); return; }
+  let price = null;
+  if (priceRaw !== '') {
+    price = Number(priceRaw);
+    if (!Number.isFinite(price) || price < 0 || price > 100000) { kcRequestMessage('Enter a valid price from R0 to R100,000, or leave the budget empty.'); return; }
+  }
+  if (mode === 'fixed' && price === null) { kcRequestMessage('Enter your fixed price, or change the pricing option to driver offers.'); return; }
+
+  const button = document.getElementById('kcCreateRequestButton');
+  if (button) button.disabled = true;
+  kcRequestMessage('Checking sign-in and posting your journey request…');
+  try {
+    const user = await getSignedInUser();
+    if (!user) throw new Error('Please create a passenger account or sign in above before posting a request.');
+    const { data, error } = await db.rpc('kc_create_passenger_journey_request', {
+      p_pickup_location: pickup,
+      p_destination: destination,
+      p_travel_date: date,
+      p_travel_time: time,
+      p_passenger_count: count,
+      p_pricing_mode: mode,
+      p_passenger_price: price,
+      p_notes: notes || null
+    });
+    if (error) throw error;
+    document.getElementById('requestPickup').value = '';
+    document.getElementById('requestDestination').value = '';
+    document.getElementById('requestTravelTime').value = '';
+    document.getElementById('requestPassengerCount').value = '1';
+    document.getElementById('requestPricingMode').value = 'fixed';
+    document.getElementById('requestPassengerPrice').value = '';
+    document.getElementById('requestNotes').value = '';
+    kcUpdateRequestPriceHelp();
+    kcRequestMessage('Journey request posted successfully. Reference: ' + String(data) + '. Approved drivers can now see the route and respond. No payment was taken.');
+    await kcLoadJourneyRequests();
+  } catch (error) {
+    kcRequestMessage('Could not post journey request: ' + friendlyError(error) + '. Confirm the separate KC passenger request SQL setup has been run.');
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+async function kcCreateDriverOfferForm(request) {
+  const form = document.createElement('div');
+  form.className = 'request-offer-form';
+  const title = document.createElement('strong');
+  title.textContent = 'Send your price offer';
+  form.appendChild(title);
+  const priceLabel = document.createElement('label');
+  priceLabel.textContent = 'Your price (R)';
+  const priceInput = document.createElement('input');
+  priceInput.type = 'number'; priceInput.min = '0'; priceInput.max = '100000'; priceInput.step = '0.01'; priceInput.placeholder = 'e.g. 450';
+  priceLabel.appendChild(priceInput);
+  form.appendChild(priceLabel);
+  const noteLabel = document.createElement('label');
+  noteLabel.textContent = 'Optional message';
+  const noteInput = document.createElement('textarea');
+  noteInput.rows = 2; noteInput.maxLength = 500; noteInput.placeholder = 'Briefly explain your offer or meeting arrangement';
+  noteLabel.appendChild(noteInput);
+  form.appendChild(noteLabel);
+  const submitButton = kcRequestButton('SUBMIT PRICE OFFER', () => kcSubmitPassengerJourneyOffer(request.id, priceInput, noteInput, submitButton));
+  form.appendChild(submitButton);
+  return form;
+}
+async function kcSubmitPassengerJourneyOffer(requestId, priceInput, noteInput, button) {
+  const price = Number(priceInput.value);
+  if (priceInput.value.trim() === '' || !Number.isFinite(price) || price < 0 || price > 100000) {
+    kcRequestMessage('Enter a valid driver offer from R0 to R100,000.'); return;
+  }
+  button.disabled = true;
+  kcRequestMessage('Checking driver approval and submitting your offer…');
+  try {
+    const { data, error } = await db.rpc('kc_submit_passenger_journey_offer', {
+      p_request_id: requestId,
+      p_offered_price: price,
+      p_offer_note: noteInput.value.trim() || null
+    });
+    if (error) throw error;
+    kcRequestMessage('Your price offer was sent. The passenger can review and accept or decline it.');
+    await kcLoadJourneyRequests();
+  } catch (error) {
+    kcRequestMessage('Could not send offer: ' + friendlyError(error) + '. Only approved drivers can offer prices on open requests.');
+  } finally { button.disabled = false; }
+}
+async function kcAcceptFixedPassengerRequest(request) {
+  if (!confirm('Accept the passenger’s fixed price of R' + Number(request.passenger_price).toFixed(2) + ' for this journey request?')) return;
+  kcRequestMessage('Confirming your acceptance…');
+  try {
+    const { error } = await db.rpc('kc_accept_fixed_passenger_journey_request', { p_request_id: request.id });
+    if (error) throw error;
+    kcRequestMessage('You accepted the passenger’s fixed price. The request is now marked accepted. Arrange final details privately with the passenger.');
+    await kcLoadJourneyRequests();
+  } catch (error) {
+    kcRequestMessage('Could not accept this request: ' + friendlyError(error) + '. Only verified drivers can accept a fixed-price request.');
+  }
+}
+async function kcAcceptPassengerJourneyOffer(requestId, offerId, price, driverName) {
+  if (!confirm('Accept ' + driverName + '’s offer of R' + Number(price).toFixed(2) + '? This marks the request as accepted; it does not take payment.')) return;
+  kcRequestMessage('Accepting the driver offer…');
+  try {
+    const { error } = await db.rpc('kc_accept_passenger_journey_offer', {
+      p_request_id: requestId,
+      p_offer_id: offerId
+    });
+    if (error) throw error;
+    kcRequestMessage('Offer accepted. The request is now marked accepted. No payment was taken.');
+    await kcLoadJourneyRequests();
+  } catch (error) {
+    kcRequestMessage('Could not accept offer: ' + friendlyError(error) + '. The request may already have been accepted or closed.');
+  }
+}
+async function kcCancelPassengerJourneyRequest(requestId) {
+  if (!confirm('Cancel this open journey request? Drivers will no longer be able to respond.')) return;
+  kcRequestMessage('Cancelling request…');
+  try {
+    const { error } = await db.rpc('kc_cancel_passenger_journey_request', { p_request_id: requestId });
+    if (error) throw error;
+    kcRequestMessage('Journey request cancelled.');
+    await kcLoadJourneyRequests();
+  } catch (error) { kcRequestMessage('Could not cancel request: ' + friendlyError(error)); }
+}
+async function kcLoadJourneyRequests() {
+  const openBox = document.getElementById('kcOpenJourneyRequests');
+  const myBox = document.getElementById('kcMyJourneyRequests');
+  if (!openBox || !myBox) return;
+  try {
+    const user = await getSignedInUser();
+    openBox.textContent = user ? 'Loading requests available to your account…' : 'Sign in to browse or respond to journey requests.';
+    myBox.textContent = user ? 'Loading your requests and offers…' : 'Sign in to see your requests and offers.';
+    const authStatus = document.getElementById('kcRequestAuthStatus');
+    if (!user) { if (authStatus) authStatus.textContent = 'Not signed in. Create a passenger account or sign in above. Signing out here signs out of the whole KC app.'; kcRequestMessage('Create a passenger account or sign in before posting a request.'); return; }
+    if (authStatus) authStatus.textContent = 'Signed in. You can post journey requests. This login session is shared with the rest of KC.';
+
+    let isApprovedDriver = false;
+    const { data: profile, error: profileError } = await db.from('profiles').select('role').eq('id', user.id).maybeSingle();
+    if (profileError) throw profileError;
+    if (profile?.role === 'driver') {
+      const { data: verification, error: verificationError } = await db.from('driver_verifications')
+        .select('pdp_status,criminal_status').eq('driver_id', user.id).maybeSingle();
+      if (verificationError) throw verificationError;
+      isApprovedDriver = verification?.pdp_status === 'approved' && verification?.criminal_status === 'approved';
+    }
+
+    // A verified driver can browse all open requests through the RLS policy.
+    if (!isApprovedDriver) {
+      openBox.textContent = 'Open requests from other passengers are shown only to drivers whose PDP and criminal-record checks are both approved. You can still post a journey request and manage your own requests below.';
+    } else {
+      const { data: openRequests, error: openError } = await db.from('kc_passenger_journey_requests')
+        .select('id,passenger_id,pickup_location,destination,travel_date,travel_time,passenger_count,pricing_mode,passenger_price,notes,status,created_at')
+        .eq('status', 'open').order('created_at', { ascending: false }).limit(50);
+      if (openError) throw openError;
+      openBox.replaceChildren();
+      const otherRequests = (openRequests || []).filter(item => item.passenger_id !== user.id);
+      if (!otherRequests.length) {
+        openBox.textContent = 'There are no open passenger requests to respond to at the moment.';
+      } else {
+        for (const request of otherRequests) {
+          const card = document.createElement('div'); card.className = 'request-card';
+          const heading = document.createElement('h4'); heading.textContent = request.pickup_location + ' → ' + request.destination; card.appendChild(heading);
+          card.appendChild(kcRequestParagraph(kcRequestTravelText(request)));
+          card.appendChild(kcRequestParagraph(kcRequestPricingText(request), 'request-price'));
+          if (request.notes) card.appendChild(kcRequestParagraph('Additional details: ' + request.notes));
+          if (request.pricing_mode === 'fixed') card.appendChild(kcRequestButton('ACCEPT FIXED PRICE', () => kcAcceptFixedPassengerRequest(request)));
+          card.appendChild(await kcCreateDriverOfferForm(request));
+          openBox.appendChild(card);
+        }
+      }
+    }
+
+    // Passenger can view their requests and all offers made against them.
+    const { data: myRequests, error: myError } = await db.from('kc_passenger_journey_requests')
+      .select('id,passenger_id,pickup_location,destination,travel_date,travel_time,passenger_count,pricing_mode,passenger_price,notes,status,accepted_driver_id,accepted_price,created_at')
+      .eq('passenger_id', user.id).order('created_at', { ascending: false }).limit(30);
+    if (myError) throw myError;
+    myBox.replaceChildren();
+    if (!myRequests?.length) {
+      myBox.textContent = 'You have not posted a journey request yet. Use the form above to create one.';
+      return;
+    }
+    const requestIds = myRequests.map(item => item.id);
+    const { data: allOffers, error: offersError } = await db.from('kc_passenger_journey_offers')
+      .select('id,request_id,driver_id,offered_price,offer_note,status,created_at')
+      .in('request_id', requestIds).order('created_at', { ascending: true });
+    if (offersError) throw offersError;
+    const offersByRequest = new Map();
+    (allOffers || []).forEach(offer => {
+      if (!offersByRequest.has(offer.request_id)) offersByRequest.set(offer.request_id, []);
+      offersByRequest.get(offer.request_id).push(offer);
+    });
+    const driverIds = [...new Set([...(allOffers || []).map(item => item.driver_id), ...myRequests.map(item => item.accepted_driver_id).filter(Boolean)])];
+    let driverNames = new Map();
+    if (driverIds.length) {
+      const { data: driverProfiles, error: namesError } = await db.from('profiles').select('id,full_name').in('id', driverIds);
+      if (!namesError) driverNames = new Map((driverProfiles || []).map(item => [item.id, item.full_name || 'Verified driver']));
+    }
+    myRequests.forEach(request => {
+      const card = document.createElement('div'); card.className = 'request-card';
+      const heading = document.createElement('h4'); heading.textContent = request.pickup_location + ' → ' + request.destination; card.appendChild(heading);
+      card.appendChild(kcRequestParagraph(kcRequestTravelText(request)));
+      card.appendChild(kcRequestParagraph(kcRequestPricingText(request), 'request-price'));
+      const status = String(request.status || 'open').replace(/_/g, ' ');
+      card.appendChild(kcRequestParagraph('Status: ' + status.toUpperCase()));
+      if (request.status === 'accepted') {
+        const acceptedName = driverNames.get(request.accepted_driver_id) || 'Selected driver';
+        card.appendChild(kcRequestParagraph('Accepted price: R' + Number(request.accepted_price || 0).toFixed(2)));
+        card.appendChild(kcRequestParagraph('Accepted driver: ' + acceptedName));
+      }
+      if (request.notes) card.appendChild(kcRequestParagraph('Your notes: ' + request.notes));
+      const offers = offersByRequest.get(request.id) || [];
+      const offersHeading = document.createElement('h4'); offersHeading.className = 'request-section-heading'; offersHeading.textContent = 'Driver offers (' + offers.length + ')'; card.appendChild(offersHeading);
+      if (!offers.length) card.appendChild(kcRequestParagraph('No driver offers yet. Keep the request open while waiting for responses.'));
+      offers.forEach(offer => {
+        const offerWrap = document.createElement('div'); offerWrap.className = 'request-offer-form';
+        const driverName = driverNames.get(offer.driver_id) || 'Verified driver';
+        const offerHeading = document.createElement('strong'); offerHeading.textContent = driverName + ' — R' + Number(offer.offered_price).toFixed(2); offerWrap.appendChild(offerHeading);
+        offerWrap.appendChild(kcRequestParagraph('Offer status: ' + String(offer.status || 'pending').toUpperCase()));
+        if (offer.offer_note) offerWrap.appendChild(kcRequestParagraph(offer.offer_note));
+        if (request.status === 'open' && offer.status === 'pending') {
+          offerWrap.appendChild(kcRequestButton('ACCEPT THIS OFFER', () => kcAcceptPassengerJourneyOffer(request.id, offer.id, offer.offered_price, driverName)));
+        }
+        card.appendChild(offerWrap);
+      });
+      if (request.status === 'open') card.appendChild(kcRequestButton('CANCEL MY REQUEST', () => kcCancelPassengerJourneyRequest(request.id), true));
+      myBox.appendChild(card);
+    });
+  } catch (error) {
+    const message = 'Could not load journey requests: ' + friendlyError(error) + '. Confirm the KC passenger request SQL setup and table permissions.';
+    openBox.textContent = message; myBox.textContent = message;
+  }
+}
 
 /* KC JOURNEY GUARDIAN + PARCEL GUARDIAN: additive feature layer */
 let kcActiveJourney = null;
@@ -1927,14 +2331,17 @@ async function kcStartJourney() {
       const user = await getSignedInUser();
       if (!user) throw new Error('Sign in again before starting a journey.');
       kcGuardianMessage('Starting secure journey sharing…');
+      let shareToken = kcActiveJourney?.share_token || null;
       if (!kcActiveJourney) {
         const { data, error } = await db.rpc('kc_start_journey', { p_ride_id: rideId });
         if (error) throw error;
         const row = Array.isArray(data) ? data[0] : data;
         if (!row?.session_id || !row?.share_token) throw new Error('The database did not return the journey link details.');
         kcActiveJourney = { id: row.session_id, share_token: row.share_token, status: 'active' };
+        shareToken = row.share_token;
       }
-      document.getElementById('guardianShareLink').value = `${location.origin}${location.pathname}?kc_track=${encodeURIComponent(row.share_token)}#guardian`;
+      if (!shareToken) throw new Error('The active journey is missing its sharing token.');
+      document.getElementById('guardianShareLink').value = `${location.origin}${location.pathname}?kc_track=${encodeURIComponent(shareToken)}#guardian`;
       document.getElementById('guardianShareArea').hidden = false;
       await kcWriteLocation(position, true);
       kcGuardianMessage('Journey sharing is active. Your location is being shared with people who have the private link until the journey ends or the link expires.');
